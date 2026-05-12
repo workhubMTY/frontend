@@ -11,6 +11,7 @@ const routes = [
   { name: "Tablero", href: "/tablero" },
   { name: "Cubículos", href: "/reservaciones" },
   { name: "Calendario", href: "/calendario" },
+  { name: "Estacionamientos", href: "/estacionamientos" },
 ];
 
 export default function Navbar() {
@@ -85,7 +86,12 @@ export default function Navbar() {
 
       <label className="ml-auto flex gap-2 bg-background-page self-center px-4 py-2 rounded-full text-xs text-on-background-2 cursor-pointer">
         <span className="material-symbols-outlined">chat_bubble</span>
-        <button onClick={() => route.push("/chatbot")} className="cursor-pointer">Pide al chatbot</button>
+        <button
+          onClick={() => route.push("/chatbot")}
+          className="cursor-pointer"
+        >
+          Pide al chatbot
+        </button>
       </label>
       <label className="bg-background-page self-center p-2 select-none rounded-full text-on-background-2 font-semibold material-symbols-outlined">
         notifications

@@ -707,7 +707,7 @@ export default function UserProfilePage() {
     notCompleted: 12,
   };
   return (
-    <div className="mx-auto w-full bg-background-page px-12 py-8">
+    <div className="mx-auto w-full h-full bg-background-page px-12 py-8">
       <div className="flex flex-col gap-2 mb-4">
         <h1 className="text-3xl font-bold tracking-tight text-slate-950">
           Perfil de usuario

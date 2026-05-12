@@ -54,3 +54,13 @@ export type MockApiJson = {
   spaceReservations: ApiReservation[];
   externalEvents: ApiReservation[];
 };
+
+export type CalendarSelectionAction =
+  | {
+      type: "day";
+      dayId: string;
+    }
+  | {
+      type: "range";
+      dateIds: string[];
+    };

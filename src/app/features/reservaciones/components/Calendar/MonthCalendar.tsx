@@ -4,6 +4,7 @@ import { useState } from "react";
 import type { CalendarCell, SelectionMode } from "../../types/reservaciones";
 import { getRangeIds } from "../../lib/dates";
 import { cn } from "../../lib/cn";
+import { CalendarSelectionAction } from "../../types/reservaciones";
 
 type MonthCalendarProps = {
   activeDayId: string;
@@ -12,10 +13,7 @@ type MonthCalendarProps = {
   modifiedDateIds: string[];
   conflictDateIds: string[];
   calendarCells: CalendarCell[];
-  onSingleDaySelect: (dayId: string) => void;
-  onToggleDay: (dayId: string) => void;
-  onDragRangeSelect: (dateIds: string[]) => void;
-  onRepeatDaySelect: (dayId: string) => void;
+  onSelect: (action: CalendarSelectionAction) => void;
 };
 
 export function MonthCalendar({
@@ -25,10 +23,7 @@ export function MonthCalendar({
   modifiedDateIds,
   conflictDateIds,
   calendarCells,
-  onSingleDaySelect,
-  onToggleDay,
-  onDragRangeSelect,
-  onRepeatDaySelect,
+  onSelect,
 }: MonthCalendarProps) {
   const [dragStartId, setDragStartId] = useState<string | null>(null);
   const [dragPreviewIds, setDragPreviewIds] = useState<string[]>([]);
@@ -46,13 +41,12 @@ export function MonthCalendar({
   function handlePointerDown(dayId: string) {
     if (isBlockedDate(dayId)) return;
 
-    if (selectionMode === "single") {
-      onSingleDaySelect(dayId);
-      return;
-    }
+    if (selectionMode === "single" || selectionMode === "repeat") {
+      onSelect({
+        type: "day",
+        dayId,
+      });
 
-    if (selectionMode === "repeat") {
-      onRepeatDaySelect(dayId);
       return;
     }
 
@@ -69,9 +63,15 @@ export function MonthCalendar({
     if (dragStartId === null) return;
 
     if (dragPreviewIds.length <= 1) {
-      onToggleDay(dragStartId);
+      onSelect({
+        type: "day",
+        dayId: dragStartId,
+      });
     } else {
-      onDragRangeSelect(dragPreviewIds);
+      onSelect({
+        type: "range",
+        dateIds: dragPreviewIds,
+      });
     }
 
     setDragStartId(null);
@@ -80,11 +80,7 @@ export function MonthCalendar({
 
   return (
     <div onPointerUp={finishDrag} onPointerLeave={finishDrag}>
-      <div className="mb-4 flex items-center justify-between">
-        <button className="rounded-lg p-2 text-slate-500 hover:bg-slate-100">
-          <ChevronLeft className="h-4 w-4" />
-        </button>
-
+      <div className="mb-4 flex items-center justify-center">
         <p className="text-sm font-semibold text-slate-800">
           {calendarCells[0]?.date.toLocaleDateString("es-MX", {
             month: "short",
@@ -96,10 +92,6 @@ export function MonthCalendar({
             { month: "short", day: "numeric" },
           )}
         </p>
-
-        <button className="rounded-lg p-2 text-slate-500 hover:bg-slate-100">
-          <ChevronRight className="h-4 w-4" />
-        </button>
       </div>
 
       <div className="grid select-none grid-cols-7 gap-y-3 text-center text-xs">

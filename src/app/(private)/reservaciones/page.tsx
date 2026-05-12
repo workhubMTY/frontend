@@ -1,13 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import {
-  CalendarDays,
-  ChevronDown,
-  ChevronLeft,
-  ChevronRight,
-  X,
-} from "lucide-react";
+import { useRouter } from "next/navigation";
+import { X } from "lucide-react";
 
 import { MonthCalendar } from "@/app/features/reservaciones/components/Calendar/MonthCalendar";
 import { Card } from "@/app/features/reservaciones/components/Card";
@@ -16,6 +11,7 @@ import { ProposedSchedulesCard } from "@/app/features/reservaciones/components/P
 import { ReservationFooter } from "@/app/features/reservaciones/components/ReservationFooter";
 import { ReservationTimelineCard } from "@/app/features/reservaciones/components/ReservationTimelineCard";
 import PageTransition from "@/app/components/PageTransition/PageTransition";
+import type { CalendarSelectionAction } from "@/app/features/reservaciones/types/reservaciones";
 
 import {
   apiGetExternalEventsInInterval,
@@ -34,11 +30,7 @@ import {
   hasOverlappingBlocks,
 } from "@/app/features/reservaciones/lib/conflicts";
 
-import {
-  formatDateRanges,
-  formatShortDateById,
-  uniqueSortedIds,
-} from "@/app/features/reservaciones/lib/formatting";
+import { uniqueSortedIds } from "@/app/features/reservaciones/lib/formatting";
 
 import { cn } from "@/app/features/reservaciones/lib/cn";
 
@@ -52,31 +44,22 @@ import type {
 export default function ReservationSchedulerPage() {
   const calendarCells = useMemo(() => createCalendarCells(), []);
 
-  const defaultDateIds = useMemo(
-    () =>
-      calendarCells
-        .filter((cell) => !cell.isWeekend)
-        .slice(0, 4)
-        .map((cell) => cell.id),
-    [calendarCells],
-  );
-
   const selectedSpaceName = "Sala A";
 
   const [selectionMode, setSelectionMode] = useState<SelectionMode>("multiple");
 
-  const [selectedDateIds, setSelectedDateIds] =
-    useState<string[]>(defaultDateIds);
+  const [selectedDateIds, setSelectedDateIds] = useState<string[]>([
+    getFirstAvailableDateId(calendarCells),
+  ]);
 
   const [activeDayId, setActiveDayId] = useState(
-    defaultDateIds[0] ?? getFirstAvailableDateId(calendarCells),
+    getFirstAvailableDateId(calendarCells),
   );
 
   const [dayBlocks, setDayBlocks] = useState<Record<string, TimeBlock[]>>({});
 
   const [pendingBlocks, setPendingBlocks] = useState<TimeBlock[]>([]);
   const [showAllEvents, setShowAllEvents] = useState(false);
-  const [showSelectedDays, setShowSelectedDays] = useState(false);
   const [hasAppliedCurrentSelection, setHasAppliedCurrentSelection] =
     useState(false);
 
@@ -106,23 +89,33 @@ export default function ReservationSchedulerPage() {
   function isWeekendDateId(dateId: string) {
     return calendarCells.find((cell) => cell.id === dateId)?.isWeekend ?? false;
   }
-
   function getAffectedDateIdsForBlock(block: TimeBlock) {
-    if (!block.applyToAllSelected) {
-      return isWeekendDateId(activeDayId) ? [] : [activeDayId];
-    }
-
     const selectableDateIds = selectedDateIds.filter(
       (dateId) => !isWeekendDateId(dateId),
     );
 
-    return selectableDateIds.length > 0
-      ? selectableDateIds
-      : isWeekendDateId(activeDayId)
-        ? []
-        : [activeDayId];
+    if (selectableDateIds.length === 0) {
+      return [];
+    }
+
+    if (block.applyToAllSelected) {
+      return selectableDateIds;
+    }
+
+    if (!selectableDateIds.includes(activeDayId)) {
+      return [];
+    }
+
+    return [activeDayId];
   }
 
+  const pendingBlocksForActiveDay = useMemo(
+    () =>
+      pendingBlocks.filter((block) =>
+        getAffectedDateIdsForBlock(block).includes(activeDayId),
+      ),
+    [pendingBlocks, selectedDateIds, activeDayId, calendarCells],
+  );
   const affectedDateIdsForPendingBlocks = useMemo(
     () =>
       uniqueSortedIds(
@@ -130,7 +123,107 @@ export default function ReservationSchedulerPage() {
       ),
     [activeDayId, calendarCells, pendingBlocks, selectedDateIds],
   );
+  function mergeOrRemoveRange(
+    previousDateIds: string[],
+    rangeDateIds: string[],
+  ) {
+    const previousDateIdsSet = new Set(previousDateIds);
 
+    const fullRangeAlreadySelected = rangeDateIds.every((dateId) =>
+      previousDateIdsSet.has(dateId),
+    );
+
+    if (fullRangeAlreadySelected) {
+      return uniqueSortedIds(
+        previousDateIds.filter((dateId) => !rangeDateIds.includes(dateId)),
+      );
+    }
+
+    return uniqueSortedIds([...previousDateIds, ...rangeDateIds]);
+  }
+  function handleCalendarSelect(action: CalendarSelectionAction) {
+    if (action.type === "day") {
+      const dayId = action.dayId;
+
+      if (isWeekendDateId(dayId)) return;
+
+      if (selectionMode === "single") {
+        setSelectedDateIds([dayId]);
+        setActiveDayId(dayId);
+        setHasAppliedCurrentSelection(false);
+        return;
+      }
+
+      if (selectionMode === "repeat") {
+        const selectedCell = calendarCells.find((cell) => cell.id === dayId);
+        if (!selectedCell) return;
+
+        const repeatedDateIds = calendarCells
+          .filter(
+            (cell) =>
+              !cell.isWeekend &&
+              cell.date >= selectedCell.date &&
+              cell.date.getDay() === selectedCell.date.getDay(),
+          )
+          .map((cell) => cell.id);
+
+        setSelectedDateIds(uniqueSortedIds(repeatedDateIds));
+        setActiveDayId(dayId);
+        setHasAppliedCurrentSelection(false);
+        return;
+      }
+
+      if (selectionMode === "multiple") {
+        if (hasAppliedCurrentSelection) {
+          setSelectedDateIds([dayId]);
+          setActiveDayId(dayId);
+          setHasAppliedCurrentSelection(false);
+          return;
+        }
+
+        setSelectedDateIds((previousDateIds) => {
+          const alreadySelected = previousDateIds.includes(dayId);
+          const alreadyActive = activeDayId === dayId;
+
+          if (!alreadySelected) {
+            return uniqueSortedIds([...previousDateIds, dayId]);
+          }
+
+          if (alreadySelected && !alreadyActive) {
+            return previousDateIds;
+          }
+
+          return uniqueSortedIds(
+            previousDateIds.filter((selectedDayId) => selectedDayId !== dayId),
+          );
+        });
+
+        setActiveDayId(dayId);
+        return;
+      }
+    }
+
+    if (action.type === "range") {
+      if (selectionMode !== "multiple") return;
+
+      const draggedDateIds = uniqueSortedIds(
+        action.dateIds.filter((dateId) => !isWeekendDateId(dateId)),
+      );
+
+      if (draggedDateIds.length === 0) return;
+
+      setSelectedDateIds((previousDateIds) => {
+        if (hasAppliedCurrentSelection) {
+          return draggedDateIds;
+        }
+
+        return mergeOrRemoveRange(previousDateIds, draggedDateIds);
+      });
+
+      setHasAppliedCurrentSelection(false);
+      setActiveDayId(draggedDateIds[0] ?? activeDayId);
+    }
+  }
   const conflictDateIds = useMemo(() => {
     const conflictIds = new Set<string>();
 
@@ -181,15 +274,6 @@ export default function ReservationSchedulerPage() {
   ]);
 
   const activeBlocks = dayBlocks[activeDayId] ?? [];
-
-  const activeDayLabel = formatShortDateById(activeDayId);
-
-  const activeNavigationIndex = Math.max(
-    navigationDateIds.findIndex((dateId) => dateId === activeDayId),
-    0,
-  );
-
-  const selectedDaysSummary = formatDateRanges(selectedDateIds);
 
   const activeDayExternalEvents = useMemo(
     () =>
@@ -250,18 +334,18 @@ export default function ReservationSchedulerPage() {
   const hasSavedBlockEdits = editedSavedDateIds.length > 0;
 
   const hasValidPendingTarget =
-    !hasPendingChanges || affectedDateIdsForPendingBlocks.length > 0;
+    hasPendingChanges && affectedDateIdsForPendingBlocks.length > 0;
+
+  const hasSavedBlocksToContinue = Object.values(dayBlocks).some(
+    (blocks) => blocks.length > 0,
+  );
 
   const canSaveChanges =
-    ((hasPendingChanges && hasValidPendingTarget) || hasSavedBlockEdits) &&
-    !hasBlockingSpaceConflict;
+    (hasValidPendingTarget || hasSavedBlockEdits) && !hasBlockingSpaceConflict;
 
   const canContinue =
     !hasBlockingSpaceConflict &&
-    (selectedDateIds.length > 0 ||
-      affectedDateIdsForPendingBlocks.length > 0 ||
-      hasSavedBlockEdits);
-
+    (hasValidPendingTarget || hasSavedBlockEdits || hasSavedBlocksToContinue);
   useEffect(() => {
     let cancelled = false;
 
@@ -296,22 +380,6 @@ export default function ReservationSchedulerPage() {
     };
   }, [apiJson, calendarCells]);
 
-  function goToSelectedDay(direction: "previous" | "next") {
-    if (navigationDateIds.length === 0) return;
-
-    const currentIndex = navigationDateIds.includes(activeDayId)
-      ? navigationDateIds.findIndex((dateId) => dateId === activeDayId)
-      : 0;
-
-    const nextIndex =
-      direction === "next"
-        ? (currentIndex + 1) % navigationDateIds.length
-        : (currentIndex - 1 + navigationDateIds.length) %
-          navigationDateIds.length;
-
-    setActiveDayId(navigationDateIds[nextIndex]);
-  }
-
   function handleModeChange(mode: SelectionMode) {
     setSelectionMode(mode);
 
@@ -325,74 +393,6 @@ export default function ReservationSchedulerPage() {
       setActiveDayId(nextDayId);
       setHasAppliedCurrentSelection(false);
     }
-  }
-
-  function handleSingleDaySelect(dayId: string) {
-    if (isWeekendDateId(dayId)) return;
-
-    setSelectedDateIds([dayId]);
-    setActiveDayId(dayId);
-    setHasAppliedCurrentSelection(false);
-  }
-
-  function handleToggleDay(dayId: string) {
-    if (isWeekendDateId(dayId)) return;
-
-    if (hasAppliedCurrentSelection) {
-      setSelectedDateIds([dayId]);
-      setActiveDayId(dayId);
-      setHasAppliedCurrentSelection(false);
-      return;
-    }
-
-    setSelectedDateIds((previousDateIds) => {
-      const alreadySelected = previousDateIds.includes(dayId);
-
-      const nextDateIds = alreadySelected
-        ? previousDateIds.filter((selectedDayId) => selectedDayId !== dayId)
-        : [...previousDateIds, dayId];
-
-      return uniqueSortedIds(nextDateIds);
-    });
-
-    setActiveDayId(dayId);
-  }
-
-  function handleDragRangeSelect(dateIds: string[]) {
-    const draggedDateIds = uniqueSortedIds(
-      dateIds.filter((dateId) => !isWeekendDateId(dateId)),
-    );
-
-    setSelectedDateIds((previousDateIds) => {
-      const nextDateIds = hasAppliedCurrentSelection
-        ? draggedDateIds
-        : uniqueSortedIds([...previousDateIds, ...draggedDateIds]);
-
-      return nextDateIds;
-    });
-
-    setHasAppliedCurrentSelection(false);
-    setActiveDayId(draggedDateIds[0] ?? activeDayId);
-  }
-
-  function handleRepeatDaySelect(dayId: string) {
-    if (isWeekendDateId(dayId)) return;
-
-    const selectedCell = calendarCells.find((cell) => cell.id === dayId);
-    if (!selectedCell) return;
-
-    const repeatedDateIds = calendarCells
-      .filter(
-        (cell) =>
-          !cell.isWeekend &&
-          cell.date >= selectedCell.date &&
-          cell.date.getDay() === selectedCell.date.getDay(),
-      )
-      .map((cell) => cell.id);
-
-    setSelectedDateIds(uniqueSortedIds(repeatedDateIds));
-    setActiveDayId(dayId);
-    setHasAppliedCurrentSelection(false);
   }
 
   function clearSelection() {
@@ -523,7 +523,7 @@ export default function ReservationSchedulerPage() {
     setEditedSavedDateIds([]);
     setHasAppliedCurrentSelection(true);
   }
-
+  const router = useRouter();
   function handleContinue() {
     if (!canContinue) return;
 
@@ -531,8 +531,7 @@ export default function ReservationSchedulerPage() {
       applyPendingBlocks();
     }
 
-    // Aquí navegarías a la siguiente pantalla:
-    // router.push("/reservations/confirm");
+    router.push("/reservaciones/confirmar");
   }
   return (
     <PageTransition>
@@ -554,104 +553,10 @@ export default function ReservationSchedulerPage() {
         <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_390px]">
           <div className="space-y-5">
             <Card className="p-5">
-              <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-                <div className="flex flex-wrap gap-3"></div>
-
-                <div className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-2 py-1">
-                  <button
-                    type="button"
-                    onClick={() => goToSelectedDay("previous")}
-                    className="rounded-lg p-1.5 text-slate-500 hover:bg-slate-100"
-                  >
-                    <ChevronLeft className="h-4 w-4" />
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setShowSelectedDays((value) => !value)}
-                    className="flex min-w-36 items-center justify-center gap-1 rounded-lg px-2 py-1 text-center hover:bg-slate-50"
-                  >
-                    <span>
-                      <span className="block text-xs font-semibold text-slate-800">
-                        {activeDayLabel}
-                      </span>
-                      <span className="block text-[11px] text-slate-400">
-                        {navigationDateIds.length > 0
-                          ? activeNavigationIndex + 1
-                          : 0}{" "}
-                        de {navigationDateIds.length} seleccionados
-                      </span>
-                    </span>
-                    <ChevronDown
-                      className={cn(
-                        "h-3.5 w-3.5 text-slate-400 transition",
-                        showSelectedDays && "rotate-180",
-                      )}
-                    />
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => goToSelectedDay("next")}
-                    className="rounded-lg p-1.5 text-slate-500 hover:bg-slate-100"
-                  >
-                    <ChevronRight className="h-4 w-4" />
-                  </button>
-                </div>
-              </div>
-
-              {showSelectedDays && (
-                <div className="mb-4 rounded-xl border border-slate-200 bg-white p-3">
-                  <div className="mb-2 flex items-center justify-between gap-3">
-                    <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                      Días seleccionados
-                    </p>
-                    <button
-                      type="button"
-                      onClick={() => setShowSelectedDays(false)}
-                      className="text-xs font-semibold text-slate-500 hover:text-slate-800"
-                    >
-                      Ocultar
-                    </button>
-                  </div>
-
-                  <div className="flex max-h-24 flex-wrap gap-2 overflow-y-auto pr-1">
-                    {navigationDateIds.map((dateId) => {
-                      const isModified = modifiedDateIds.includes(dateId);
-                      const hasConflict = conflictDateIds.includes(dateId);
-                      const isActive = activeDayId === dateId;
-
-                      return (
-                        <button
-                          key={dateId}
-                          type="button"
-                          onClick={() => setActiveDayId(dateId)}
-                          className={cn(
-                            "rounded-full border px-3 py-1.5 text-xs font-semibold transition",
-                            !isModified &&
-                              !hasConflict &&
-                              "border-violet-200 bg-violet-50 text-violet-700 hover:bg-violet-100",
-                            isModified &&
-                              !hasConflict &&
-                              "border-violet-600 bg-violet-600 text-white hover:bg-violet-700",
-                            hasConflict &&
-                              "border-red-600 bg-red-500 text-white hover:bg-red-600",
-                            isActive &&
-                              "outline outline-2 outline-offset-2 outline-violet-300",
-                          )}
-                        >
-                          {formatShortDateById(dateId)}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-
               <ReservationTimelineCard
                 activeDayId={activeDayId}
                 activeBlocks={activeBlocks}
-                pendingBlocks={pendingBlocks}
+                pendingBlocks={pendingBlocksForActiveDay}
                 spaceReservationsForActiveDay={spaceReservationsForActiveDay}
                 externalTimelineEventsForActiveDay={
                   externalTimelineEventsForActiveDay
@@ -662,7 +567,7 @@ export default function ReservationSchedulerPage() {
             <ProposedSchedulesCard
               activeDayId={activeDayId}
               activeBlocks={activeBlocks}
-              pendingBlocks={pendingBlocks}
+              pendingBlocks={pendingBlocksForActiveDay}
               onAddPendingBlock={addPendingBlock}
               onDeletePendingBlock={deletePendingBlock}
               onDeleteSavedBlock={deleteSavedBlock}
@@ -684,7 +589,6 @@ export default function ReservationSchedulerPage() {
             />
           </div>
           <aside className="sticky top-5 self-start space-y-5 ">
-            {" "}
             <Card className="p-5">
               <div className="mb-4 grid grid-cols-3 rounded-xl border border-slate-200 bg-slate-50 p-1 text-sm font-semibold text-slate-600">
                 <button
@@ -734,13 +638,20 @@ export default function ReservationSchedulerPage() {
                 modifiedDateIds={modifiedDateIds}
                 conflictDateIds={conflictDateIds}
                 calendarCells={calendarCells}
-                onSingleDaySelect={handleSingleDaySelect}
-                onToggleDay={handleToggleDay}
-                onDragRangeSelect={handleDragRangeSelect}
-                onRepeatDaySelect={handleRepeatDaySelect}
+                onSelect={handleCalendarSelect}
               />
-
-              <div className="mt-5 space-y-3 border-t border-slate-200 pt-4 text-sm">
+              <div className="flex flex-wrap gap-2 mt-5">
+                <button
+                  type="button"
+                  onClick={clearSelection}
+                  disabled={selectedDateIds.length === 0}
+                  className="flex items-center justify-center flex-1  gap-1 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-600 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:text-slate-300"
+                >
+                  <X className="h-3.5 w-3.5" />
+                  Limpiar selección
+                </button>
+              </div>
+              <div className="border-slate-200 pt-4 text-sm">
                 <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500">
                   <span className="flex items-center gap-2">
                     <span className="h-5 w-5 rounded-full border border-violet-200 bg-violet-50" />
@@ -756,41 +667,6 @@ export default function ReservationSchedulerPage() {
                     <span className="h-5 w-5 rounded-full bg-red-500 ring-2 ring-red-100" />
                     Empalme
                   </span>
-                </div>
-
-                <div className="rounded-xl border border-violet-100 bg-violet-50/60 p-3">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-violet-700">
-                    Selección
-                  </p>
-                  <p className="mt-1 text-sm text-slate-700">
-                    {selectedDaysSummary}
-                  </p>
-                </div>
-
-                <div className="flex flex-wrap gap-2">
-                  <button
-                    type="button"
-                    onClick={clearSelection}
-                    disabled={selectedDateIds.length === 0}
-                    className="flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-600 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:text-slate-300"
-                  >
-                    <X className="h-3.5 w-3.5" />
-                    Limpiar selección
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setShowSelectedDays((value) => !value)}
-                    className="flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-600 transition hover:bg-slate-50"
-                  >
-                    <ChevronDown
-                      className={cn(
-                        "h-3.5 w-3.5 transition",
-                        showSelectedDays && "rotate-180",
-                      )}
-                    />
-                    {showSelectedDays ? "Ocultar días" : "Ver días"}
-                  </button>
                 </div>
               </div>
             </Card>
