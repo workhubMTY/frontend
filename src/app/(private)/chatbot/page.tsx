@@ -2,211 +2,244 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
-import { Search, CalendarDays, Users, LayoutGrid, MessageSquare } from "lucide-react";
+import { Search, CalendarPlus, Users, CalendarRange, Bot, Send } from "lucide-react";
 import AccentureLogo from "../../../../public/accenture_logo_purple1.png";
-import DownTransition from "@/app/components/PageTransition/DownTransition";
+import Image from "next/image";
 
 interface Message {
-  id: number;
-  role: "bot" | "user";
-  text: string;
-  routeKey?: string;
+  id: string;
+  role: "user" | "assistant";
+  content: string;
 }
 
-interface ActionCard {
-  label: string;
-  query: string;
-  icon: React.ReactNode;
-}
-
-const ROUTE_MAP: Record<string, { label: string; href: string }> = {
-  salas: { label: "Salas disponibles", href: "/reservaciones" },
-  reserva: { label: "Reservar espacio", href: "/reservaciones" },
-  amigos: { label: "Compañeros hoy", href: "/home" },
-  agenda: { label: "Calendario", href: "/calendario" },
-  tablero: { label: "Tablero", href: "/tablero" },
-  perfil: { label: "Mi perfil", href: "/perfil" },
+const PREDEFINED_RESPONSES: Record<string, string> = {
+  "Quiero buscar salas disponibles":
+    "Claro, ¿para cuántas personas necesitas la sala y en qué fecha y horario?",
+  "Quiero reservar un espacio":
+    "Por supuesto. ¿Qué tipo de espacio necesitas reservar y para cuándo?",
+  "¿Qué amigos van hoy a la oficina?":
+    "Hoy están en la oficina: Ana García, Luis Martínez y Sofía Ramírez.",
+  "Quiero realizar una agenda múltiple":
+    "Entendido. ¿Cuántas personas participarán y cuáles son los días que necesitas agendar?",
 };
 
-const RESPONSES: Record<string, string> = {
-  salas: "Encontré estas salas disponibles para hoy. Puedes reservar directamente desde aquí.",
-  reserva: "Te ayudo a reservar tu espacio. ¿Qué fecha y horario necesitas?",
-  amigos: "Hoy están confirmados 4 compañeros en la oficina. ¿Quieres ver quiénes son?",
-  agenda: "Listo, te muestro tu agenda múltiple con todos los eventos del equipo.",
-  tablero: "Aquí tienes tu tablero con las métricas más recientes.",
-  perfil: "Te muestro la sección de tu perfil.",
-  default: "Entendido. ¿Hay algo más específico en lo que te pueda ayudar?",
-};
+const DEFAULT_RESPONSE = "Entendido. ¿Hay algo más en lo que pueda ayudarte? Puedo buscar salas, reservar espacios, informarte quién está en la oficina o gestionar una agenda múltiple.";
 
-const ACTION_CARDS: ActionCard[] = [
-  { label: "Busca salas disponibles", query: "Busca salas disponibles", icon: <Search size={26} strokeWidth={1.5} />      },
-  { label: "Reserva un espacio", query: "Reserva un espacio", icon: <CalendarDays size={26} strokeWidth={1.5} /> },
-  { label: "¿Qué amigos van hoy a la oficina?", query: "¿Qué amigos van hoy a la oficina?",icon: <Users size={26} strokeWidth={1.5} />        },
-  { label: "Realiza una agenda múltiple", query: "Realiza una agenda múltiple", icon: <LayoutGrid size={26} strokeWidth={1.5} />   },
+const QUICK_ACTIONS = [
+  {
+    id: "search",
+    icon: Search,
+    label: "Busca salas\ndisponibles",
+    prompt: "Quiero buscar salas disponibles",
+  },
+  {
+    id: "reserve",
+    icon: CalendarPlus,
+    label: "Reserva un\nespacio",
+    prompt: "Quiero reservar un espacio",
+  },
+  {
+    id: "friends",
+    icon: Users,
+    label: "¿Qué amigos van\nhoy a la oficina?",
+    prompt: "¿Qué amigos van hoy a la oficina?",
+  },
+  {
+    id: "multiple",
+    icon: CalendarRange,
+    label: "Realiza una\nagenda múltiple",
+    prompt: "Quiero realizar una agenda múltiple",
+  },
 ];
 
-function matchKey(text: string): string | null {
-  const t = text.toLowerCase();
-  if (t.includes("sala") || t.includes("busca")) return "salas";
-  if (t.includes("reserva") || t.includes("espacio")) return "reserva";
-  if (t.includes("amigo") || t.includes("compañero") || t.includes("oficina")) return "amigos";
-  if (t.includes("agenda") || t.includes("múltiple") || t.includes("multiple")) return "agenda";
-  if (t.includes("tablero")) return "tablero";
-  if (t.includes("perfil")) return "perfil";
-  return null;
-}
-
-function TypingIndicator() {
-  return (
-    <div className="flex items-center gap-1 rounded-xl rounded-tl-sm bg-white border border-gray-200 px-3 py-2.5 w-fit">
-      {[0, 150, 300].map((d) => (
-        <span key={d} className="h-1.5 w-1.5 rounded-full bg-purple-300 animate-bounce" style={{ animationDelay: `${d}ms` }} />
-      ))}
-    </div>
-  );
-}
-
-let msgId = 0;
-
-export default function ChatBot() {
+export default function ChatbotPage() {
   const router = useRouter();
-  const [view, setView] = useState<"home" | "chat">("home");
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
-  const [typing, setTyping] = useState(false);
-  const msgsRef = useRef<HTMLDivElement>(null);
+  const [isTyping, setIsTyping] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  const hasMessages = messages.length > 0;
+
   useEffect(() => {
-    msgsRef.current?.scrollTo({ top: msgsRef.current.scrollHeight, behavior: "smooth" });
-  }, [messages, typing]);
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, isTyping]);
 
-  function goToChat(query?: string) {
-    setView("chat");
-    setTimeout(() => inputRef.current?.focus(), 50);
-    if (query) sendMessage(query);
-  }
+  const sendMessage = (text: string) => {
+    if (!text.trim() || isTyping) return;
 
-  function goHome() {
-    setView("home");
-    setMessages([]);
+    const userMsg: Message = {
+      id: Date.now().toString(),
+      role: "user",
+      content: text.trim(),
+    };
+
+    if (messages.length === 0) {
+      setMessages([
+        { id: "greeting", role: "assistant", content: "Hola ! ¿Cómo puedo asistirle hoy?" },
+        userMsg,
+      ]);
+    } else {
+      setMessages((prev) => [...prev, userMsg]);
+    }
+
     setInput("");
-  }
-
-  function sendMessage(text: string) {
-    const trimmed = text.trim();
-    if (!trimmed) return;
-    setInput("");
-    setMessages((prev) => [...prev, { id: ++msgId, role: "user", text: trimmed }]);
-    setTyping(true);
+    inputRef.current?.focus();
+    setIsTyping(true);
     setTimeout(() => {
-      setTyping(false);
-      const key = matchKey(trimmed);
-      setMessages((prev) => [...prev, {
-        id: ++msgId,
-        role: "bot",
-        text: key ? RESPONSES[key] : RESPONSES.default,
-        routeKey: key ?? undefined,
-      }]);
-    }, 700);
-  }
+      const reply = PREDEFINED_RESPONSES[text.trim()] ?? DEFAULT_RESPONSE;
+      setMessages((prev) => [
+        ...prev,
+        { id: (Date.now() + 1).toString(), role: "assistant", content: reply },
+      ]);
+      setIsTyping(false);
+      inputRef.current?.focus();
+    }, 800);
+  };
 
-  const Header = () => (
-    <div className="flex items-center gap-3 px-5 py-3 bg-[#f5f5f5] border-b border-gray-200 shrink-0">
-      <a href="/home">
-        <Image src={AccentureLogo} alt="Accenture" width={32} height={32} />
-      </a>
-      <span className="text-[17px] font-medium text-gray-900">Chatbot</span>
-    </div>
-  );
-
-  const BottomBar = ({ onInputClick }: { onInputClick?: () => void }) => (
-    <div className="flex items-center gap-3 px-4 py-3 border-t border-gray-200 bg-[#f5f5f5] shrink-0">
-      <button
-        onClick={goHome}
-        className="text-[13px] text-gray-500 hover:text-gray-700 transition-colors whitespace-nowrap bg-transparent border-none cursor-pointer"
-      >
-        Volver
-      </button>
-      <div
-        className="flex flex-1 items-center gap-2 bg-white border border-gray-200 rounded-full px-4 py-2.5 cursor-text"
-        onClick={onInputClick}
-      >
-        <span className="text-gray-400 flex items-center"><MessageSquare size={16} /></span>
-        {view === "chat" ? (
-          <input
-            ref={inputRef}
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && sendMessage(input)}
-            placeholder="Solicita al chatbot..."
-            className="flex-1 text-[13px] text-gray-800 placeholder:text-gray-400 bg-transparent outline-none border-none"
-          />
-        ) : (
-          <span className="text-[13px] text-gray-400 select-none">Solicita al chatbot...</span>
-        )}
-      </div>
-    </div>
-  );
-
-  if (view === "home") {
-    return (
-      <div className="flex h-full flex-col bg-[#f5f5f5]">
-        <Header />
-        <div className="flex flex-1 flex-col items-center justify-center px-6 pb-4">
-          <p className="text-[20px] text-gray-900 mb-8 text-center">¡Hola! ¿Cómo puedo asistirle hoy?</p>
-          <div className="grid grid-cols-4 gap-3 w-full max-w-2xl">
-            {ACTION_CARDS.map((card) => (
-              <button
-                key={card.query}
-                onClick={() => goToChat(card.query)}
-                className="flex flex-col items-center gap-3 bg-white border border-gray-200 rounded-2xl px-3 py-5 cursor-pointer transition-all hover:border-purple-300 hover:bg-purple-50 text-gray-800"
-              >
-                <span className="text-gray-700">{card.icon}</span>
-                <span className="text-[12px] text-center leading-snug">{card.label}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-        <BottomBar onInputClick={() => goToChat()} />
-      </div>
-    );
-  }
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    sendMessage(input);
+  };
 
   return (
-    <DownTransition>
-        <div className="flex h-full flex-col bg-[#f5f5f5]">
-        <Header />
-        <div ref={msgsRef} className="flex-1 overflow-y-auto px-6 py-4 flex flex-col gap-3 min-h-0">
-            {messages.map((msg) =>
-            msg.role === "user" ? (
-                <div key={msg.id} className="flex justify-end">
-                <div className="max-w-[75%] rounded-xl rounded-br-sm bg-violet-700 px-3.5 py-2.5 text-[13px] leading-relaxed text-white">
-                    {msg.text}
-                </div>
-                </div>
-            ) : (
-                <div key={msg.id} className="flex flex-col items-start gap-2 max-w-[75%]">
-                <div className="rounded-xl rounded-tl-sm bg-white border border-gray-200 px-3.5 py-2.5 text-[13px] leading-relaxed text-gray-800">
-                    {msg.text}
-                </div>
-                {msg.routeKey && ROUTE_MAP[msg.routeKey] && (
-                    <button
-                    onClick={() => router.push(ROUTE_MAP[msg.routeKey!].href)}
-                    className="flex items-center gap-1.5 rounded-full border border-purple-300 bg-white px-3 py-1.5 text-[12px] text-purple-700 hover:bg-purple-50 transition-colors cursor-pointer"
-                    >
-                    Ir a {ROUTE_MAP[msg.routeKey].label}
-                    <span className="text-purple-400">→</span>
-                    </button>
+    <div className="w-screen h-screen flex flex-col bg-[#e8e8e8] overflow-hidden">
+        <div className="flex items-center gap-3 px-8 py-5">
+          <a href="/home">
+            <Image
+              src={AccentureLogo}
+              alt="accenture logo"
+              width={40}
+              height={40}
+            />
+          </a>
+          <span className="text-2xl font-semibold text-gray-800 tracking-wide">Chatbot</span>
+        </div>
+      <div className="flex-1 overflow-y-auto flex flex-col">
+        {!hasMessages ? (
+          <div className="flex-1 flex flex-col items-center justify-center px-12 gap-10">
+            <h1 className="text-2xl font-normal text-gray-700 text-center">
+              ¡Hola! ¿Cómo puedo asistirle hoy?
+            </h1>
+            <div className="grid grid-cols-4 gap-4 w-full max-w-5xl">
+              {QUICK_ACTIONS.map(({ id, icon: Icon, label, prompt }) => (
+                <button
+                  key={id}
+                  onClick={() => sendMessage(prompt)}
+                  className="flex flex-col items-center justify-center gap-3 bg-[#d0d0d0] hover:bg-[#c8c8c8] active:scale-95 rounded-2xl p-7 min-h-[140px] transition-all duration-150 text-center"
+                >
+                  <Icon size={34} className="text-gray-700" strokeWidth={1.3} />
+                  <span className="text-sm text-gray-700 leading-snug font-medium whitespace-pre-line">
+                    {label}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <div className="flex-1 flex flex-col px-12 py-6 gap-4 max-w-5xl mx-auto w-full">
+            {messages.map((msg) => (
+              <div
+                key={msg.id}
+                className={`flex items-end gap-3 ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+              >
+                {msg.role === "assistant" && (
+                  <div className="w-10 h-10 rounded-full bg-gray-400 flex items-center justify-center flex-shrink-0">
+                    <Bot size={20} className="text-white" />
+                  </div>
                 )}
+                <div className="flex flex-col gap-1 max-w-[55%]">
+                  {msg.role === "assistant" && (
+                    <span className="text-xs text-gray-500 ml-1 font-medium">Asistente virtual</span>
+                  )}
+                  <div
+                    className={`rounded-2xl px-5 py-3 text-sm leading-relaxed ${
+                      msg.role === "user"
+                        ? "bg-[#1a1a2e] text-white rounded-br-sm"
+                        : "bg-white text-gray-800 rounded-bl-sm shadow-sm"
+                    }`}
+                  >
+                    {msg.content}
+                  </div>
                 </div>
-            )
+              </div>
+            ))}
+
+            {isTyping && (
+              <div className="flex items-end gap-3 justify-start">
+                <div className="w-10 h-10 rounded-full bg-gray-400 flex items-center justify-center flex-shrink-0">
+                  <Bot size={20} className="text-white" />
+                </div>
+                <div className="flex flex-col gap-1">
+                  <span className="text-xs text-gray-500 ml-1 font-medium">Asistente virtual</span>
+                  <div className="bg-white rounded-2xl rounded-bl-sm px-5 py-3 shadow-sm flex gap-2 items-center">
+                    <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:0ms]" />
+                    <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:150ms]" />
+                    <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:300ms]" />
+                  </div>
+                </div>
+              </div>
             )}
-            {typing && <TypingIndicator />}
+            <div ref={messagesEndRef} />
+          </div>
+        )}
+      </div>
+      <div className="w-full bg-[#e8e8e8]">
+        <svg width="0" height="0" style={{ position: "absolute" }}>
+          <defs>
+            <clipPath id="tab-shape" clipPathUnits="objectBoundingBox">
+              <path
+                d="
+                  M0.20,0.08
+                  Q0.22,0 0.30,0
+                  L0.70,0
+                  Q0.78,0 0.80,0.08
+                  L1,1
+                  L0,1
+                  Z
+                "
+              />
+            </clipPath>
+          </defs>
+        </svg>
+        <div className="flex items-end w-full px-6 pt-2">
+          <button
+            onClick={() => router.push("/home")}
+            style={{ clipPath: "url(#tab-shape)" }}
+            className="flex-shrink-0 bg-[#d4d4d4] hover:bg-[#cacaca] active:bg-[#c0c0c0] transition-colors duration-150 text-sm font-medium text-gray-700 w-[110px] h-[52px] whitespace-nowrap"
+          >
+            Volver
+          </button>
+          <form onSubmit={handleSubmit} className="flex-1 ml-3 mb-1">
+            <div className="flex items-center bg-[#d4d4d4] rounded-full px-4 py-0.5">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6b7280" strokeWidth="1.8" className="flex-shrink-0">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+              </svg>
+              <input
+                ref={inputRef}
+                type="text"
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                placeholder="Solicita al chatbot..."
+                className="flex-1 bg-transparent px-3 py-3 text-sm text-gray-600 placeholder-gray-500 outline-none"
+                disabled={isTyping}
+                autoFocus
+              />
+              {input.trim() && (
+                <button
+                  type="submit"
+                  disabled={isTyping}
+                  className="w-8 h-8 bg-[#7C3AED] rounded-full flex items-center justify-center flex-shrink-0 hover:bg-[#6D28D9] transition-colors disabled:opacity-50"
+                >
+                  <Send size={14} className="text-white ml-0.5" />
+                </button>
+              )}
+            </div>
+          </form>
         </div>
-        <BottomBar />
-        </div>
-    </DownTransition>
+        <div className="w-full h-6 bg-[#d4d4d4]" />
+      </div>
+    </div>
   );
 }
