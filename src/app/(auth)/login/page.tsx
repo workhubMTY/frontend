@@ -11,10 +11,10 @@ interface User {
 }
 
 export default function Login() {
-  const [user, setUser]   = useState<User>({ eId: "", password: "" });
+  const [user, setUser] = useState<User>({ eId: "", password: "" });
   const [error, setError] = useState<string>("");
-  const [dark, setDark]   = useState<boolean>(true);
-  const router            = useRouter();
+  const [dark, setDark] = useState<boolean>(true);
+  const router = useRouter();
 
   function onChangeUser(e: React.ChangeEvent<HTMLInputElement>) {
     setUser({ ...user, [e.target.name]: e.target.value });
@@ -35,7 +35,6 @@ export default function Login() {
     }
   }
 
-  // ── colour tokens (dark / light) ──────────────────────────────────────
   const t = dark
     ? {
         bg:         "#0a0a0a",
@@ -69,6 +68,8 @@ export default function Login() {
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
         @import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined');
+
+        * { box-sizing: border-box; }
 
         .acc-grid {
           background-image:
@@ -110,6 +111,12 @@ export default function Login() {
         .acc-panel { animation:accPanel .65s .1s ease both; }
         @keyframes accPanel { from{transform:translateX(60px);opacity:0;} to{transform:translateX(0);opacity:1;} }
 
+        /* Mobile: panel slides up */
+        @media (max-width: 767px) {
+          .acc-panel { animation:accPanelMobile .65s .1s ease both; }
+          @keyframes accPanelMobile { from{transform:translateY(60px);opacity:0;} to{transform:translateY(0);opacity:1;} }
+        }
+
         .acc-r1   { animation:accFU .5s .45s ease both; }
         .acc-r2   { animation:accFU .5s .52s ease both; }
         .acc-rbtn { animation:accFU .5s .60s ease both; }
@@ -149,6 +156,138 @@ export default function Login() {
           cursor:pointer; transition:background .3s, transform .2s; z-index:10;
         }
         .acc-tog:hover { transform:rotate(20deg) scale(1.08); }
+
+        /* ── LAYOUT ── */
+
+        /* Desktop: side by side */
+        .login-root {
+          display: flex;
+          flex-direction: row;
+          height: 100svh;
+          width: 100%;
+          overflow: hidden;
+        }
+
+        .login-left {
+          position: relative;
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          justify-content: space-between;
+          overflow: hidden;
+          padding: 2.5rem;
+        }
+
+        .login-right {
+          position: relative;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          overflow: hidden;
+          padding: 3rem 2.5rem;
+          width: min(430px, 44%);
+          border-left: 1px solid ${t.border};
+        }
+
+        /* Tablet: adjust proportions */
+        @media (max-width: 1024px) and (min-width: 768px) {
+          .login-left {
+            padding: 2rem;
+          }
+          .login-right {
+            width: min(380px, 50%);
+            padding: 2.5rem 2rem;
+          }
+        }
+
+        /* Mobile: stack vertically */
+        @media (max-width: 767px) {
+          .login-root {
+            flex-direction: column;
+            height: 100svh;
+            overflow-y: auto;
+          }
+
+          /* Left = compact header strip */
+          .login-left {
+            flex: none;
+            justify-content: flex-start;
+            padding: 1.4rem 1.4rem 1rem;
+            min-height: 0;
+          }
+
+          .login-left-bottom {
+            margin-top: 1rem;
+          }
+
+          .login-left h1 {
+            font-size: clamp(1.4rem, 5vw, 1.8rem) !important;
+          }
+
+          .login-left p {
+            font-size: .8rem !important;
+          }
+
+          .acc-orb {
+            width: 260px;
+            height: 260px;
+            bottom: -60px;
+            left: -40px;
+          }
+
+          /* Right = main content, fills remaining space */
+          .login-right {
+            width: 100% !important;
+            border-left: none !important;
+            border-top: 1px solid ${t.border};
+            padding: 2rem 1.4rem 2rem;
+            justify-content: flex-start;
+            flex: 1;
+          }
+
+          /* On mobile the toggle goes to top-right of the right panel */
+          .acc-tog {
+            top: 1rem;
+            right: 1rem;
+          }
+        }
+
+        /* Small phones (≤ 375px) */
+        @media (max-width: 375px) {
+          .login-left {
+            padding: 1.1rem 1.1rem .8rem;
+          }
+          .login-right {
+            padding: 1.5rem 1.1rem 1.5rem;
+          }
+        }
+
+        /* Landscape mobile */
+        @media (max-width: 767px) and (orientation: landscape) {
+          .login-root {
+            flex-direction: row;
+            overflow: hidden;
+          }
+          .login-left {
+            flex: 0 0 38%;
+            padding: 1.2rem;
+            justify-content: space-between;
+          }
+          .login-right {
+            width: 62% !important;
+            border-left: 1px solid ${t.border} !important;
+            border-top: none !important;
+            padding: 1.5rem 1.5rem;
+            overflow-y: auto;
+            justify-content: center;
+          }
+          .login-right h2 {
+            font-size: 1.4rem !important;
+          }
+          .login-right .mb-8 {
+            margin-bottom: 1rem !important;
+          }
+        }
       `}</style>
 
       <section
@@ -158,10 +297,10 @@ export default function Login() {
           color:       t.text,
           transition:  "background .4s, color .4s",
         }}
-        className="flex h-[100svh] w-full overflow-hidden"
+        className="login-root"
       >
         {/* ── LEFT ───────────────────────────────────────────── */}
-        <div className="relative flex flex-1 flex-col justify-between overflow-hidden px-10 py-10">
+        <div className="login-left">
           <div className="acc-grid absolute inset-0" />
           <div className="acc-orb" />
 
@@ -171,33 +310,38 @@ export default function Login() {
               alt="Accenture Logo"
               width={160}
               height={60}
-              className="w-[130px] select-none"
+              className="w-[110px] sm:w-[130px] select-none"
               priority
             />
           </div>
 
-          <div className="relative z-10">
+          <div className="login-left-bottom relative z-10">
             <h1
-              className="acc-fu text-[clamp(1.9rem,3.2vw,3rem)] font-bold leading-[1.1] tracking-tight"
-              style={{ color: t.text, transition: "color .4s" }}
+              className="login-left acc-fu font-bold leading-[1.1] tracking-tight"
+              style={{
+                color: t.text,
+                transition: "color .4s",
+                fontSize: "clamp(1.9rem, 3.2vw, 3rem)",
+              }}
             >
               Workhub<br />
               <span style={{ color: "#a100ff" }}>Monterrey</span>
             </h1>
-            <p className="acc-fu2 mt-3 text-[.88rem]" style={{ color: t.textSub, transition: "color .4s" }}>
+            <p
+              className="acc-fu2 mt-2 text-[.88rem]"
+              style={{ color: t.textSub, transition: "color .4s" }}
+            >
               Gestión de tareas, sprints y KPIs para tu equipo.
             </p>
-            <div className="acc-divider mt-5 w-full" />
+            <div className="acc-divider mt-4 w-full" />
           </div>
         </div>
 
         {/* ── RIGHT ──────────────────────────────────────────── */}
         <div
-          className="acc-panel relative flex flex-col justify-center overflow-hidden px-10 py-12"
+          className="login-right acc-panel"
           style={{
-            width:      "min(430px, 44%)",
             background:  t.panel,
-            borderLeft: `1px solid ${t.border}`,
             transition:  "background .4s, border-color .4s",
           }}
         >
@@ -226,12 +370,15 @@ export default function Login() {
             Portal de acceso
           </p>
           <h2
-            className="acc-fd2 text-[1.85rem] font-bold tracking-tight"
+            className="acc-fd2 text-[1.65rem] sm:text-[1.85rem] font-bold tracking-tight"
             style={{ color: t.text, transition: "color .4s" }}
           >
             Bienvenido
           </h2>
-          <p className="mb-8 mt-1 text-[.82rem]" style={{ color: t.textSub, transition: "color .4s" }}>
+          <p
+            className="mb-6 sm:mb-8 mt-1 text-[.82rem]"
+            style={{ color: t.textSub, transition: "color .4s" }}
+          >
             Ingresa tus credenciales corporativas
           </p>
 
@@ -288,7 +435,10 @@ export default function Login() {
             </button>
           </form>
 
-          <p className="acc-rft mt-5 text-center text-[.74rem]" style={{ color: t.textSub, transition: "color .4s" }}>
+          <p
+            className="acc-rft mt-5 text-center text-[.74rem]"
+            style={{ color: t.textSub, transition: "color .4s" }}
+          >
             ¿Problemas para acceder?{" "}
             <a href="#" className="text-[#a100ff] hover:underline">
               Contacta a IT Support
