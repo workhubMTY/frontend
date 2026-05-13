@@ -1,112 +1,41 @@
 import { Flame, Info, Trophy, UsersRound, Network } from "lucide-react";
-import type {
-  Achievement,
-  AchievementProgress,
-  AchievementUserData,
-} from "../../types/profile";
+import type { Achievement, AchievementProgress } from "../../types/profile";
 import { getInitials } from "../../lib/formatting";
 
 type AchievementComparisonCardProps = {
-  personalData: AchievementUserData;
-  friendsData?: AchievementUserData;
+  achievements: Achievement[];
   onDisplayAll: () => void;
-  onChangeFriend: () => void;
 };
 
 export function AchievementComparisonCard({
-  personalData,
-  friendsData,
+  achievements,
   onDisplayAll,
-  onChangeFriend,
 }: AchievementComparisonCardProps) {
-  if (!friendsData) {
-    return (
-      <section className="border border-neutral-200 bg-white shadow-sm">
-        <header className="border-b border-neutral-100">
-          <div className="flex items-center gap-3 px-7 py-5">
-            <Trophy size={22} className="text-neutral-700" />
-            <h2 className="text-xl font-semibold tracking-tight text-neutral-950">
-              Logros
-            </h2>
-          </div>
-        </header>
-
-        <div className="divide-y divide-neutral-100">
-          {personalData.achievements.map((achievement) => {
-            return (
-              <AchievementRow
-                key={achievement.id}
-                achievement={achievement}
-                userProgress={achievement.userProgress}
-              />
-            );
-          })}
-        </div>
-
-        <footer className="flex items-center justify-between border-t border-neutral-100 bg-neutral-50 px-7 py-4">
-          <div className="flex items-center gap-2 text-sm text-neutral-500">
-            <Info size={16} />
-            ¡Compara con tus amigos!
-          </div>
-        </footer>
-      </section>
-    );
-  }
-
   return (
     <section className="border border-neutral-200 bg-white shadow-sm">
-      <header className="border-b border-neutral-100">
-        <div className="flex items-center gap-3 px-7 py-5">
+      <header className="flex border-b border-neutral-100 justify-between px-7 py-5">
+        <div className="flex items-center gap-3 ">
           <Trophy size={22} className="text-neutral-700" />
           <h2 className="text-xl font-semibold tracking-tight text-neutral-950">
-            Comparación de logros
+            Logros
           </h2>
         </div>
-
-        <div className="grid items-center gap-5 border-t border-neutral-100 px-7 py-5 sm:grid-cols-[1fr_auto_1fr]">
-          <PersonPreview
-            label="Tú"
-            name={personalData.name}
-            // avatarUrl={personalData.avatarUrl}
-          />
-
-          <span className="text-center text-sm font-semibold text-neutral-500">
-            VS
-          </span>
-
-          <PersonPreview
-            label={"Tu amistad"}
-            name={friendsData.name}
-            // avatarUrl={selectedFriend.avatarUrl}
-            alignRight
-          />
-        </div>
+        <button
+          type="button"
+          onClick={onDisplayAll}
+          className="text-sm font-medium text-purple-700 transition hover:text-purple-900"
+        >
+          Ver todos
+        </button>
       </header>
 
       <div className="divide-y divide-neutral-100">
-        <div className="grid grid-cols-[1fr_120px_120px] gap-5 px-7 py-3 text-xs font-semibold uppercase tracking-wide text-neutral-500">
-          <span>Logro</span>
-          <span>Tú</span>
-          <span>{friendsData.name.split(" ")[0]}</span>
-        </div>
-
-        {personalData.achievements.map((achievement, index) => {
-          // ESTO ASUME QUE LOS LOGROS SIEMPRE ESTARAN EN EL MISMO ORDEN
-          const friendAchievement = friendsData.achievements.find(
-            (a) => a.id === achievement.id,
-          );
-          const friendProgress = friendAchievement?.userProgress ?? {
-            current: 0,
-            target: achievement.userProgress.target,
-            status: "locked" as const,
-          };
-
+        {achievements.slice(0, 3).map((achievement) => {
           return (
             <AchievementRow
               key={achievement.id}
               achievement={achievement}
               userProgress={achievement.userProgress}
-              friendProgress={friendProgress}
             />
           );
         })}
@@ -115,58 +44,10 @@ export function AchievementComparisonCard({
       <footer className="flex items-center justify-between border-t border-neutral-100 bg-neutral-50 px-7 py-4">
         <div className="flex items-center gap-2 text-sm text-neutral-500">
           <Info size={16} />
-          Comparando con {friendsData.name}
+          ¡Compara con tus amigos!
         </div>
-
-        <button
-          type="button"
-          onClick={onChangeFriend}
-          className="text-sm font-medium text-purple-700 transition hover:text-purple-900"
-        >
-          Cambiar
-        </button>
       </footer>
     </section>
-  );
-}
-
-type PersonPreviewProps = {
-  label: string;
-  name: string;
-  avatarUrl?: string;
-  alignRight?: boolean;
-};
-
-function PersonPreview({
-  label,
-  name,
-  avatarUrl,
-  alignRight = false,
-}: PersonPreviewProps) {
-  return (
-    <div
-      className={[
-        "flex items-center gap-3",
-        alignRight ? "justify-start sm:justify-end" : "",
-      ].join(" ")}
-    >
-      {avatarUrl ? (
-        <img
-          src={avatarUrl}
-          alt={label}
-          className="h-11 w-11 rounded-full object-cover"
-        />
-      ) : (
-        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-purple-100 font-semibold text-purple-700">
-          {getInitials(name)}
-        </div>
-      )}
-
-      <div className={alignRight ? "sm:text-right" : ""}>
-        <p className="font-semibold text-neutral-950">{label}</p>
-        <p className="text-sm text-neutral-500">{name}</p>
-      </div>
-    </div>
   );
 }
 
@@ -181,28 +62,8 @@ function AchievementRow({
   userProgress,
   friendProgress,
 }: AchievementRowProps) {
-  if (!friendProgress) {
-    return (
-      <article className="grid grid-cols-[1fr_120px] gap-5 px-7 py-5">
-        <div className="flex min-w-0 gap-4">
-          <AchievementIcon icon={achievement.icon} />
-
-          <div className="min-w-0">
-            <h3 className="font-semibold text-neutral-950">
-              {achievement.title}
-            </h3>
-            <p className="mt-1 text-sm leading-5 text-neutral-500">
-              {achievement.description}
-            </p>
-          </div>
-        </div>
-
-        <ProgressCell progress={userProgress} />
-      </article>
-    );
-  }
   return (
-    <article className="grid grid-cols-[1fr_120px_120px] gap-5 px-7 py-5">
+    <article className="grid grid-cols-[1fr_120px] gap-5 px-7 py-5">
       <div className="flex min-w-0 gap-4">
         <AchievementIcon icon={achievement.icon} />
 
@@ -217,7 +78,6 @@ function AchievementRow({
       </div>
 
       <ProgressCell progress={userProgress} />
-      <ProgressCell progress={friendProgress} />
     </article>
   );
 }

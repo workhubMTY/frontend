@@ -229,9 +229,7 @@ export default function UserProfilePage() {
 
             <div className="min-w-0 lg:col-span-4">
               <AchievementComparisonCard
-                personalData={personalAchievementData}
-                friendsData={selectedFriendsData ?? undefined}
-                onChangeFriend={handleChangeFriend}
+                achievements={achievements}
                 /*
                   Agrega esta prop a tu AchievementComparisonCard.
                   El botón "Ver todos" debería llamar onDisplayAll().

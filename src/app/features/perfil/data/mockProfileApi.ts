@@ -250,6 +250,27 @@ const ACHIEVEMENTS: AchievementList = {
       icon: "flame",
       userProgress: { current: 6, target: 10, status: "in_progress" },
     },
+    {
+      id: "achievement-4",
+      title: "Conexión creciente",
+      description: "Agrega 5 amigos a tu red",
+      icon: "users",
+      userProgress: { current: 3, target: 5, status: "in_progress" },
+    },
+    {
+      id: "achievement-5",
+      title: "Red consolidada",
+      description: "Ten 20 amigos en tu red",
+      icon: "network",
+      userProgress: { current: 12, target: 20, status: "in_progress" },
+    },
+    {
+      id: "achievement-6",
+      title: "Racha de 30 días",
+      description: "Inicia sesión 30 días seguidos",
+      icon: "flame",
+      userProgress: { current: 15, target: 30, status: "in_progress" },
+    },
   ],
 
   CM: [
@@ -273,6 +294,27 @@ const ACHIEVEMENTS: AchievementList = {
       description: "Inicia sesión 10 días seguidos",
       icon: "flame",
       userProgress: { current: 3, target: 10, status: "in_progress" },
+    },
+    {
+      id: "achievement-4",
+      title: "Conexión creciente",
+      description: "Agrega 5 amigos a tu red",
+      icon: "users",
+      userProgress: { current: 5, target: 5, status: "completed" },
+    },
+    {
+      id: "achievement-5",
+      title: "Red consolidada",
+      description: "Ten 20 amigos en tu red",
+      icon: "network",
+      userProgress: { current: 7, target: 20, status: "in_progress" },
+    },
+    {
+      id: "achievement-6",
+      title: "Racha de 30 días",
+      description: "Inicia sesión 30 días seguidos",
+      icon: "flame",
+      userProgress: { current: 10, target: 30, status: "in_progress" },
     },
   ],
 
@@ -298,6 +340,27 @@ const ACHIEVEMENTS: AchievementList = {
       icon: "flame",
       userProgress: { current: 10, target: 10, status: "completed" },
     },
+    {
+      id: "achievement-4",
+      title: "Conexión creciente",
+      description: "Agrega 5 amigos a tu red",
+      icon: "users",
+      userProgress: { current: 4, target: 5, status: "in_progress" },
+    },
+    {
+      id: "achievement-5",
+      title: "Red consolidada",
+      description: "Ten 20 amigos en tu red",
+      icon: "network",
+      userProgress: { current: 20, target: 20, status: "completed" },
+    },
+    {
+      id: "achievement-6",
+      title: "Racha de 30 días",
+      description: "Inicia sesión 30 días seguidos",
+      icon: "flame",
+      userProgress: { current: 30, target: 30, status: "completed" },
+    },
   ],
 
   AG: [
@@ -321,6 +384,27 @@ const ACHIEVEMENTS: AchievementList = {
       description: "Inicia sesión 10 días seguidos",
       icon: "flame",
       userProgress: { current: 1, target: 10, status: "in_progress" },
+    },
+    {
+      id: "achievement-4",
+      title: "Conexión creciente",
+      description: "Agrega 5 amigos a tu red",
+      icon: "users",
+      userProgress: { current: 2, target: 5, status: "in_progress" },
+    },
+    {
+      id: "achievement-5",
+      title: "Red consolidada",
+      description: "Ten 20 amigos en tu red",
+      icon: "network",
+      userProgress: { current: 5, target: 20, status: "in_progress" },
+    },
+    {
+      id: "achievement-6",
+      title: "Racha de 30 días",
+      description: "Inicia sesión 30 días seguidos",
+      icon: "flame",
+      userProgress: { current: 7, target: 30, status: "in_progress" },
     },
   ],
 
@@ -346,6 +430,27 @@ const ACHIEVEMENTS: AchievementList = {
       icon: "flame",
       userProgress: { current: 2, target: 10, status: "in_progress" },
     },
+    {
+      id: "achievement-4",
+      title: "Conexión creciente",
+      description: "Agrega 5 amigos a tu red",
+      icon: "users",
+      userProgress: { current: 1, target: 5, status: "in_progress" },
+    },
+    {
+      id: "achievement-5",
+      title: "Red consolidada",
+      description: "Ten 20 amigos en tu red",
+      icon: "network",
+      userProgress: { current: 3, target: 20, status: "in_progress" },
+    },
+    {
+      id: "achievement-6",
+      title: "Racha de 30 días",
+      description: "Inicia sesión 30 días seguidos",
+      icon: "flame",
+      userProgress: { current: 0, target: 30, status: "locked" },
+    },
   ],
 
   JM: [
@@ -369,6 +474,27 @@ const ACHIEVEMENTS: AchievementList = {
       description: "Inicia sesión 10 días seguidos",
       icon: "flame",
       userProgress: { current: 8, target: 10, status: "in_progress" },
+    },
+    {
+      id: "achievement-4",
+      title: "Conexión creciente",
+      description: "Agrega 5 amigos a tu red",
+      icon: "users",
+      userProgress: { current: 5, target: 5, status: "completed" },
+    },
+    {
+      id: "achievement-5",
+      title: "Red consolidada",
+      description: "Ten 20 amigos en tu red",
+      icon: "network",
+      userProgress: { current: 18, target: 20, status: "in_progress" },
+    },
+    {
+      id: "achievement-6",
+      title: "Racha de 30 días",
+      description: "Inicia sesión 30 días seguidos",
+      icon: "flame",
+      userProgress: { current: 25, target: 30, status: "in_progress" },
     },
   ],
 
@@ -394,6 +520,27 @@ const ACHIEVEMENTS: AchievementList = {
       icon: "flame",
       userProgress: { current: 5, target: 10, status: "in_progress" },
     },
+    {
+      id: "achievement-4",
+      title: "Conexión creciente",
+      description: "Agrega 5 amigos a tu red",
+      icon: "users",
+      userProgress: { current: 2, target: 5, status: "in_progress" },
+    },
+    {
+      id: "achievement-5",
+      title: "Red consolidada",
+      description: "Ten 20 amigos en tu red",
+      icon: "network",
+      userProgress: { current: 10, target: 20, status: "in_progress" },
+    },
+    {
+      id: "achievement-6",
+      title: "Racha de 30 días",
+      description: "Inicia sesión 30 días seguidos",
+      icon: "flame",
+      userProgress: { current: 12, target: 30, status: "in_progress" },
+    },
   ],
 
   MT: [
@@ -418,6 +565,27 @@ const ACHIEVEMENTS: AchievementList = {
       icon: "flame",
       userProgress: { current: 0, target: 10, status: "locked" },
     },
+    {
+      id: "achievement-4",
+      title: "Conexión creciente",
+      description: "Agrega 5 amigos a tu red",
+      icon: "users",
+      userProgress: { current: 0, target: 5, status: "locked" },
+    },
+    {
+      id: "achievement-5",
+      title: "Red consolidada",
+      description: "Ten 20 amigos en tu red",
+      icon: "network",
+      userProgress: { current: 2, target: 20, status: "in_progress" },
+    },
+    {
+      id: "achievement-6",
+      title: "Racha de 30 días",
+      description: "Inicia sesión 30 días seguidos",
+      icon: "flame",
+      userProgress: { current: 5, target: 30, status: "in_progress" },
+    },
   ],
 
   AC: [
@@ -441,6 +609,27 @@ const ACHIEVEMENTS: AchievementList = {
       description: "Inicia sesión 10 días seguidos",
       icon: "flame",
       userProgress: { current: 9, target: 10, status: "in_progress" },
+    },
+    {
+      id: "achievement-4",
+      title: "Conexión creciente",
+      description: "Agrega 5 amigos a tu red",
+      icon: "users",
+      userProgress: { current: 5, target: 5, status: "completed" },
+    },
+    {
+      id: "achievement-5",
+      title: "Red consolidada",
+      description: "Ten 20 amigos en tu red",
+      icon: "network",
+      userProgress: { current: 15, target: 20, status: "in_progress" },
+    },
+    {
+      id: "achievement-6",
+      title: "Racha de 30 días",
+      description: "Inicia sesión 30 días seguidos",
+      icon: "flame",
+      userProgress: { current: 20, target: 30, status: "in_progress" },
     },
   ],
 };
