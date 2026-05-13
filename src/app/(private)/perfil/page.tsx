@@ -191,7 +191,9 @@ export default function UserProfilePage() {
       <FriendsDrawer
         isOpen={isFriendDrawerOpen}
         friends={friends}
-        onCompare={(friend) => setSelectedFriendId(friend.id)}
+        selectedFriendId={selectedFriendId}
+        onCompareFriend={(id) => setSelectedFriendId(id)}
+        onClearComparison={() => setSelectedFriendId(null)}
         onClose={() => setIsFriendDrawerOpen(false)}
       />
     </>

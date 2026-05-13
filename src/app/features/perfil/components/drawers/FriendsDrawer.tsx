@@ -1,15 +1,23 @@
 "use client";
 
-import { Search, SlidersHorizontal, Trophy, Users, X } from "lucide-react";
+import {
+  Check,
+  Search,
+  SlidersHorizontal,
+  Trophy,
+  Users,
+  X,
+} from "lucide-react";
 import type { Friend } from "../../types/profile";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 type FriendsDrawerProps = {
   isOpen: boolean;
   friends: Friend[];
   selectedFriendId?: string | null;
   onClose: () => void;
-  onCompare: (friend: Friend) => void;
+  onCompareFriend: (id: string) => void;
+  onClearComparison: () => void;
   onInviteFriends?: () => void;
 };
 
@@ -20,11 +28,14 @@ export function FriendsDrawer({
   friends,
   selectedFriendId,
   onClose,
-  onCompare,
+  onCompareFriend,
+  onClearComparison,
   onInviteFriends,
 }: FriendsDrawerProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [sortOption, setSortOption] = useState<SortOption>("name-asc");
+
+  useEffect(() => console.log(selectedFriendId), [selectedFriendId]);
 
   const filteredFriends = useMemo(() => {
     const normalizedSearch = searchTerm.trim().toLowerCase();
@@ -113,42 +124,59 @@ export function FriendsDrawer({
             <ul className="divide-y divide-neutral-100">
               {filteredFriends.map((friend) => {
                 const isSelected = friend.id === selectedFriendId;
-
+                // console.log(friend.id, selectedFriendId);
                 return (
-                  <li
+                  <article
                     key={friend.id}
-                    className={`flex items-center justify-between gap-4 px-8 py-4 transition ${
+                    className={[
+                      "grid items-center gap-4 px-7 py-4 transition",
+                      "md:grid-cols-[1fr_auto]",
                       isSelected
-                        ? "bg-purple-50"
-                        : "bg-white hover:bg-neutral-50"
-                    }`}
+                        ? "border-l-4 border-purple-700 bg-purple-50/70 pl-6"
+                        : "border-l-4 border-transparent hover:bg-neutral-50",
+                    ].join(" ")}
                   >
                     <div className="flex min-w-0 items-center gap-4">
-                      <Avatar name={friend.name} avatarUrl={friend.avatarUrl} />
+                      <img
+                        src={friend.avatarUrl}
+                        alt={friend.name}
+                        className="h-12 w-12 rounded-full object-cover"
+                      />
 
                       <div className="min-w-0">
-                        <p className="truncate text-base font-semibold text-neutral-950">
+                        <h3 className="truncate font-semibold text-neutral-950">
                           {friend.name}
-                        </p>
-                        <p className="truncate text-sm text-neutral-500">
+                        </h3>
+                        <p className="text-sm text-neutral-500">
                           {friend.role}
                         </p>
                       </div>
                     </div>
 
-                    <button
-                      type="button"
-                      onClick={() => onCompare(friend)}
-                      className={`inline-flex h-10 items-center gap-2 border px-4 text-sm font-medium transition ${
-                        isSelected
-                          ? "border-purple-700 bg-purple-700 text-white hover:bg-purple-800"
-                          : "border-neutral-200 bg-white text-neutral-700 hover:border-purple-700 hover:text-purple-700"
-                      }`}
-                    >
-                      <Trophy size={16} />
-                      {isSelected ? "Comparando" : "Comparar"}
-                    </button>
-                  </li>
+                    <div className="flex flex-wrap gap-3">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          isSelected
+                            ? onClearComparison()
+                            : onCompareFriend(friend.id)
+                        }
+                        className={[
+                          "inline-flex h-10 items-center gap-2 border px-4 text-sm font-medium transition",
+                          isSelected
+                            ? "border-purple-700 bg-purple-700 text-white hover:bg-purple-800"
+                            : "border-neutral-300 bg-white text-neutral-700 hover:bg-neutral-50",
+                        ].join(" ")}
+                      >
+                        {isSelected ? (
+                          <Check size={17} />
+                        ) : (
+                          <Trophy size={17} />
+                        )}
+                        {isSelected ? "Comparando" : "Comparar"}
+                      </button>
+                    </div>
+                  </article>
                 );
               })}
             </ul>

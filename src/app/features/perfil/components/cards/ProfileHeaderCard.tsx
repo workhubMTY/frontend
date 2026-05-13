@@ -6,7 +6,8 @@ import {
   Trophy,
   UserRound,
 } from "lucide-react";
-import type { UserProfile } from "../types/profile";
+import type { UserProfile } from "../../types/profile";
+import { getInitials } from "../../lib/formatting";
 
 type ProfileHeaderCardProps = {
   profile: UserProfile;
@@ -25,7 +26,7 @@ export function ProfileHeaderCard({ profile }: ProfileHeaderCardProps) {
             /> */}
 
             <div className="h-36 w-36 flex rounded-full border-4 border-purple-100 text-center justify-center items-center uppercase text-primary-1 text-4xl font-semibold bg-purple-100 ">
-              mf
+              {getInitials(profile.name)}
             </div>
 
             {/* <button
@@ -54,7 +55,7 @@ export function ProfileHeaderCard({ profile }: ProfileHeaderCardProps) {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 lg:col-span-7 lg:grid-cols-4">
+        <div className="grid grid-cols-2 lg:col-span-7 lg:grid-cols-4 divide-x">
           <ProfileStat
             icon={<Star size={21} />}
             label="Puntos"
@@ -92,7 +93,7 @@ type ProfileStatProps = {
 
 function ProfileStat({ icon, label, value }: ProfileStatProps) {
   return (
-    <div className="flex min-h-[150px] flex-col justify-center items-center border-r last:border-r-0  border-neutral-1 px-6">
+    <div className="flex min-h-[150px] flex-col justify-center items-center  border-neutral-1 px-6">
       <div className="mb-5 flex h-11 w-11 items-center justify-center bg-purple-50 text-purple-700 rounded-full">
         {icon}
       </div>
