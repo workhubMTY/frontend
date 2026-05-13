@@ -22,6 +22,7 @@ import { TeamsCard } from "@/app/features/perfil/components/cards/TeamsCard";
 import { AchievementComparisonCard } from "@/app/features/perfil/components/cards/AchievementComparisonCard";
 import { FriendsDrawer } from "@/app/features/perfil/components/drawers/FriendsDrawer";
 import { TeamsDrawer } from "@/app/features/perfil/components/drawers/TeamsDrawer";
+import { AchievementComparisonDrawer } from "@/app/features/perfil/components/drawers/AchievementComparisonDrawer";
 
 export default function UserProfilePage() {
   const USER_ID = "MF"; // Esto deberiamos poder sacarlo de un context o algo
@@ -31,14 +32,13 @@ export default function UserProfilePage() {
   const [achievements, setAchievements] = useState<Achievement[] | null>(null);
   const [teams, setTeams] = useState<Team[] | null>(null);
 
-  // Para la comparacion entre amistades
   const [selectedFriendId, setSelectedFriendId] = useState<string | null>(null);
   const [selectedFriendsData, setSelectedFriendsData] =
     useState<AchievementUserData | null>(null);
 
-  // states para desplegar los drawers
-  const [isFriendDrawerOpen, setIsFriendDrawerOpen] = useState<boolean>(false);
-  const [isTeamDrawerOpen, setIsTeamDrawerOpen] = useState<boolean>(false);
+  const [isFriendDrawerOpen, setIsFriendDrawerOpen] = useState(false);
+  const [isTeamDrawerOpen, setIsTeamDrawerOpen] = useState(false);
+  const [isAchievementDrawerOpen, setIsAchievementDrawerOpen] = useState(false);
 
   const [isLoading, setIsLoading] = useState(true);
 
@@ -46,17 +46,63 @@ export default function UserProfilePage() {
     null,
   );
 
+  const personalAchievementData = useMemo<AchievementUserData | null>(() => {
+    if (!profile || !achievements) return null;
+
+    return {
+      name: profile.name,
+      achievements,
+    };
+  }, [profile, achievements]);
+
   function handleDisplayAllTeams() {
     setInitialOpenTeamId(null);
     setIsTeamDrawerOpen(true);
+    setIsFriendDrawerOpen(false);
+    setIsAchievementDrawerOpen(false);
   }
 
   function handleDisplayTeamMembers(teamId: string) {
     setInitialOpenTeamId(teamId);
     setIsTeamDrawerOpen(true);
+    setIsFriendDrawerOpen(false);
+    setIsAchievementDrawerOpen(false);
   }
 
-  // fetches iniciales
+  function handleDisplayAllFriends() {
+    setIsFriendDrawerOpen(true);
+    setIsTeamDrawerOpen(false);
+    setIsAchievementDrawerOpen(false);
+  }
+
+  function handleDisplayAllAchievements() {
+    setIsAchievementDrawerOpen(true);
+    setIsFriendDrawerOpen(false);
+    setIsTeamDrawerOpen(false);
+  }
+
+  function handleCompareFriend(friendId: string) {
+    setSelectedFriendId(friendId);
+
+    setIsAchievementDrawerOpen(true);
+    setIsFriendDrawerOpen(false);
+    setIsTeamDrawerOpen(false);
+  }
+
+  function handleSelectFriendInsideAchievementDrawer(friendId: string | null) {
+    setSelectedFriendId(friendId);
+  }
+
+  function handleClearComparison() {
+    setSelectedFriendId(null);
+  }
+
+  function handleChangeFriend() {
+    setIsAchievementDrawerOpen(true);
+    setIsFriendDrawerOpen(false);
+    setIsTeamDrawerOpen(false);
+  }
+
   useEffect(() => {
     async function loadInitialData() {
       try {
@@ -88,20 +134,23 @@ export default function UserProfilePage() {
     loadInitialData();
   }, []);
 
-  // fetch de los datos del amigo a comparar
   useEffect(() => {
     async function loadFriendsAchievements() {
       if (!selectedFriendId) {
         setSelectedFriendsData(null);
         return;
       }
+
       const selectedFriend = friends?.find(
         (current) => current.id === selectedFriendId,
       );
+
       if (!selectedFriend) return;
+
       try {
         const achievementsResponse =
           await getAchievementsByUserId(selectedFriendId);
+
         setSelectedFriendsData({
           name: selectedFriend.name,
           achievements: achievementsResponse,
@@ -110,29 +159,21 @@ export default function UserProfilePage() {
         console.log(error);
       }
     }
+
     loadFriendsAchievements();
-  }, [selectedFriendId]);
-
-  function handleCompareFriend(friendId: string) {
-    console.log(friendId);
-    setSelectedFriendId(friendId);
-  }
-
-  function handleClearComparison() {
-    setSelectedFriendId(null);
-  }
-
-  function handleChangeFriend() {
-    document
-      .getElementById("friends-section")
-      ?.scrollIntoView({ behavior: "smooth", block: "center" });
-  }
+  }, [selectedFriendId, friends]);
 
   if (isLoading) {
     return <ProfilePageSkeleton />;
   }
 
-  if (!profile || !teams || !friends || !achievements) {
+  if (
+    !profile ||
+    !teams ||
+    !friends ||
+    !achievements ||
+    !personalAchievementData
+  ) {
     return (
       <main className="min-h-screen bg-neutral-100 px-8 py-8">
         <div className="mx-auto max-w-screen-2xl border border-neutral-200 bg-white p-8 shadow-sm">
@@ -146,8 +187,8 @@ export default function UserProfilePage() {
 
   return (
     <>
-      <main className="min-h-full bg-background-page px-8 py-8 text-neutral-950">
-        <div className="mx-auto max-w-screen-2xl">
+      <main className="min-h-full min-w-full bg-background-page px-8 py-8 text-neutral-950">
+        <div className="mx-auto min-w-full max-w-screen-2xl">
           <header className="mb-6">
             <h1 className="text-4xl font-semibold tracking-tight text-neutral-950">
               Perfil de usuario
@@ -168,20 +209,17 @@ export default function UserProfilePage() {
           </section>
 
           <section className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-12">
-            <div id="friends-section" className="col-span-4">
+            <div id="friends-section" className="min-w-0 lg:col-span-4">
               <FriendsCard
                 friends={friends}
                 selectedFriendId={selectedFriendId}
                 onCompareFriend={handleCompareFriend}
                 onClearComparison={handleClearComparison}
-                onDisplayAll={() => {
-                  setIsFriendDrawerOpen(true);
-                  setIsTeamDrawerOpen(false);
-                }}
+                onDisplayAll={handleDisplayAllFriends}
               />
             </div>
 
-            <div className="col-span-4">
+            <div className="min-w-0 lg:col-span-4">
               <TeamsCard
                 teams={teams}
                 onDisplayAll={handleDisplayAllTeams}
@@ -189,44 +227,53 @@ export default function UserProfilePage() {
               />
             </div>
 
-            <div className="col-span-4">
-              {selectedFriendsData ? (
-                <AchievementComparisonCard
-                  personalData={{
-                    name: profile.name,
-                    achievements,
-                  }}
-                  friendsData={selectedFriendsData}
-                  onChangeFriend={handleChangeFriend}
-                />
-              ) : (
-                <AchievementComparisonCard
-                  personalData={{
-                    name: profile.name,
-                    achievements,
-                  }}
-                  onChangeFriend={handleChangeFriend}
-                />
-              )}
+            <div className="min-w-0 lg:col-span-4">
+              <AchievementComparisonCard
+                personalData={personalAchievementData}
+                friendsData={selectedFriendsData ?? undefined}
+                onChangeFriend={handleChangeFriend}
+                /*
+                  Agrega esta prop a tu AchievementComparisonCard.
+                  El botón "Ver todos" debería llamar onDisplayAll().
+                */
+                onDisplayAll={handleDisplayAllAchievements}
+              />
             </div>
           </section>
         </div>
       </main>
+
       <FriendsDrawer
         isOpen={isFriendDrawerOpen}
         friends={friends}
         selectedFriendId={selectedFriendId}
-        onCompareFriend={(id) => setSelectedFriendId(id)}
-        onClearComparison={() => setSelectedFriendId(null)}
+        onCompareFriend={handleCompareFriend}
+        onClearComparison={handleClearComparison}
         onClose={() => setIsFriendDrawerOpen(false)}
       />
+
       <TeamsDrawer
         open={isTeamDrawerOpen}
         teams={teams}
         onClose={() => setIsTeamDrawerOpen(false)}
         initialOpenTeamId={initialOpenTeamId}
-        onCreateOrJoinTeam={() => alert("Crear o unirse a un equipo")}
         onGetTeamMembers={mockGetTeamMembers}
+        inviteCandidates={friends}
+        onCreateTeam={async (payload) => {
+          console.log("Crear equipo:", payload);
+          // aquí luego llamas tu API
+        }}
+      />
+
+      <AchievementComparisonDrawer
+        isOpen={isAchievementDrawerOpen}
+        personalData={personalAchievementData}
+        friendData={selectedFriendsData}
+        friends={friends}
+        selectedFriendId={selectedFriendId}
+        onSelectFriend={handleSelectFriendInsideAchievementDrawer}
+        onClose={() => setIsAchievementDrawerOpen(false)}
+        onClearComparison={handleClearComparison}
       />
     </>
   );

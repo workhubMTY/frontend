@@ -9,12 +9,14 @@ import { getInitials } from "../../lib/formatting";
 type AchievementComparisonCardProps = {
   personalData: AchievementUserData;
   friendsData?: AchievementUserData;
+  onDisplayAll: () => void;
   onChangeFriend: () => void;
 };
 
 export function AchievementComparisonCard({
   personalData,
   friendsData,
+  onDisplayAll,
   onChangeFriend,
 }: AchievementComparisonCardProps) {
   if (!friendsData) {
