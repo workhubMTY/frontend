@@ -41,16 +41,19 @@ import type {
   TimelineEvent,
 } from "@/app/features/reservaciones/types/reservaciones";
 
-export default function ReservationSchedulerPage() {
-  const calendarCells = useMemo(() => createCalendarCells(), []);
+export interface ReservationSchedulerPageProps {
+  spaceName: string;
+}
 
-  const selectedSpaceName = "Sala A";
+export default function ReservationSchedulerPage({
+  spaceName = "Sala A",
+}: ReservationSchedulerPageProps) {
+  const router = useRouter();
+  const calendarCells = useMemo(() => createCalendarCells(), []);
 
   const [selectionMode, setSelectionMode] = useState<SelectionMode>("multiple");
 
-  const [selectedDateIds, setSelectedDateIds] = useState<string[]>([
-    getFirstAvailableDateId(calendarCells),
-  ]);
+  const [selectedDateIds, setSelectedDateIds] = useState<string[]>([]);
 
   const [activeDayId, setActiveDayId] = useState(
     getFirstAvailableDateId(calendarCells),
@@ -74,11 +77,6 @@ export default function ReservationSchedulerPage() {
   const apiJson = useMemo(
     () => createMockApiJson(calendarCells),
     [calendarCells],
-  );
-
-  const navigationDateIds = useMemo(
-    () => uniqueSortedIds(selectedDateIds),
-    [selectedDateIds],
   );
 
   const modifiedDateIds = useMemo(
@@ -230,8 +228,7 @@ export default function ReservationSchedulerPage() {
     Object.entries(dayBlocks).forEach(([dateId, blocks]) => {
       const spaceReservationsForDate = apiJson.spaceReservations.filter(
         (reservation) =>
-          reservation.dateId === dateId &&
-          reservation.location === selectedSpaceName,
+          reservation.dateId === dateId && reservation.location === spaceName,
       );
 
       const hasInternalConflict = hasOverlappingBlocks(blocks);
@@ -252,7 +249,7 @@ export default function ReservationSchedulerPage() {
         const hasPendingSpaceConflict = apiJson.spaceReservations.some(
           (reservation) =>
             reservation.dateId === dateId &&
-            reservation.location === selectedSpaceName &&
+            reservation.location === spaceName &&
             blockOverlapsApiReservation(block, reservation),
         );
 
@@ -270,7 +267,7 @@ export default function ReservationSchedulerPage() {
     dayBlocks,
     pendingBlocks,
     selectedDateIds,
-    selectedSpaceName,
+    spaceName,
   ]);
 
   const activeBlocks = dayBlocks[activeDayId] ?? [];
@@ -309,7 +306,7 @@ export default function ReservationSchedulerPage() {
         apiJson.spaceReservations.some(
           (reservation) =>
             reservation.dateId === dateId &&
-            reservation.location === selectedSpaceName &&
+            reservation.location === spaceName &&
             blockOverlapsApiReservation(block, reservation),
         ),
       );
@@ -321,7 +318,7 @@ export default function ReservationSchedulerPage() {
       apiJson.spaceReservations.some(
         (reservation) =>
           reservation.dateId === dateId &&
-          reservation.location === selectedSpaceName &&
+          reservation.location === spaceName &&
           blockOverlapsApiReservation(block, reservation),
       ),
     ),
@@ -352,7 +349,7 @@ export default function ReservationSchedulerPage() {
     apiGetSpaceReservationsByDay({
       apiJson,
       dateId: activeDayId,
-      spaceName: selectedSpaceName,
+      spaceName: spaceName,
     }).then((events) => {
       if (!cancelled) setSpaceReservationsForActiveDay(events);
     });
@@ -360,7 +357,7 @@ export default function ReservationSchedulerPage() {
     return () => {
       cancelled = true;
     };
-  }, [activeDayId, apiJson, selectedSpaceName]);
+  }, [activeDayId, apiJson, spaceName]);
 
   useEffect(() => {
     let cancelled = false;
@@ -523,7 +520,6 @@ export default function ReservationSchedulerPage() {
     setEditedSavedDateIds([]);
     setHasAppliedCurrentSelection(true);
   }
-  const router = useRouter();
   function handleContinue() {
     if (!canContinue) return;
 
@@ -531,7 +527,7 @@ export default function ReservationSchedulerPage() {
       applyPendingBlocks();
     }
 
-    router.push("/reservaciones/confirmar");
+    router.push("/cubiculos/reservacion/confirmar");
   }
   return (
     <PageTransition>
@@ -540,7 +536,7 @@ export default function ReservationSchedulerPage() {
           <div className="flex items-center gap-4">
             <div>
               <h1 className="text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl">
-                Ajusta tu reservación · {selectedSpaceName}
+                Ajusta tu reservación · {spaceName}
               </h1>
               <p className="mt-1 text-sm text-slate-500">
                 Revisa disponibilidad, arrastra días y configura múltiples
@@ -585,6 +581,9 @@ export default function ReservationSchedulerPage() {
               canSaveChanges={canSaveChanges}
               canContinue={canContinue}
               onSaveChanges={applyPendingBlocks}
+              onCancel={() => {
+                router.push("/cubiculos");
+              }}
               onContinue={handleContinue}
             />
           </div>

@@ -9,7 +9,7 @@ import "./navbar.css";
 const routes = [
   { name: "Inicio", href: "/home" },
   { name: "Tablero", href: "/tablero" },
-  { name: "Cubículos", href: "/reservaciones" },
+  { name: "Cubículos", href: "/cubiculos" },
   { name: "Calendario", href: "/calendario" },
   { name: "Estacionamientos", href: "/estacionamientos" },
 ];

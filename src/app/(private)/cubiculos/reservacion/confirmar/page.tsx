@@ -187,7 +187,7 @@ export default function Cubiculo() {
   };
   const handleRegresar = () => {
     setModalAbierto(false);
-    router.push("/reservaciones");
+    router.push("/cubiculos");
   };
 
   return (
