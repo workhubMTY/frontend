@@ -42,6 +42,20 @@ export default function UserProfilePage() {
 
   const [isLoading, setIsLoading] = useState(true);
 
+  const [initialOpenTeamId, setInitialOpenTeamId] = useState<string | null>(
+    null,
+  );
+
+  function handleDisplayAllTeams() {
+    setInitialOpenTeamId(null);
+    setIsTeamDrawerOpen(true);
+  }
+
+  function handleDisplayTeamMembers(teamId: string) {
+    setInitialOpenTeamId(teamId);
+    setIsTeamDrawerOpen(true);
+  }
+
   // fetches iniciales
   useEffect(() => {
     async function loadInitialData() {
@@ -132,7 +146,7 @@ export default function UserProfilePage() {
 
   return (
     <>
-      <main className="min-h-screen bg-background-page px-8 py-8 text-neutral-950">
+      <main className="min-h-full bg-background-page px-8 py-8 text-neutral-950">
         <div className="mx-auto max-w-screen-2xl">
           <header className="mb-6">
             <h1 className="text-4xl font-semibold tracking-tight text-neutral-950">
@@ -170,7 +184,8 @@ export default function UserProfilePage() {
             <div className="col-span-4">
               <TeamsCard
                 teams={teams}
-                onDisplayAll={() => setIsTeamDrawerOpen(true)}
+                onDisplayAll={handleDisplayAllTeams}
+                onDisplayMembers={handleDisplayTeamMembers}
               />
             </div>
 
@@ -209,6 +224,7 @@ export default function UserProfilePage() {
         open={isTeamDrawerOpen}
         teams={teams}
         onClose={() => setIsTeamDrawerOpen(false)}
+        initialOpenTeamId={initialOpenTeamId}
         onCreateOrJoinTeam={() => alert("Crear o unirse a un equipo")}
         onGetTeamMembers={mockGetTeamMembers}
       />

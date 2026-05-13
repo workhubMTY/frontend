@@ -1,4 +1,5 @@
-import { useMemo, useState } from "react";
+"use client";
+import { useEffect, useMemo, useState } from "react";
 import {
   ChevronDown,
   ChevronUp,
@@ -25,9 +26,10 @@ type TeamMembersState = {
 type TeamsDrawerProps = {
   open: boolean;
   teams: TeamSummary[];
+  initialOpenTeamId?: string | null;
   onClose: () => void;
-  onCreateOrJoinTeam: () => void;
   onGetTeamMembers: (teamId: string) => Promise<User[]>;
+  onCreateOrJoinTeam: () => void;
 };
 
 type AvatarProps = {
@@ -70,6 +72,7 @@ export function TeamsDrawer({
   open,
   teams,
   onClose,
+  initialOpenTeamId,
   onCreateOrJoinTeam,
   onGetTeamMembers,
 }: TeamsDrawerProps) {
@@ -79,41 +82,30 @@ export function TeamsDrawer({
   const [membersByTeamId, setMembersByTeamId] = useState<
     Record<string, TeamMembersState>
   >({});
+  async function loadTeamMembersIfNeeded(teamId: string) {
+    let shouldFetch = false;
 
-  const filteredTeams = useMemo(() => {
-    const normalizedSearch = search.trim().toLowerCase();
+    setMembersByTeamId((current) => {
+      const currentState = current[teamId];
 
-    if (!normalizedSearch) return teams;
+      if (currentState?.loading || currentState?.members.length > 0) {
+        return current;
+      }
 
-    return teams.filter((team) =>
-      team.name.toLowerCase().includes(normalizedSearch),
-    );
-  }, [teams, search]);
+      shouldFetch = true;
 
-  async function handleToggleTeam(teamId: string) {
-    const isCurrentlyOpen = openTeamId === teamId;
+      return {
+        ...current,
+        [teamId]: {
+          loading: true,
+          members: currentState?.members ?? [],
+        },
+      };
+    });
 
-    if (isCurrentlyOpen) {
-      setOpenTeamId(null);
-      return;
-    }
-
-    setOpenTeamId(teamId);
-
-    const alreadyLoaded = membersByTeamId[teamId];
-
-    if (alreadyLoaded) return;
-
-    setMembersByTeamId((current) => ({
-      ...current,
-      [teamId]: {
-        loading: true,
-        members: [],
-      },
-    }));
+    if (!shouldFetch) return;
 
     try {
-      console.log(teamId);
       const members = await onGetTeamMembers(teamId);
 
       setMembersByTeamId((current) => ({
@@ -133,6 +125,38 @@ export function TeamsDrawer({
         },
       }));
     }
+  }
+  useEffect(() => {
+    if (!open) return;
+
+    if (!initialOpenTeamId) {
+      setOpenTeamId(null);
+      return;
+    }
+
+    setOpenTeamId(initialOpenTeamId);
+    loadTeamMembersIfNeeded(initialOpenTeamId);
+  }, [open, initialOpenTeamId]);
+
+  const filteredTeams = useMemo(() => {
+    const normalizedSearch = search.trim().toLowerCase();
+
+    if (!normalizedSearch) return teams;
+
+    return teams.filter((team) =>
+      team.name.toLowerCase().includes(normalizedSearch),
+    );
+  }, [teams, search]);
+  async function handleToggleTeam(teamId: string) {
+    const isCurrentlyOpen = openTeamId === teamId;
+
+    if (isCurrentlyOpen) {
+      setOpenTeamId(null);
+      return;
+    }
+
+    setOpenTeamId(teamId);
+    await loadTeamMembersIfNeeded(teamId);
   }
 
   if (!open) return null;

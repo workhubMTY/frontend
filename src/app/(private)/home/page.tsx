@@ -2,7 +2,6 @@
 
 import { useState, useMemo } from "react";
 import {
-<<<<<<< Updated upstream
   Search,
   UserPlus,
   Clock,
@@ -11,6 +10,9 @@ import {
   ChevronRight,
   Star,
   Calendar,
+  CalendarDays,
+  Users,
+  MailOpen,
 } from "lucide-react";
 import AgendaRapida, {
   ExternalEvent,
@@ -55,6 +57,7 @@ interface EventoGeneral {
   start: number;
   end: number;
 }
+type MobileTab = "agenda" | "red" | "invitaciones";
 
 const EVENTOS_GENERALES: EventoGeneral[] = [
   {
@@ -141,39 +144,6 @@ const INVITACIONES: DiaInvitaciones[] = [
       },
     ],
   },
-=======
-  Search, UserPlus, Clock, MapPin,
-  ChevronLeft, ChevronRight, Star, Calendar,
-  CalendarDays, Users, MailOpen,
-} from "lucide-react";
-import AgendaRapida, { ExternalEvent } from "@/app/components/AgendaRapida/AgendaRapida";
-import PageTransition from "@/app/components/PageTransition/PageTransition";
-
-interface Invitacion { nombre: string; sala: string; hora: string; tipo: string; day: number; start: number; end: number; }
-interface DiaInvitaciones { dia: string; dayIndex: number; items: Invitacion[]; }
-interface Reserva { titulo: string; hora: string; lugar: string; estado: "Confirmada" | "Pendiente"; day: number; start: number; end: number; }
-interface Persona { initials: string; name: string; role: string; reservas: Reserva[]; }
-interface EventoGeneral { titulo: string; descripcion: string; tipo: "Festivo" | "Corporativo" | "Social"; icono: string; day: number; start: number; end: number; }
-type MobileTab = "agenda" | "red" | "invitaciones";
-
-const EVENTOS_GENERALES: EventoGeneral[] = [
-  { titulo: "Día del Trabajo", descripcion: "Día festivo nacional — oficinas cerradas", tipo: "Festivo", icono: "🎉", day: 3, start: 0, end: 24 },
-  { titulo: "All-Hands Accenture MX", descripcion: "Sesión global transmitida en vivo", tipo: "Corporativo", icono: "📡", day: 0, start: 10, end: 11.5 },
-  { titulo: "Happy Hour Workhub", descripcion: "Terraza · Todos bienvenidos", tipo: "Social", icono: "🍹", day: 4, start: 17, end: 19 },
-];
-
-const INVITACIONES: DiaInvitaciones[] = [
-  { dia: "Lunes", dayIndex: 0, items: [
-    { nombre: "Junta de seguimiento", sala: "ISJ03 · Sierra Madre", hora: "7:00–13:00", tipo: "Reunión", day: 0, start: 7, end: 13 },
-    { nombre: "Refinamiento de req.", sala: "ABC02 · Sala 2", hora: "8:00–17:00", tipo: "Planning", day: 0, start: 8, end: 17 },
-  ]},
-  { dia: "Martes", dayIndex: 1, items: [
-    { nombre: "Junta con Stakeholders", sala: "DS340 · Sala 4", hora: "7:00–13:00", tipo: "Reunión", day: 1, start: 7, end: 13 },
-  ]},
-  { dia: "Miércoles", dayIndex: 2, items: [
-    { nombre: "Junta de seguimiento", sala: "ISJ03 · Sierra Madre", hora: "7:00–13:00", tipo: "Reunión", day: 2, start: 7, end: 13 },
-  ]},
->>>>>>> Stashed changes
 ];
 
 const PERSONAS: Persona[] = [
@@ -182,7 +152,6 @@ const PERSONAS: Persona[] = [
     name: "Cristina González",
     role: "Senior Developer",
     reservas: [
-<<<<<<< Updated upstream
       {
         titulo: "Sprint Planning",
         hora: "9:00–11:00",
@@ -210,11 +179,6 @@ const PERSONAS: Persona[] = [
         start: 11,
         end: 13,
       },
-=======
-      { titulo: "Sprint Planning", hora: "9:00–11:00", lugar: "Sala Magna", estado: "Confirmada", day: 0, start: 9, end: 11 },
-      { titulo: "Design Review", hora: "11:00–12:30", lugar: "ISJ03", estado: "Confirmada", day: 0, start: 11, end: 12.5 },
-      { titulo: "Retrospectiva", hora: "11:00–13:00", lugar: "Sala 2", estado: "Pendiente", day: 2, start: 11, end: 13 },
->>>>>>> Stashed changes
     ],
   },
   {
@@ -222,7 +186,6 @@ const PERSONAS: Persona[] = [
     name: "María Jesús",
     role: "Tester",
     reservas: [
-<<<<<<< Updated upstream
       {
         titulo: "Standup",
         hora: "8:00–9:00",
@@ -241,10 +204,6 @@ const PERSONAS: Persona[] = [
         start: 13,
         end: 14,
       },
-=======
-      { titulo: "Standup", hora: "8:00–9:00", lugar: "Sala Virtual", estado: "Confirmada", day: 1, start: 8, end: 9 },
-      { titulo: "Revisión QA", hora: "13:00–14:00", lugar: "ISJ04", estado: "Confirmada", day: 1, start: 13, end: 14 },
->>>>>>> Stashed changes
     ],
   },
   {
@@ -252,7 +211,6 @@ const PERSONAS: Persona[] = [
     name: "Mia Clements",
     role: "Junior Developer",
     reservas: [
-<<<<<<< Updated upstream
       {
         titulo: "Standup",
         hora: "8:00–9:00",
@@ -280,11 +238,6 @@ const PERSONAS: Persona[] = [
         start: 14,
         end: 15,
       },
-=======
-      { titulo: "Standup", hora: "8:00–9:00", lugar: "Sala Virtual", estado: "Confirmada", day: 0, start: 8, end: 9 },
-      { titulo: "Workshop UX", hora: "10:00–12:00", lugar: "Sala UX", estado: "Confirmada", day: 2, start: 10, end: 12 },
-      { titulo: "1:1 con manager", hora: "14:00–15:00", lugar: "Oficina Dir.", estado: "Pendiente", day: 3, start: 14, end: 15 },
->>>>>>> Stashed changes
     ],
   },
 ];
@@ -295,14 +248,10 @@ const PERSON_COLORS = [
   { bg: "#D6F5E6", text: "#0F6E56" },
 ];
 
-<<<<<<< Updated upstream
 const TIPO_EVENTO_COLORS: Record<
   EventoGeneral["tipo"],
   { bg: string; text: string; border: string }
 > = {
-=======
-const TIPO_EVENTO_COLORS: Record<EventoGeneral["tipo"], { bg: string; text: string; border: string }> = {
->>>>>>> Stashed changes
   Festivo: { bg: "#FEF9C3", text: "#713F12", border: "#EAB308" },
   Corporativo: { bg: "#EDE9FE", text: "#4C1D95", border: "#7C3AED" },
   Social: { bg: "#D6F5E6", text: "#065F46", border: "#10B981" },
@@ -316,17 +265,12 @@ function EventoGeneralDetail({
   dotActive,
   onDot,
 }: {
-<<<<<<< Updated upstream
   evento: EventoGeneral;
   onPrev: () => void;
   onNext: () => void;
   dotCount: number;
   dotActive: number;
   onDot: (i: number) => void;
-=======
-  evento: EventoGeneral; onPrev: () => void; onNext: () => void;
-  dotCount: number; dotActive: number; onDot: (i: number) => void;
->>>>>>> Stashed changes
 }) {
   const c = TIPO_EVENTO_COLORS[evento.tipo];
   return (
@@ -336,54 +280,42 @@ function EventoGeneralDetail({
           Eventos & Festivos
         </h3>
         <div className="flex gap-1.5">
-<<<<<<< Updated upstream
           <button
             onClick={onPrev}
-            className="flex h-6 w-6 items-center justify-center rounded-md border border-gray-200 text-gray-400 hover:border-violet-500 hover:text-violet-500 transition-colors cursor-pointer bg-white"
+            className="flex h-7 w-7 items-center justify-center rounded-md border border-gray-200 text-gray-400 hover:border-violet-500 hover:text-violet-500 active:bg-gray-100 transition-colors cursor-pointer bg-white"
           >
-            <ChevronLeft size={12} />
+            <ChevronLeft size={13} />
           </button>
           <button
             onClick={onNext}
-            className="flex h-6 w-6 items-center justify-center rounded-md border border-gray-200 text-gray-400 hover:border-violet-500 hover:text-violet-500 transition-colors cursor-pointer bg-white"
+            className="flex h-7 w-7 items-center justify-center rounded-md border border-gray-200 text-gray-400 hover:border-violet-500 hover:text-violet-500 active:bg-gray-100 transition-colors cursor-pointer bg-white"
           >
-            <ChevronRight size={12} />
-=======
-          <button onClick={onPrev}
-            className="flex h-7 w-7 items-center justify-center rounded-md border border-gray-200 text-gray-400 hover:border-violet-500 hover:text-violet-500 active:bg-gray-100 transition-colors cursor-pointer bg-white">
-            <ChevronLeft size={13} />
-          </button>
-          <button onClick={onNext}
-            className="flex h-7 w-7 items-center justify-center rounded-md border border-gray-200 text-gray-400 hover:border-violet-500 hover:text-violet-500 active:bg-gray-100 transition-colors cursor-pointer bg-white">
             <ChevronRight size={13} />
->>>>>>> Stashed changes
           </button>
         </div>
       </div>
       <div className="flex gap-3 px-4 py-3">
-        <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl text-2xl"
-          style={{ background: c.bg, borderLeft: `3px solid ${c.border}` }}>
+        <div
+          className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl text-2xl"
+          style={{ background: c.bg, borderLeft: `3px solid ${c.border}` }}
+        >
           {evento.icono}
         </div>
         <div className="flex flex-1 flex-col gap-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-<<<<<<< Updated upstream
-            <p className="text-[13px] font-semibold text-gray-900">
+            <p className="text-[13px] font-semibold text-gray-900 leading-tight">
               {evento.titulo}
             </p>
             <span
-              className="rounded px-1.5 py-0.5 text-[10px] font-medium"
+              className="rounded-full px-2 py-0.5 text-[10px] font-medium shrink-0"
               style={{ background: c.bg, color: c.text }}
             >
               {evento.tipo}
             </span>
-=======
-            <p className="text-[13px] font-semibold text-gray-900 leading-tight">{evento.titulo}</p>
-            <span className="rounded-full px-2 py-0.5 text-[10px] font-medium shrink-0"
-              style={{ background: c.bg, color: c.text }}>{evento.tipo}</span>
->>>>>>> Stashed changes
           </div>
-          <p className="text-[11px] text-gray-400 leading-snug">{evento.descripcion}</p>
+          <p className="text-[11px] text-gray-400 leading-snug">
+            {evento.descripcion}
+          </p>
           <button className="mt-1 self-start rounded-lg border border-violet-600 px-3 py-1 text-[11px] font-medium text-violet-600 hover:bg-violet-600 hover:text-white active:bg-violet-700 transition-colors cursor-pointer bg-transparent">
             Ver en agenda
           </button>
@@ -395,98 +327,148 @@ function EventoGeneralDetail({
             key={i}
             onClick={() => onDot(i)}
             className="h-1.5 rounded-full border-none cursor-pointer transition-all"
-<<<<<<< Updated upstream
             style={{
-              width: i === dotActive ? "14px" : "6px",
-              background: i === dotActive ? "#7F77DD" : "#D1D5DB",
+              width: i === dotActive ? "16px" : "6px",
+              background: i === dotActive ? "#7C3AED" : "#D1D5DB",
             }}
           />
-=======
-            style={{ width: i === dotActive ? "16px" : "6px", background: i === dotActive ? "#7C3AED" : "#D1D5DB" }} />
->>>>>>> Stashed changes
         ))}
       </div>
     </div>
   );
 }
 
-function PanelRed({ selectedPerson, onPersonClick }: { selectedPerson: number | null; onPersonClick: (i: number) => void }) {
+function PanelRed({
+  selectedPerson,
+  onPersonClick,
+}: {
+  selectedPerson: number | null;
+  onPersonClick: (i: number) => void;
+}) {
   return (
     <div className="flex flex-col h-full gap-3">
       <div className="flex shrink-0 items-center justify-between">
-        <span className="text-[0.9rem] font-semibold text-gray-900">Red personal</span>
+        <span className="text-[0.9rem] font-semibold text-gray-900">
+          Red personal
+        </span>
       </div>
       {selectedPerson !== null && (
         <div className="flex items-center gap-1.5 rounded-xl bg-orange-50 border border-orange-100 px-3 py-2">
-          <span className="inline-block h-2 w-2 rounded-sm shrink-0" style={{ background: "#F97316" }} />
+          <span
+            className="inline-block h-2 w-2 rounded-sm shrink-0"
+            style={{ background: "#F97316" }}
+          />
           <p className="text-[11px] text-orange-700 leading-tight">
-            Mostrando horarios de <strong>{PERSONAS[selectedPerson].name.split(" ")[0]}</strong> en la agenda
+            Mostrando horarios de{" "}
+            <strong>{PERSONAS[selectedPerson].name.split(" ")[0]}</strong> en la
+            agenda
           </p>
         </div>
       )}
       <div className="flex flex-1 flex-col gap-1.5 overflow-y-auto min-h-0">
         {PERSONAS.map((p, i) => (
-          <button key={i} onClick={() => onPersonClick(i)}
+          <button
+            key={i}
+            onClick={() => onPersonClick(i)}
             className="flex w-full cursor-pointer items-center gap-3 rounded-xl border-none px-3 py-3 text-left font-[inherit] transition-colors"
-            style={{ background: selectedPerson === i ? "#FFF0E6" : "#F9FAFB" }}>
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[12px] font-semibold"
-              style={{ background: PERSON_COLORS[i].bg, color: PERSON_COLORS[i].text }}>
+            style={{ background: selectedPerson === i ? "#FFF0E6" : "#F9FAFB" }}
+          >
+            <div
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[12px] font-semibold"
+              style={{
+                background: PERSON_COLORS[i].bg,
+                color: PERSON_COLORS[i].text,
+              }}
+            >
               {p.initials}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-[13px] font-medium leading-tight truncate"
-                style={{ color: selectedPerson === i ? "#9A3412" : "#111827" }}>
+              <p
+                className="text-[13px] font-medium leading-tight truncate"
+                style={{ color: selectedPerson === i ? "#9A3412" : "#111827" }}
+              >
                 {p.name}
               </p>
-              <p className="text-[11px] leading-tight mt-0.5"
-                style={{ color: selectedPerson === i ? "#C2663A" : "#9CA3AF" }}>
+              <p
+                className="text-[11px] leading-tight mt-0.5"
+                style={{ color: selectedPerson === i ? "#C2663A" : "#9CA3AF" }}
+              >
                 {p.role}
               </p>
             </div>
-            {selectedPerson === i
-              ? <Star size={12} className="shrink-0" style={{ color: "#F97316" }} />
-              : <span className="text-[10px] text-gray-300 shrink-0">ver →</span>
-            }
+            {selectedPerson === i ? (
+              <Star
+                size={12}
+                className="shrink-0"
+                style={{ color: "#F97316" }}
+              />
+            ) : (
+              <span className="text-[10px] text-gray-300 shrink-0">ver →</span>
+            )}
           </button>
         ))}
       </div>
       <div className="shrink-0 flex items-center gap-2 rounded-xl bg-gray-100 px-4 py-2.5">
         <Search size={13} className="shrink-0 text-gray-400" />
-        <input type="text" placeholder="Buscar persona..."
-          className="w-full bg-transparent text-[12px] text-gray-700 outline-none placeholder:text-gray-400" />
+        <input
+          type="text"
+          placeholder="Buscar persona..."
+          className="w-full bg-transparent text-[12px] text-gray-700 outline-none placeholder:text-gray-400"
+        />
       </div>
     </div>
   );
 }
 
-function PanelInvitaciones({ selInv, onInvClick }: { selInv: string | null; onInvClick: (dayIndex: number, ii: number) => void }) {
+function PanelInvitaciones({
+  selInv,
+  onInvClick,
+}: {
+  selInv: string | null;
+  onInvClick: (dayIndex: number, ii: number) => void;
+}) {
   return (
     <div className="flex flex-col h-full gap-3">
       <div className="flex shrink-0 items-center justify-between">
-        <span className="text-[0.9rem] font-semibold text-gray-900">Invitaciones</span>
+        <span className="text-[0.9rem] font-semibold text-gray-900">
+          Invitaciones
+        </span>
         <Calendar size={15} className="text-gray-400" />
       </div>
       {selInv !== null && (
         <div className="flex items-center gap-1.5 rounded-xl bg-blue-50 border border-blue-100 px-3 py-2">
-          <span className="inline-block h-2 w-2 rounded-sm shrink-0" style={{ background: "#3B82F6" }} />
-          <p className="text-[11px] text-blue-700 leading-tight">Invitación marcada en la agenda</p>
+          <span
+            className="inline-block h-2 w-2 rounded-sm shrink-0"
+            style={{ background: "#3B82F6" }}
+          />
+          <p className="text-[11px] text-blue-700 leading-tight">
+            Invitación marcada en la agenda
+          </p>
         </div>
       )}
       <div className="flex-1 overflow-y-auto min-h-0">
         {INVITACIONES.map((sec, si) => (
           <div key={si}>
-            <p className="pt-1 pb-1.5 text-[9px] font-bold uppercase tracking-wider text-gray-400">{sec.dia}</p>
+            <p className="pt-1 pb-1.5 text-[9px] font-bold uppercase tracking-wider text-gray-400">
+              {sec.dia}
+            </p>
             {sec.items.map((item, ii) => {
-              const id         = `inv_${sec.dayIndex}_${ii}`;
+              const id = `inv_${sec.dayIndex}_${ii}`;
               const isSelected = selInv === id;
               return (
-                <div key={ii}
+                <div
+                  key={ii}
                   onClick={() => onInvClick(sec.dayIndex, ii)}
                   className="mb-2 cursor-pointer rounded-xl px-3 py-3 transition-colors border"
-                  style={{ background: isSelected ? "#E6F4FF" : "#F9FAFB", borderColor: isSelected ? "#93C5FD" : "transparent" }}
+                  style={{
+                    background: isSelected ? "#E6F4FF" : "#F9FAFB",
+                    borderColor: isSelected ? "#93C5FD" : "transparent",
+                  }}
                 >
-                  <p className="text-[12px] font-semibold leading-tight mb-1.5"
-                    style={{ color: isSelected ? "#1E3A8A" : "#111827" }}>
+                  <p
+                    className="text-[12px] font-semibold leading-tight mb-1.5"
+                    style={{ color: isSelected ? "#1E3A8A" : "#111827" }}
+                  >
                     {item.nombre}
                   </p>
                   <div className="flex items-center gap-1.5 text-[11px] text-gray-400 mb-1">
@@ -513,17 +495,13 @@ export default function Home() {
   const [selectedPerson, setSelectedPerson] = useState<number | null>(null);
   const [selInv, setSelInv] = useState<string | null>(null);
   const [curEv, setCurEv] = useState(0);
-<<<<<<< Updated upstream
-=======
   const [mobileTab, setMobileTab] = useState<MobileTab>("agenda");
->>>>>>> Stashed changes
 
   const externalEvents = useMemo<ExternalEvent[]>(() => {
     const evts: ExternalEvent[] = [];
 
     if (selectedPerson !== null) {
-<<<<<<< Updated upstream
-      PERSONAS[selectedPerson].reservas.forEach((r) => {
+      PERSONAS[selectedPerson].reservas.forEach((r) =>
         evts.push({
           day: r.day,
           start: r.start,
@@ -531,20 +509,14 @@ export default function Home() {
           label: r.titulo,
           sublabel: r.lugar,
           kind: "friend",
-        });
-      });
-=======
-      PERSONAS[selectedPerson].reservas.forEach(r =>
-        evts.push({ day: r.day, start: r.start, end: r.end, label: r.titulo, sublabel: r.lugar, kind: "friend" })
+        }),
       );
->>>>>>> Stashed changes
     }
 
     if (selInv !== null) {
-      INVITACIONES.forEach(sec =>
+      INVITACIONES.forEach((sec) =>
         sec.items.forEach((item, ii) => {
-<<<<<<< Updated upstream
-          if (selInv === `inv_${sec.dayIndex}_${ii}`) {
+          if (selInv === `inv_${sec.dayIndex}_${ii}`)
             evts.push({
               day: item.day,
               start: item.start,
@@ -553,13 +525,12 @@ export default function Home() {
               sublabel: item.sala,
               kind: "invitation",
             });
-          }
-        });
-      });
+        }),
+      );
     }
 
     EVENTOS_GENERALES.forEach((eg) => {
-      if (eg.tipo === "Festivo") {
+      if (eg.tipo === "Festivo")
         evts.push({
           day: eg.day,
           start: 6,
@@ -567,57 +538,55 @@ export default function Home() {
           label: eg.titulo,
           kind: "holiday",
         });
-      }
-=======
-          if (selInv === `inv_${sec.dayIndex}_${ii}`)
-            evts.push({ day: item.day, start: item.start, end: item.end, label: item.nombre, sublabel: item.sala, kind: "invitation" });
-        })
-      );
-    }
-
-    EVENTOS_GENERALES.forEach(eg => {
-      if (eg.tipo === "Festivo")
-        evts.push({ day: eg.day, start: 6, end: 18, label: eg.titulo, kind: "holiday" });
->>>>>>> Stashed changes
     });
 
     return evts;
   }, [selectedPerson, selInv]);
 
-<<<<<<< Updated upstream
-  const handlePersonClick = (i: number) =>
-    setSelectedPerson(selectedPerson === i ? null : i);
-  const handleInvClick = (dayIndex: number, ii: number) => {
-    const id = `inv_${dayIndex}_${ii}`;
-    setSelInv(selInv === id ? null : id);
-=======
   const handlePersonClick = (i: number) => {
     const next = selectedPerson === i ? null : i;
     setSelectedPerson(next);
     if (next !== null) setMobileTab("agenda");
->>>>>>> Stashed changes
   };
 
   const handleInvClick = (dayIndex: number, ii: number) => {
-    const id   = `inv_${dayIndex}_${ii}`;
+    const id = `inv_${dayIndex}_${ii}`;
     const next = selInv === id ? null : id;
     setSelInv(next);
     if (next !== null) setMobileTab("agenda");
   };
 
   const carouselProps = {
-    evento:    EVENTOS_GENERALES[curEv],
-    onPrev:    () => setCurEv(c => (c - 1 + EVENTOS_GENERALES.length) % EVENTOS_GENERALES.length),
-    onNext:    () => setCurEv(c => (c + 1) % EVENTOS_GENERALES.length),
-    dotCount:  EVENTOS_GENERALES.length,
+    evento: EVENTOS_GENERALES[curEv],
+    onPrev: () =>
+      setCurEv(
+        (c) => (c - 1 + EVENTOS_GENERALES.length) % EVENTOS_GENERALES.length,
+      ),
+    onNext: () => setCurEv((c) => (c + 1) % EVENTOS_GENERALES.length),
+    dotCount: EVENTOS_GENERALES.length,
     dotActive: curEv,
-    onDot:     (i: number) => setCurEv(i),
+    onDot: (i: number) => setCurEv(i),
   };
 
-  const TABS: { key: MobileTab; label: string; icon: React.ReactNode; badge?: boolean }[] = [
-    { key: "agenda",       label: "Agenda",       icon: <CalendarDays size={18} /> },
-    { key: "red",          label: "Red",          icon: <Users size={18} />,    badge: selectedPerson !== null },
-    { key: "invitaciones", label: "Invitaciones", icon: <MailOpen size={18} />, badge: selInv !== null },
+  const TABS: {
+    key: MobileTab;
+    label: string;
+    icon: React.ReactNode;
+    badge?: boolean;
+  }[] = [
+    { key: "agenda", label: "Agenda", icon: <CalendarDays size={18} /> },
+    {
+      key: "red",
+      label: "Red",
+      icon: <Users size={18} />,
+      badge: selectedPerson !== null,
+    },
+    {
+      key: "invitaciones",
+      label: "Invitaciones",
+      icon: <MailOpen size={18} />,
+      badge: selInv !== null,
+    },
   ];
 
   const AgendaPanel = (
@@ -669,226 +638,48 @@ export default function Home() {
           <h1 className="shrink-0 mb-3 text-xl sm:text-2xl font-bold tracking-tight text-gray-900">
             Bienvenido, Croissant
           </h1>
-<<<<<<< Updated upstream
-
-          <div
-            className="flex-1 min-h-0 grid gap-3"
-            style={{
-              gridTemplateColumns: "minmax(180px, 18%) 1fr minmax(180px, 18%)",
-            }}
-          >
-            <div className="flex flex-col rounded-xl bg-white shadow-sm border border-gray-100 overflow-hidden p-4 gap-3">
-              <div className="flex shrink-0 items-center justify-between">
-                <span className="text-[0.85rem] font-semibold text-gray-900">
-                  Red personal
-                </span>
-                <button className="flex h-6 w-6 items-center justify-center rounded-md border border-gray-200 text-violet-600 hover:bg-gray-50 cursor-pointer transition-colors bg-white">
-                  <UserPlus size={12} />
-                </button>
-              </div>
-
-              {selectedPerson !== null && (
-                <div className="flex items-center gap-1.5 rounded-lg bg-orange-50 border border-orange-100 px-2 py-1.5">
-                  <span
-                    className="inline-block h-2 w-2 rounded-sm shrink-0"
-                    style={{ background: "#F97316" }}
-                  />
-                  <p className="text-[10px] text-orange-700 leading-tight">
-                    Mostrando horarios de{" "}
-                    <strong>
-                      {PERSONAS[selectedPerson].name.split(" ")[0]}
-                    </strong>{" "}
-                    en la agenda
-                  </p>
-                </div>
-              )}
-
-              <div className="flex flex-1 flex-col gap-1 overflow-y-auto min-h-0">
-                {PERSONAS.map((p, i) => (
-                  <button
-                    key={i}
-                    onClick={() => handlePersonClick(i)}
-                    className="flex w-full cursor-pointer items-center gap-2.5 rounded-lg border-none px-2 py-2 text-left font-[inherit] transition-colors"
-                    style={{
-                      background:
-                        selectedPerson === i ? "#FFF0E6" : "transparent",
-                    }}
-                  >
-                    <div
-                      className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold"
-                      style={{
-                        background: PERSON_COLORS[i].bg,
-                        color: PERSON_COLORS[i].text,
-                      }}
-                    >
-                      {p.initials}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p
-                        className="text-[12px] font-medium leading-tight truncate"
-                        style={{
-                          color: selectedPerson === i ? "#9A3412" : "#111827",
-                        }}
-                      >
-                        {p.name}
-                      </p>
-                      <p
-                        className="text-[10px] leading-tight"
-                        style={{
-                          color: selectedPerson === i ? "#C2663A" : "#9CA3AF",
-                        }}
-                      >
-                        {p.role}
-                      </p>
-                    </div>
-                    {selectedPerson === i && (
-                      <Star
-                        size={10}
-                        className="shrink-0"
-                        style={{ color: "#F97316" }}
-                      />
-                    )}
-                  </button>
-                ))}
-              </div>
-
-              <div className="shrink-0 flex items-center gap-2 rounded-lg bg-gray-100 px-3 py-2">
-                <Search size={11} className="shrink-0 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="Buscar"
-                  className="w-full bg-transparent text-[11px] text-gray-700 outline-none placeholder:text-gray-400"
-                />
-              </div>
-=======
           <div className="desktop-grid hidden sm:flex flex-1 min-h-0 flex-col">
             <div className="col-left flex flex-col rounded-xl bg-white shadow-sm border border-gray-100 overflow-hidden p-4 min-h-0">
-              <PanelRed selectedPerson={selectedPerson} onPersonClick={handlePersonClick} />
->>>>>>> Stashed changes
+              <PanelRed
+                selectedPerson={selectedPerson}
+                onPersonClick={handlePersonClick}
+              />
             </div>
             <div className="col-center flex flex-col min-h-0 gap-3">
               <div className="flex-1 min-h-0 overflow-hidden rounded-xl shadow-sm border border-gray-100 bg-white">
                 <AgendaRapida externalEvents={externalEvents} />
               </div>
-<<<<<<< Updated upstream
-              <EventoGeneralDetail
-                evento={EVENTOS_GENERALES[curEv]}
-                onPrev={() =>
-                  setCurEv(
-                    (c) =>
-                      (c - 1 + EVENTOS_GENERALES.length) %
-                      EVENTOS_GENERALES.length,
-                  )
-                }
-                onNext={() =>
-                  setCurEv((c) => (c + 1) % EVENTOS_GENERALES.length)
-                }
-                dotCount={EVENTOS_GENERALES.length}
-                dotActive={curEv}
-                onDot={(i) => setCurEv(i)}
-              />
-            </div>
-
-            <div className="flex flex-col rounded-xl bg-white shadow-sm border border-gray-100 overflow-hidden p-4 gap-3">
-              <div className="flex shrink-0 items-center justify-between">
-                <span className="text-[0.85rem] font-semibold text-gray-900">
-                  Invitaciones
-                </span>
-                <Calendar size={13} className="text-gray-400" />
-              </div>
-
-              {selInv !== null && (
-                <div className="flex items-center gap-1.5 rounded-lg bg-blue-50 border border-blue-100 px-2 py-1.5">
-                  <span
-                    className="inline-block h-2 w-2 rounded-sm shrink-0"
-                    style={{ background: "#3B82F6" }}
-                  />
-                  <p className="text-[10px] text-blue-700 leading-tight">
-                    Invitación marcada en la agenda
-                  </p>
-                </div>
-              )}
-
-              <div className="flex-1 overflow-y-auto min-h-0">
-                {INVITACIONES.map((sec, si) => (
-                  <div key={si}>
-                    <p className="py-1 text-[9px] font-bold uppercase tracking-wider text-gray-400">
-                      {sec.dia}
-                    </p>
-                    {sec.items.map((item, ii) => {
-                      const id = `inv_${sec.dayIndex}_${ii}`;
-                      const isSelected = selInv === id;
-                      return (
-                        <div
-                          key={ii}
-                          onClick={() => handleInvClick(sec.dayIndex, ii)}
-                          className="mb-1 cursor-pointer rounded-lg px-2 py-2 transition-colors border"
-                          style={{
-                            background: isSelected ? "#E6F4FF" : "transparent",
-                            borderColor: isSelected ? "#93C5FD" : "transparent",
-                          }}
-                          onMouseEnter={(e) => {
-                            if (!isSelected)
-                              (
-                                e.currentTarget as HTMLDivElement
-                              ).style.background = "#F9FAFB";
-                          }}
-                          onMouseLeave={(e) => {
-                            if (!isSelected)
-                              (
-                                e.currentTarget as HTMLDivElement
-                              ).style.background = "transparent";
-                          }}
-                        >
-                          <p
-                            className="text-[11px] font-semibold leading-tight mb-1"
-                            style={{
-                              color: isSelected ? "#1E3A8A" : "#111827",
-                            }}
-                          >
-                            {item.nombre}
-                          </p>
-                          <div className="flex items-center gap-1 text-[10px] text-gray-400 mb-0.5">
-                            <MapPin size={8} /> {item.sala}
-                          </div>
-                          <div className="flex items-center gap-1 text-[10px] text-gray-400">
-                            <Clock size={8} /> {item.hora}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                ))}
-              </div>
-
-              <button className="shrink-0 w-full cursor-pointer rounded-lg border border-gray-200 py-1.5 text-[11px] text-gray-500 hover:border-violet-600 hover:text-violet-600 transition-colors bg-transparent">
-                Mostrar todas
-              </button>
-=======
               <EventoGeneralDetail {...carouselProps} />
             </div>
             <div className="col-right flex flex-col rounded-xl bg-white shadow-sm border border-gray-100 overflow-hidden p-4 min-h-0">
               <PanelInvitaciones selInv={selInv} onInvClick={handleInvClick} />
->>>>>>> Stashed changes
             </div>
           </div>
           <div className="flex sm:hidden flex-1 min-h-0 flex-col">
-            {mobileTab === "agenda"       && AgendaPanel}
-            {mobileTab === "red"          && (
+            {mobileTab === "agenda" && AgendaPanel}
+            {mobileTab === "red" && (
               <div className="flex flex-1 min-h-0 flex-col rounded-xl bg-white shadow-sm border border-gray-100 p-4 overflow-hidden">
-                <PanelRed selectedPerson={selectedPerson} onPersonClick={handlePersonClick} />
+                <PanelRed
+                  selectedPerson={selectedPerson}
+                  onPersonClick={handlePersonClick}
+                />
               </div>
             )}
             {mobileTab === "invitaciones" && (
               <div className="flex flex-1 min-h-0 flex-col rounded-xl bg-white shadow-sm border border-gray-100 p-4 overflow-hidden">
-                <PanelInvitaciones selInv={selInv} onInvClick={handleInvClick} />
+                <PanelInvitaciones
+                  selInv={selInv}
+                  onInvClick={handleInvClick}
+                />
               </div>
             )}
           </div>
         </div>
-        <nav className="home-safe-bottom flex sm:hidden shrink-0 items-stretch bg-white border-t border-gray-100 shadow-[0_-4px_20px_rgba(0,0,0,0.07)]"
-          style={{ zIndex: 30 }}>
-          {TABS.map(tab => {
+        <nav
+          className="home-safe-bottom flex sm:hidden shrink-0 items-stretch bg-white border-t border-gray-100 shadow-[0_-4px_20px_rgba(0,0,0,0.07)]"
+          style={{ zIndex: 30 }}
+        >
+          {TABS.map((tab) => {
             const isActive = mobileTab === tab.key;
             return (
               <button
@@ -904,7 +695,10 @@ export default function Home() {
                   <span className="absolute top-2.5 right-[calc(50%-10px)] h-2 w-2 rounded-full bg-orange-400 border-2 border-white" />
                 )}
                 <span style={{ opacity: isActive ? 1 : 0.55 }}>{tab.icon}</span>
-                <span className="text-[10px]" style={{ fontWeight: isActive ? 600 : 400 }}>
+                <span
+                  className="text-[10px]"
+                  style={{ fontWeight: isActive ? 600 : 400 }}
+                >
                   {tab.label}
                 </span>
               </button>
