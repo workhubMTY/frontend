@@ -1,6 +1,6 @@
 import { ChevronRight, UsersRound } from "lucide-react";
-import type { Team } from "../types/profile";
-import { getInitials } from "../lib/formatting";
+import type { Team } from "../../types/profile";
+import { getInitials } from "../../lib/formatting";
 
 type TeamsCardProps = {
   teams: Team[];

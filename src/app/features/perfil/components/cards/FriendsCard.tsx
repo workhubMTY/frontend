@@ -1,18 +1,19 @@
-import { Check, Trophy, UserPlus, UsersRound } from "lucide-react";
-import type { Friend } from "../types/profile";
+import { Check, Trophy, UsersRound } from "lucide-react";
+import type { Friend } from "../../types/profile";
 
 type FriendsCardProps = {
   friends: Friend[];
   selectedFriendId: string | null;
   onCompareFriend: (friendId: string) => void;
   onClearComparison: () => void;
-  onInviteFriend: (friend: Friend) => void;
+  onDisplayAll: () => void;
 };
 
 export function FriendsCard({
   friends,
   selectedFriendId,
   onCompareFriend,
+  onDisplayAll,
   onClearComparison,
 }: FriendsCardProps) {
   return (
@@ -27,7 +28,7 @@ export function FriendsCard({
 
         <button
           type="button"
-          onClick={() => alert("Ver todas las amistades")}
+          onClick={onDisplayAll}
           className="text-sm font-medium text-purple-700 transition hover:text-purple-900"
         >
           Ver todos
@@ -35,7 +36,7 @@ export function FriendsCard({
       </header>
 
       <div className="divide-y divide-neutral-100">
-        {friends.map((friend) => {
+        {friends.slice(0, 3).map((friend) => {
           const isSelected = selectedFriendId === friend.id;
 
           return (

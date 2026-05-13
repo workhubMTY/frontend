@@ -181,10 +181,46 @@ const FRIENDS: FriendList = {
       avatarUrl:
         "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=200&h=200&fit=crop&crop=face",
     },
+    {
+      id: "LP",
+      name: "Laura Pérez",
+      role: "Compañera",
+      avatarUrl:
+        "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=200&h=200&fit=crop&crop=face",
+    },
+    {
+      id: "JM",
+      name: "Jorge Martínez",
+      role: "Amigo cercano",
+      avatarUrl:
+        "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=200&h=200&fit=crop&crop=face",
+    },
+    {
+      id: "SR",
+      name: "Sofía Ramírez",
+      role: "Compañera",
+      avatarUrl:
+        "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=200&h=200&fit=crop&crop=face",
+    },
+    {
+      id: "MT",
+      name: "Miguel Torres",
+      role: "Mentor",
+      avatarUrl:
+        "https://images.unsplash.com/photo-1527980965255-d3b416303d12?w=200&h=200&fit=crop&crop=face",
+    },
+    {
+      id: "AC",
+      name: "Ana Castillo",
+      role: "Compañera",
+      avatarUrl:
+        "https://images.unsplash.com/photo-1544723795-3fb6469f5b39?w=200&h=200&fit=crop&crop=face",
+    },
   ],
 };
 
 type AchievementList = Record<string, Achievement[]>;
+
 const ACHIEVEMENTS: AchievementList = {
   MF: [
     {
@@ -192,33 +228,21 @@ const ACHIEVEMENTS: AchievementList = {
       title: "Primera amistad",
       description: "Agrega 1 amigo a tu red",
       icon: "users",
-      userProgress: {
-        current: 1,
-        target: 1,
-        status: "completed",
-      },
+      userProgress: { current: 1, target: 1, status: "completed" },
     },
     {
       id: "achievement-2",
       title: "Red activa",
       description: "Ten 10 amigos en tu red",
       icon: "network",
-      userProgress: {
-        current: 7,
-        target: 10,
-        status: "in_progress",
-      },
+      userProgress: { current: 7, target: 10, status: "in_progress" },
     },
     {
       id: "achievement-3",
       title: "Racha de 10 días",
       description: "Inicia sesión 10 días seguidos",
       icon: "flame",
-      userProgress: {
-        current: 6,
-        target: 10,
-        status: "in_progress",
-      },
+      userProgress: { current: 6, target: 10, status: "in_progress" },
     },
   ],
 
@@ -228,33 +252,21 @@ const ACHIEVEMENTS: AchievementList = {
       title: "Primera amistad",
       description: "Agrega 1 amigo a tu red",
       icon: "users",
-      userProgress: {
-        current: 1,
-        target: 1,
-        status: "completed",
-      },
+      userProgress: { current: 1, target: 1, status: "completed" },
     },
     {
       id: "achievement-2",
       title: "Red activa",
       description: "Ten 10 amigos en tu red",
       icon: "network",
-      userProgress: {
-        current: 7,
-        target: 10,
-        status: "in_progress",
-      },
+      userProgress: { current: 5, target: 10, status: "in_progress" },
     },
     {
       id: "achievement-3",
       title: "Racha de 10 días",
       description: "Inicia sesión 10 días seguidos",
       icon: "flame",
-      userProgress: {
-        current: 6,
-        target: 10,
-        status: "in_progress",
-      },
+      userProgress: { current: 3, target: 10, status: "in_progress" },
     },
   ],
 
@@ -264,33 +276,21 @@ const ACHIEVEMENTS: AchievementList = {
       title: "Primera amistad",
       description: "Agrega 1 amigo a tu red",
       icon: "users",
-      userProgress: {
-        current: 1,
-        target: 1,
-        status: "completed",
-      },
+      userProgress: { current: 1, target: 1, status: "completed" },
     },
     {
       id: "achievement-2",
       title: "Red activa",
       description: "Ten 10 amigos en tu red",
       icon: "network",
-      userProgress: {
-        current: 7,
-        target: 10,
-        status: "in_progress",
-      },
+      userProgress: { current: 9, target: 10, status: "in_progress" },
     },
     {
       id: "achievement-3",
       title: "Racha de 10 días",
       description: "Inicia sesión 10 días seguidos",
       icon: "flame",
-      userProgress: {
-        current: 6,
-        target: 10,
-        status: "in_progress",
-      },
+      userProgress: { current: 10, target: 10, status: "completed" },
     },
   ],
 
@@ -300,33 +300,141 @@ const ACHIEVEMENTS: AchievementList = {
       title: "Primera amistad",
       description: "Agrega 1 amigo a tu red",
       icon: "users",
-      userProgress: {
-        current: 1,
-        target: 1,
-        status: "completed",
-      },
+      userProgress: { current: 1, target: 1, status: "completed" },
     },
     {
       id: "achievement-2",
       title: "Red activa",
       description: "Ten 10 amigos en tu red",
       icon: "network",
-      userProgress: {
-        current: 7,
-        target: 10,
-        status: "in_progress",
-      },
+      userProgress: { current: 2, target: 10, status: "in_progress" },
     },
     {
       id: "achievement-3",
       title: "Racha de 10 días",
       description: "Inicia sesión 10 días seguidos",
       icon: "flame",
-      userProgress: {
-        current: 6,
-        target: 10,
-        status: "in_progress",
-      },
+      userProgress: { current: 1, target: 10, status: "in_progress" },
+    },
+  ],
+
+  LP: [
+    {
+      id: "achievement-1",
+      title: "Primera amistad",
+      description: "Agrega 1 amigo a tu red",
+      icon: "users",
+      userProgress: { current: 0, target: 1, status: "locked" },
+    },
+    {
+      id: "achievement-2",
+      title: "Red activa",
+      description: "Ten 10 amigos en tu red",
+      icon: "network",
+      userProgress: { current: 4, target: 10, status: "in_progress" },
+    },
+    {
+      id: "achievement-3",
+      title: "Racha de 10 días",
+      description: "Inicia sesión 10 días seguidos",
+      icon: "flame",
+      userProgress: { current: 2, target: 10, status: "in_progress" },
+    },
+  ],
+
+  JM: [
+    {
+      id: "achievement-1",
+      title: "Primera amistad",
+      description: "Agrega 1 amigo a tu red",
+      icon: "users",
+      userProgress: { current: 1, target: 1, status: "completed" },
+    },
+    {
+      id: "achievement-2",
+      title: "Red activa",
+      description: "Ten 10 amigos en tu red",
+      icon: "network",
+      userProgress: { current: 10, target: 10, status: "completed" },
+    },
+    {
+      id: "achievement-3",
+      title: "Racha de 10 días",
+      description: "Inicia sesión 10 días seguidos",
+      icon: "flame",
+      userProgress: { current: 8, target: 10, status: "in_progress" },
+    },
+  ],
+
+  SR: [
+    {
+      id: "achievement-1",
+      title: "Primera amistad",
+      description: "Agrega 1 amigo a tu red",
+      icon: "users",
+      userProgress: { current: 1, target: 1, status: "completed" },
+    },
+    {
+      id: "achievement-2",
+      title: "Red activa",
+      description: "Ten 10 amigos en tu red",
+      icon: "network",
+      userProgress: { current: 6, target: 10, status: "in_progress" },
+    },
+    {
+      id: "achievement-3",
+      title: "Racha de 10 días",
+      description: "Inicia sesión 10 días seguidos",
+      icon: "flame",
+      userProgress: { current: 5, target: 10, status: "in_progress" },
+    },
+  ],
+
+  MT: [
+    {
+      id: "achievement-1",
+      title: "Primera amistad",
+      description: "Agrega 1 amigo a tu red",
+      icon: "users",
+      userProgress: { current: 1, target: 1, status: "completed" },
+    },
+    {
+      id: "achievement-2",
+      title: "Red activa",
+      description: "Ten 10 amigos en tu red",
+      icon: "network",
+      userProgress: { current: 3, target: 10, status: "in_progress" },
+    },
+    {
+      id: "achievement-3",
+      title: "Racha de 10 días",
+      description: "Inicia sesión 10 días seguidos",
+      icon: "flame",
+      userProgress: { current: 0, target: 10, status: "locked" },
+    },
+  ],
+
+  AC: [
+    {
+      id: "achievement-1",
+      title: "Primera amistad",
+      description: "Agrega 1 amigo a tu red",
+      icon: "users",
+      userProgress: { current: 1, target: 1, status: "completed" },
+    },
+    {
+      id: "achievement-2",
+      title: "Red activa",
+      description: "Ten 10 amigos en tu red",
+      icon: "network",
+      userProgress: { current: 8, target: 10, status: "in_progress" },
+    },
+    {
+      id: "achievement-3",
+      title: "Racha de 10 días",
+      description: "Inicia sesión 10 días seguidos",
+      icon: "flame",
+      userProgress: { current: 9, target: 10, status: "in_progress" },
     },
   ],
 };

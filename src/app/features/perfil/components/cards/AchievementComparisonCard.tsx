@@ -3,8 +3,8 @@ import type {
   Achievement,
   AchievementProgress,
   AchievementUserData,
-} from "../types/profile";
-import { getInitials } from "../lib/formatting";
+} from "../../types/profile";
+import { getInitials } from "../../lib/formatting";
 
 type AchievementComparisonCardProps = {
   personalData: AchievementUserData;
@@ -73,7 +73,7 @@ export function AchievementComparisonCard({
           </span>
 
           <PersonPreview
-            label={friendsData.name}
+            label={"Tu amistad"}
             name={friendsData.name}
             // avatarUrl={selectedFriend.avatarUrl}
             alignRight
