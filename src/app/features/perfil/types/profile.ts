@@ -1,17 +1,20 @@
-export type Friend = {
+export type User = {
   id: string;
   name: string;
   role: string;
-  avatarUrl: string;
+  avatarUrl?: string;
 };
+
+export type Friend = User;
 
 export type Team = {
   id: string;
   name: string;
   membersCount: number;
-  role: string;
 };
-
+export type DetailedTeam = Team & {
+  members: User[];
+};
 export type AchievementStatus = "completed" | "in_progress" | "locked";
 
 export type AchievementProgress = {
@@ -25,6 +28,7 @@ export type AchievementUserData = {
   avatarUrl?: string;
   achievements: Achievement[];
 };
+
 export type Achievement = {
   id: string;
   title: string;

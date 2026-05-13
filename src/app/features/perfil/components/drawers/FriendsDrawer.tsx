@@ -9,7 +9,7 @@ import {
   X,
 } from "lucide-react";
 import type { Friend } from "../../types/profile";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 
 type FriendsDrawerProps = {
   isOpen: boolean;
@@ -34,8 +34,6 @@ export function FriendsDrawer({
 }: FriendsDrawerProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [sortOption, setSortOption] = useState<SortOption>("name-asc");
-
-  useEffect(() => console.log(selectedFriendId), [selectedFriendId]);
 
   const filteredFriends = useMemo(() => {
     const normalizedSearch = searchTerm.trim().toLowerCase();

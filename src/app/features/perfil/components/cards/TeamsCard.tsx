@@ -4,9 +4,10 @@ import { getInitials } from "../../lib/formatting";
 
 type TeamsCardProps = {
   teams: Team[];
+  onDisplayAll: () => void;
 };
 
-export function TeamsCard({ teams }: TeamsCardProps) {
+export function TeamsCard({ teams, onDisplayAll }: TeamsCardProps) {
   return (
     <section className="border border-neutral-200 bg-white shadow-sm h-full flex flex-col">
       <header className="flex items-center justify-between border-b border-neutral-100 px-7 py-5">
@@ -19,7 +20,7 @@ export function TeamsCard({ teams }: TeamsCardProps) {
 
         <button
           type="button"
-          onClick={() => alert("Ver todos los equipos")}
+          onClick={() => onDisplayAll()}
           className="text-sm font-medium text-purple-700 transition hover:text-purple-900"
         >
           Ver todos
@@ -40,7 +41,7 @@ export function TeamsCard({ teams }: TeamsCardProps) {
               <div>
                 <h3 className="font-semibold text-neutral-950">{team.name}</h3>
                 <p className="text-sm text-neutral-500">
-                  {team.membersCount} miembros · {team.role}
+                  {team.membersCount} miembros
                 </p>
               </div>
             </div>

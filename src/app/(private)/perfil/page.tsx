@@ -13,6 +13,7 @@ import {
   getFriendsByUserId,
   getAchievementsByUserId,
   getTeamsByUserId,
+  mockGetTeamMembers,
 } from "@/app/features/perfil/data/mockProfileApi";
 import { ProfileHeaderCard } from "@/app/features/perfil/components/cards/ProfileHeaderCard";
 import { ProgressSummaryCard } from "@/app/features/perfil/components/cards/ProgressSumaryCard";
@@ -20,6 +21,7 @@ import { FriendsCard } from "@/app/features/perfil/components/cards/FriendsCard"
 import { TeamsCard } from "@/app/features/perfil/components/cards/TeamsCard";
 import { AchievementComparisonCard } from "@/app/features/perfil/components/cards/AchievementComparisonCard";
 import { FriendsDrawer } from "@/app/features/perfil/components/drawers/FriendsDrawer";
+import { TeamsDrawer } from "@/app/features/perfil/components/drawers/TeamsDrawer";
 
 export default function UserProfilePage() {
   const USER_ID = "MF"; // Esto deberiamos poder sacarlo de un context o algo
@@ -36,6 +38,7 @@ export default function UserProfilePage() {
 
   // states para desplegar los drawers
   const [isFriendDrawerOpen, setIsFriendDrawerOpen] = useState<boolean>(false);
+  const [isTeamDrawerOpen, setIsTeamDrawerOpen] = useState<boolean>(false);
 
   const [isLoading, setIsLoading] = useState(true);
 
@@ -157,12 +160,18 @@ export default function UserProfilePage() {
                 selectedFriendId={selectedFriendId}
                 onCompareFriend={handleCompareFriend}
                 onClearComparison={handleClearComparison}
-                onDisplayAll={() => setIsFriendDrawerOpen(true)}
+                onDisplayAll={() => {
+                  setIsFriendDrawerOpen(true);
+                  setIsTeamDrawerOpen(false);
+                }}
               />
             </div>
 
             <div className="col-span-4">
-              <TeamsCard teams={teams} />
+              <TeamsCard
+                teams={teams}
+                onDisplayAll={() => setIsTeamDrawerOpen(true)}
+              />
             </div>
 
             <div className="col-span-4">
@@ -195,6 +204,13 @@ export default function UserProfilePage() {
         onCompareFriend={(id) => setSelectedFriendId(id)}
         onClearComparison={() => setSelectedFriendId(null)}
         onClose={() => setIsFriendDrawerOpen(false)}
+      />
+      <TeamsDrawer
+        open={isTeamDrawerOpen}
+        teams={teams}
+        onClose={() => setIsTeamDrawerOpen(false)}
+        onCreateOrJoinTeam={() => alert("Crear o unirse a un equipo")}
+        onGetTeamMembers={mockGetTeamMembers}
       />
     </>
   );

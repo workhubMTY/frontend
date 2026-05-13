@@ -1,4 +1,10 @@
-import type { UserProfile, Achievement, Team, Friend } from "../types/profile";
+import type {
+  UserProfile,
+  Achievement,
+  Team,
+  Friend,
+  User,
+} from "../types/profile";
 
 const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -50,21 +56,21 @@ const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 //           name: "Equipo Alpha",
 //           initials: "EA",
 //           membersCount: 4,
-//           role: "Miembro",
+//
 //         },
 //         {
 //           id: "team-2",
 //           name: "Equipo Beta",
 //           initials: "EB",
 //           membersCount: 2,
-//           role: "Líder",
+//
 //         },
 //         {
 //           id: "team-3",
 //           name: "Equipo Gamma",
 //           initials: "EG",
 //           membersCount: 1,
-//           role: "Miembro",
+//
 //         },
 //       ],
 //       achievements: [
@@ -444,67 +450,58 @@ type TeamList = Record<string, Team[]>;
 const TEAMS: TeamList = {
   MF: [
     {
-      id: "team-1",
+      id: "team-alpha",
       name: "Equipo Alpha",
       membersCount: 4,
-      role: "Miembro",
     },
     {
-      id: "team-2",
+      id: "team-beta",
       name: "Equipo Beta",
       membersCount: 2,
-      role: "Líder",
     },
     {
-      id: "team-3",
+      id: "team-gamma",
       name: "Equipo Gamma",
       membersCount: 1,
-      role: "Miembro",
     },
   ],
 
   CM: [
     {
-      id: "team-1",
+      id: "team-delta",
       name: "Equipo Delta",
       membersCount: 3,
-      role: "Miembro",
     },
     {
-      id: "team-2",
+      id: "team-epsilon",
       name: "Equipo Épsilon",
       membersCount: 5,
-      role: "Líder",
     },
   ],
 
   VR: [
     {
-      id: "team-1",
+      id: "team-zeta",
       name: "Equipo Zeta",
       membersCount: 2,
-      role: "Miembro",
     },
     {
-      id: "team-2",
+      id: "team-theta",
       name: "Equipo Theta",
       membersCount: 4,
-      role: "Miembro",
     },
   ],
 
   AG: [
     {
-      id: "team-1",
+      id: "team-omega",
       name: "Equipo Omega",
       membersCount: 6,
-      role: "Organizador",
     },
     {
-      id: "team-2",
+      id: "team-sigma",
       name: "Equipo Sigma",
       membersCount: 3,
-      role: "Miembro",
     },
   ],
 };
@@ -540,4 +537,56 @@ export async function getAchievementsByUserId(userId: string) {
 export async function getTeamsByUserId(userId: string) {
   await wait(500);
   return TEAMS[userId];
+}
+
+export async function mockGetTeamMembers(teamId: string): Promise<User[]> {
+  await new Promise((resolve) => setTimeout(resolve, 600));
+
+  const membersByTeamId: Record<string, User[]> = {
+    "team-alpha": [
+      {
+        id: "member-1",
+        name: "Valeria Ruiz",
+        role: "Líder",
+        avatarUrl: "/avatars/valeria.jpg",
+      },
+      {
+        id: "member-2",
+        name: "Carlos Méndez",
+        role: "Miembro",
+        avatarUrl: "/avatars/carlos.jpg",
+      },
+      {
+        id: "member-3",
+        name: "Mariana López",
+        role: "Miembro",
+      },
+      {
+        id: "member-4",
+        name: "Diego Fernández",
+        role: "Miembro",
+      },
+    ],
+    "team-beta": [
+      {
+        id: "member-5",
+        name: "Ana Torres",
+        role: "Líder",
+      },
+      {
+        id: "member-6",
+        name: "Sofía Martínez",
+        role: "Miembro",
+      },
+    ],
+    "team-gamma": [
+      {
+        id: "member-7",
+        name: "Javier Torres",
+        role: "Miembro",
+      },
+    ],
+  };
+
+  return membersByTeamId[teamId] ?? [];
 }
