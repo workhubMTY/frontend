@@ -1,18 +1,10 @@
 import { ChevronRight, UsersRound } from "lucide-react";
 import type { Team } from "../types/profile";
+import { getInitials } from "../lib/formatting";
 
 type TeamsCardProps = {
   teams: Team[];
 };
-
-function getInitials(name: string): string {
-  let initials = "";
-  name
-    .split(" ")
-    .slice(0, 2)
-    .map((token) => (initials += token.at(0)));
-  return initials;
-}
 
 export function TeamsCard({ teams }: TeamsCardProps) {
   return (

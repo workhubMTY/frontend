@@ -1,8 +1,19 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import type { UserProfile } from "@/app/features/perfil/types/profile";
-import { getUserProfileMock } from "@/app/features/perfil/data/mockProfileApi";
+import {
+  type UserProfile,
+  type Friend,
+  Achievement,
+  Team,
+  AchievementUserData,
+} from "@/app/features/perfil/types/profile";
+import {
+  getUserProfileMock,
+  getFriendsByUserId,
+  getAchievementsByUserId,
+  getTeamsByUserId,
+} from "@/app/features/perfil/data/mockProfileApi";
 import { ProfileHeaderCard } from "@/app/features/perfil/components/ProfileHeaderCard";
 import { ProgressSummaryCard } from "@/app/features/perfil/components/ProgressSumaryCard";
 import { FriendsCard } from "@/app/features/perfil/components/FriendsCard";
@@ -10,44 +21,72 @@ import { TeamsCard } from "@/app/features/perfil/components/TeamsCard";
 import { AchievementComparisonCard } from "@/app/features/perfil/components/AchievementComparisonCard";
 
 export default function UserProfilePage() {
+  const USER_ID = "MF"; // Esto deberiamos poder sacarlo de un context o algo
+
   const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [friends, setFriends] = useState<Friend[] | null>(null);
+  const [achievements, setAchievements] = useState<Achievement[] | null>(null);
   const [selectedFriendId, setSelectedFriendId] = useState<string | null>(null);
+  const [friendsData, setFriendsData] = useState<AchievementUserData | null>(
+    null,
+  );
+  const [teams, setTeams] = useState<Team[] | null>(null);
+
   const [isLoading, setIsLoading] = useState(true);
-
   useEffect(() => {
-    let isMounted = true;
-
-    async function loadProfile() {
+    async function loadInitialData() {
       try {
         setIsLoading(true);
-        const response = await getUserProfileMock();
 
-        if (!isMounted) return;
+        const [
+          profileResponse,
+          friendResponse,
+          achievementResponse,
+          teamsResponse,
+        ] = await Promise.all([
+          getUserProfileMock(),
+          getFriendsByUserId(USER_ID),
+          getAchievementsByUserId(USER_ID),
+          getTeamsByUserId(USER_ID),
+        ]);
 
-        setProfile(response.profile);
+        setProfile(profileResponse);
+        setFriends(friendResponse);
+        setAchievements(achievementResponse);
+        setTeams(teamsResponse);
+      } catch (error) {
+        console.log(error);
       } finally {
-        if (isMounted) {
-          setIsLoading(false);
-        }
+        setIsLoading(false);
       }
     }
 
-    loadProfile();
-
-    return () => {
-      isMounted = false;
-    };
+    loadInitialData();
   }, []);
 
-  const selectedFriend = useMemo(() => {
-    if (!profile || !selectedFriendId) return null;
-
-    return (
-      profile.friends.find((friend) => friend.id === selectedFriendId) ?? null
-    );
-  }, [profile, selectedFriendId]);
+  useEffect(() => {
+    async function loadFriendsAchievements() {
+      if (!selectedFriendId) return;
+      const selectedFriend = friends?.find(
+        (current) => current.id === selectedFriendId,
+      );
+      if (!selectedFriend) return;
+      try {
+        const achievementsResponse =
+          await getAchievementsByUserId(selectedFriendId);
+        setFriendsData({
+          name: selectedFriend.name,
+          achievements: achievementsResponse,
+        });
+      } catch (error) {
+        console.log(error);
+      }
+    }
+    loadFriendsAchievements();
+  }, [selectedFriendId]);
 
   function handleCompareFriend(friendId: string) {
+    console.log(friendId);
     setSelectedFriendId(friendId);
   }
 
@@ -65,7 +104,7 @@ export default function UserProfilePage() {
     return <ProfilePageSkeleton />;
   }
 
-  if (!profile) {
+  if (!profile || !teams || !friends || !achievements) {
     return (
       <main className="min-h-screen bg-neutral-100 px-8 py-8">
         <div className="mx-auto max-w-screen-2xl border border-neutral-200 bg-white p-8 shadow-sm">
@@ -102,7 +141,7 @@ export default function UserProfilePage() {
         <section className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-12">
           <div id="friends-section" className="col-span-4">
             <FriendsCard
-              friends={profile.friends}
+              friends={friends}
               selectedFriendId={selectedFriendId}
               onCompareFriend={handleCompareFriend}
               onClearComparison={handleClearComparison}
@@ -113,15 +152,28 @@ export default function UserProfilePage() {
           </div>
 
           <div className="col-span-4">
-            <TeamsCard teams={profile.teams} />
+            <TeamsCard teams={teams} />
           </div>
 
           <div className="col-span-4">
-            <AchievementComparisonCard
-              profile={profile}
-              selectedFriend={selectedFriend}
-              onChangeFriend={handleChangeFriend}
-            />
+            {friendsData ? (
+              <AchievementComparisonCard
+                personalData={{
+                  name: profile.name,
+                  achievements,
+                }}
+                friendsData={friendsData}
+                onChangeFriend={handleChangeFriend}
+              />
+            ) : (
+              <AchievementComparisonCard
+                personalData={{
+                  name: profile.name,
+                  achievements,
+                }}
+                onChangeFriend={handleChangeFriend}
+              />
+            )}
           </div>
         </section>
       </div>

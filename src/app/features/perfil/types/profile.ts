@@ -8,7 +8,6 @@ export type Friend = {
 export type Team = {
   id: string;
   name: string;
-  initials: string;
   membersCount: number;
   role: string;
 };
@@ -21,13 +20,17 @@ export type AchievementProgress = {
   status: AchievementStatus;
 };
 
+export type AchievementUserData = {
+  name: string;
+  avatarUrl?: string;
+  achievements: Achievement[];
+};
 export type Achievement = {
   id: string;
   title: string;
   description: string;
   icon: "users" | "network" | "flame";
   userProgress: AchievementProgress;
-  friendsProgress: Record<string, AchievementProgress>;
 };
 
 export type UserProfile = {
@@ -44,11 +47,8 @@ export type UserProfile = {
     inProgressAchievements: number;
     pendingAchievements: number;
   };
-  friends: Friend[];
-  teams: Team[];
-  achievements: Achievement[];
 };
 
-export type ProfileApiResponse = {
-  profile: UserProfile;
-};
+// export type ProfileApiResponse = {
+//   profile: UserProfile;
+// };

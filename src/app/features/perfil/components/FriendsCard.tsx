@@ -14,7 +14,6 @@ export function FriendsCard({
   selectedFriendId,
   onCompareFriend,
   onClearComparison,
-  onInviteFriend,
 }: FriendsCardProps) {
   return (
     <section className="border border-neutral-200 bg-white shadow-sm h-full flex flex-col">

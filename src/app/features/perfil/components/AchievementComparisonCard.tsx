@@ -1,30 +1,23 @@
-import {
-  Flame,
-  Info,
-  Trophy,
-  UserRound,
-  UsersRound,
-  Network,
-} from "lucide-react";
+import { Flame, Info, Trophy, UsersRound, Network } from "lucide-react";
 import type {
   Achievement,
   AchievementProgress,
-  Friend,
-  UserProfile,
+  AchievementUserData,
 } from "../types/profile";
+import { getInitials } from "../lib/formatting";
 
 type AchievementComparisonCardProps = {
-  profile: UserProfile;
-  selectedFriend: Friend | null;
+  personalData: AchievementUserData;
+  friendsData?: AchievementUserData;
   onChangeFriend: () => void;
 };
 
 export function AchievementComparisonCard({
-  profile,
-  selectedFriend,
+  personalData,
+  friendsData,
   onChangeFriend,
 }: AchievementComparisonCardProps) {
-  if (!selectedFriend) {
+  if (!friendsData) {
     return (
       <section className="border border-neutral-200 bg-white shadow-sm">
         <header className="border-b border-neutral-100">
@@ -37,7 +30,7 @@ export function AchievementComparisonCard({
         </header>
 
         <div className="divide-y divide-neutral-100">
-          {profile.achievements.map((achievement) => {
+          {personalData.achievements.map((achievement) => {
             return (
               <AchievementRow
                 key={achievement.id}
@@ -71,8 +64,8 @@ export function AchievementComparisonCard({
         <div className="grid items-center gap-5 border-t border-neutral-100 px-7 py-5 sm:grid-cols-[1fr_auto_1fr]">
           <PersonPreview
             label="Tú"
-            name={profile.name}
-            avatarUrl={profile.avatarUrl}
+            name={personalData.name}
+            // avatarUrl={personalData.avatarUrl}
           />
 
           <span className="text-center text-sm font-semibold text-neutral-500">
@@ -80,9 +73,9 @@ export function AchievementComparisonCard({
           </span>
 
           <PersonPreview
-            label={selectedFriend.name}
-            name={selectedFriend.role}
-            avatarUrl={selectedFriend.avatarUrl}
+            label={friendsData.name}
+            name={friendsData.name}
+            // avatarUrl={selectedFriend.avatarUrl}
             alignRight
           />
         </div>
@@ -92,13 +85,15 @@ export function AchievementComparisonCard({
         <div className="grid grid-cols-[1fr_120px_120px] gap-5 px-7 py-3 text-xs font-semibold uppercase tracking-wide text-neutral-500">
           <span>Logro</span>
           <span>Tú</span>
-          <span>{selectedFriend.name.split(" ")[0]}</span>
+          <span>{friendsData.name.split(" ")[0]}</span>
         </div>
 
-        {profile.achievements.map((achievement) => {
-          const friendProgress = achievement.friendsProgress[
-            selectedFriend.id
-          ] ?? {
+        {personalData.achievements.map((achievement, index) => {
+          // ESTO ASUME QUE LOS LOGROS SIEMPRE ESTARAN EN EL MISMO ORDEN
+          const friendAchievement = friendsData.achievements.find(
+            (a) => a.id === achievement.id,
+          );
+          const friendProgress = friendAchievement?.userProgress ?? {
             current: 0,
             target: achievement.userProgress.target,
             status: "locked" as const,
@@ -118,7 +113,7 @@ export function AchievementComparisonCard({
       <footer className="flex items-center justify-between border-t border-neutral-100 bg-neutral-50 px-7 py-4">
         <div className="flex items-center gap-2 text-sm text-neutral-500">
           <Info size={16} />
-          Comparando con {selectedFriend.name}
+          Comparando con {friendsData.name}
         </div>
 
         <button
@@ -136,7 +131,7 @@ export function AchievementComparisonCard({
 type PersonPreviewProps = {
   label: string;
   name: string;
-  avatarUrl: string;
+  avatarUrl?: string;
   alignRight?: boolean;
 };
 
@@ -153,11 +148,17 @@ function PersonPreview({
         alignRight ? "justify-start sm:justify-end" : "",
       ].join(" ")}
     >
-      <img
-        src={avatarUrl}
-        alt={label}
-        className="h-11 w-11 rounded-full object-cover"
-      />
+      {avatarUrl ? (
+        <img
+          src={avatarUrl}
+          alt={label}
+          className="h-11 w-11 rounded-full object-cover"
+        />
+      ) : (
+        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-purple-100 font-semibold text-purple-700">
+          {getInitials(name)}
+        </div>
+      )}
 
       <div className={alignRight ? "sm:text-right" : ""}>
         <p className="font-semibold text-neutral-950">{label}</p>
