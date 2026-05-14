@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import AccentureLogo from "../../../../public/accenture_logo_purple1.png";
 import Image from "next/image";
 import "./navbar.css";
+import NotificationsPanel from "../NotificationsPanel/NotificationsPanel";
 
 const routes = [
   { name: "Inicio", href: "/home" },
@@ -69,6 +70,7 @@ export default function Navbar() {
             );
           })}
         </nav>
+
         <div className="ml-auto flex items-center gap-1.5">
           <label className="hidden sm:flex gap-2 bg-background-page self-center px-4 py-2 rounded-full text-xs text-on-background-2 cursor-pointer">
             <span className="material-symbols-outlined">chat_bubble</span>
@@ -76,9 +78,10 @@ export default function Navbar() {
               Pide al chatbot
             </button>
           </label>
-          <label className="bg-background-page self-center p-2 select-none rounded-full text-on-background-2 font-semibold material-symbols-outlined">
-            notifications
-          </label>
+
+          {/* 🔔 Notifications panel — replaces the static label */}
+          <NotificationsPanel />
+
           <Link href="/perfil" className="bg-background-page self-center select-none rounded-full text-on-background-2 font-semibold">
             <label className="bg-background-page self-center p-2 select-none rounded-full text-on-background-2 font-semibold material-symbols-outlined cursor-pointer">
               person
@@ -96,6 +99,7 @@ export default function Navbar() {
           </button>
         </div>
       </header>
+
       {open && (
         <div
           data-mobile-menu
