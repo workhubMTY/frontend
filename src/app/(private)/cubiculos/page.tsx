@@ -2,11 +2,11 @@
 
 import { useMemo, useState } from "react";
 import { reservableSpaces } from "@/app/features/cubiculos/data/reservableSpaces";
-import { FloorMapCard } from "@/app/features/cubiculos/components/Search/FloorMapCard";
-import { ReservationFilters } from "@/app/features/cubiculos/components/Search/ReservationFilters";
-import { ReservationSearchHeader } from "@/app/features/cubiculos/components/Search/ReservationSearchHeader";
-import { SelectedSpacePanel } from "@/app/features/cubiculos/components/Search/SelectedSpacePanel";
-import { SpacesResultsList } from "@/app/features/cubiculos/components/Search/SpacesResultsList";
+import { FloorMapCard } from "@/app/features/cubiculos/components/panels/FloorMapCard";
+import { ReservationFilters } from "@/app/features/cubiculos/components/others/ReservationFilters";
+import { ReservationSearchHeader } from "@/app/features/cubiculos/components/others/ReservationSearchHeader";
+import { SelectedSpacePanel } from "@/app/features/cubiculos/components/panels/SelectedSpacePanel";
+import { SpacesResultsList } from "@/app/features/cubiculos/components/panels/SpacesResultsList";
 
 export default function ReservableSpacesSearchPage() {
   const [search, setSearch] = useState("");
