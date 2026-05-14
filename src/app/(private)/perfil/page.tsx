@@ -14,7 +14,7 @@ import {
   getAchievementsByUserId,
   getTeamsByUserId,
   mockGetTeamMembers,
-  mockGetUsers,
+  mockGetSuggestions,
 } from "@/app/features/perfil/data/mockProfileApi";
 import { ProfileHeaderCard } from "@/app/features/perfil/components/cards/ProfileHeaderCard";
 import { ProgressSummaryCard } from "@/app/features/perfil/components/cards/ProgressSumaryCard";
@@ -46,9 +46,6 @@ export default function UserProfilePage() {
   const [initialOpenTeamId, setInitialOpenTeamId] = useState<string | null>(
     null,
   );
-  const handleGetUsers = useCallback(async () => {
-    return await mockGetUsers();
-  }, []);
   const [initialTeamDrawerMode, setInitialTeamDrawerMode] = useState<
     "list" | "create"
   >("list");
@@ -84,6 +81,10 @@ export default function UserProfilePage() {
     setIsFriendDrawerOpen(false);
     setIsTeamDrawerOpen(false);
   }
+
+  const handleSearchSuggestions = useCallback(async () => {
+    return await mockGetSuggestions();
+  }, []);
 
   function handleDisplayAllFriends() {
     setInitialFriendDrawerMode("list");
@@ -260,7 +261,7 @@ export default function UserProfilePage() {
         friends={friends}
         selectedFriendId={selectedFriendId}
         initialMode={initialFriendDrawerMode}
-        onGetUsers={handleGetUsers}
+        onSearchSuggestions={handleSearchSuggestions}
         onCompareFriend={handleCompareFriend}
         onClearComparison={handleClearComparison}
         onClose={() => setIsFriendDrawerOpen(false)}

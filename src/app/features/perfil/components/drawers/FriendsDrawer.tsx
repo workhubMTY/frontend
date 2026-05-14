@@ -12,11 +12,19 @@ import {
   Users,
   X,
 } from "lucide-react";
-import type { Friend, FriendSuggestion, User } from "../../types/profile";
+import type { Friend } from "../../types/profile";
 import { useMemo, useState, useEffect } from "react";
 import { UserMultiSelect } from "../utils/UserMultiSelect";
 import { Avatar } from "../utils/Avatar";
 import { EmptyUsersState } from "../utils/EmptyUsersState";
+
+type FriendSuggestion = {
+  id: string;
+  name: string;
+  email?: string;
+  avatarUrl?: string;
+  status?: string;
+};
 
 type SendFriendRequestsPayload = {
   userIds: string[];
@@ -28,8 +36,7 @@ type FriendsDrawerProps = {
   friends: Friend[];
   selectedFriendId?: string | null;
   initialMode?: DrawerMode;
-
-  onGetUsers: () => Promise<User[]>;
+  onSearchSuggestions: () => Promise<FriendSuggestion[]>;
   onClose: () => void;
   onCompareFriend: (id: string) => void;
   onClearComparison: () => void;
@@ -44,7 +51,7 @@ export function FriendsDrawer({
   friends,
   selectedFriendId,
   initialMode = "list",
-  onGetUsers,
+  onSearchSuggestions,
   onClose,
   onCompareFriend,
   onClearComparison,
@@ -88,7 +95,7 @@ export function FriendsDrawer({
           <InviteFriendsMode
             onBack={() => setDrawerMode("list")}
             onClose={handleClose}
-            onGetUsers={onGetUsers}
+            onSearchSuggestions={onSearchSuggestions}
             onSendFriendRequests={async (payload) => {
               await onSendFriendRequests?.(payload);
               setDrawerMode("list");
@@ -271,15 +278,16 @@ function FriendsListMode({
     </>
   );
 }
+
 type InviteFriendsModeProps = {
-  onGetUsers: () => Promise<User[]>;
+  onSearchSuggestions: () => Promise<FriendSuggestion[]>;
   onBack: () => void;
   onClose: () => void;
   onSendFriendRequests: (payload: SendFriendRequestsPayload) => Promise<void>;
 };
 
 function InviteFriendsMode({
-  onGetUsers,
+  onSearchSuggestions,
   onBack,
   onClose,
   onSendFriendRequests,
@@ -287,40 +295,52 @@ function InviteFriendsMode({
   const [users, setUsers] = useState<User[]>([]);
   const [selectedUsers, setSelectedUsers] = useState<User[]>([]);
   const [message, setMessage] = useState("");
-  const [isLoadingUsers, setIsLoadingUsers] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [suggestions, setSuggestions] = useState<FriendSuggestion[] | null>(
+    null,
+  );
 
   useEffect(() => {
     let isMounted = true;
 
-    async function loadUsers() {
+    async function loadSuggestions() {
       try {
-        setIsLoadingUsers(true);
-
-        const incomingUsers = await onGetUsers();
+        const incomingSuggestions = await onSearchSuggestions();
 
         if (isMounted) {
-          setUsers(incomingUsers);
+          setSuggestions(incomingSuggestions);
         }
       } catch (error) {
-        console.error("Error loading users:", error);
+        console.error("Error loading friend suggestions:", error);
 
         if (isMounted) {
-          setUsers([]);
-        }
-      } finally {
-        if (isMounted) {
-          setIsLoadingUsers(false);
+          setSuggestions([]);
         }
       }
     }
 
-    loadUsers();
+    loadSuggestions();
 
     return () => {
       isMounted = false;
     };
-  }, [onGetUsers]);
+  }, [onSearchSuggestions]);
+
+  const filteredSuggestions = useMemo(() => {
+    const normalizedSearch = searchTerm.trim().toLowerCase();
+    if (!suggestions) return [];
+
+    if (!normalizedSearch) return suggestions;
+
+    return suggestions.filter((person) => {
+      const name = person.name.toLowerCase();
+      const email = person.email?.toLowerCase() ?? "";
+
+      return (
+        name.includes(normalizedSearch) || email.includes(normalizedSearch)
+      );
+    });
+  }, [suggestions, searchTerm]);
 
   const canSend = selectedUsers.length > 0 && !isSubmitting;
 
@@ -362,7 +382,6 @@ function InviteFriendsMode({
             <h2 className="text-xl font-semibold tracking-tight text-neutral-950">
               Invitar a más amigos
             </h2>
-
             <p className="mt-1 text-sm text-neutral-500">
               Busca personas y envía solicitudes de amistad.
             </p>
@@ -382,20 +401,136 @@ function InviteFriendsMode({
       <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
         <div className="min-h-0 flex-1 overflow-y-auto px-8 py-6">
           <div className="space-y-6">
-            {isLoadingUsers ? (
-              <div className="py-10 text-center text-sm text-neutral-500">
-                Cargando usuarios...
+            <div>
+              <label
+                htmlFor="friend-search"
+                className="text-sm font-semibold text-neutral-950"
+              >
+                Buscar personas
+              </label>
+
+              <div className="relative mt-3">
+                <Search
+                  size={18}
+                  className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-neutral-500"
+                />
+
+                <input
+                  id="friend-search"
+                  value={searchTerm}
+                  onChange={(event) => setSearchTerm(event.target.value)}
+                  placeholder="Buscar por nombre o correo"
+                  className="h-11 w-full border border-neutral-200 bg-white pl-11 pr-4 text-sm outline-none transition placeholder:text-neutral-400 focus:border-purple-700 focus:ring-2 focus:ring-purple-100"
+                />
               </div>
-            ) : (
-              <UserMultiSelect
-                users={users}
-                selectedUsers={selectedUsers}
-                onSelectedUsersChange={setSelectedUsers}
-                placeholder="Buscar por nombre, correo o rol"
-                emptyTitle="Busca personas para invitar"
-                emptyDescription="Escribe un nombre, correo o rol para encontrar usuarios."
-              />
+            </div>
+
+            {selectedUsers.length > 0 && (
+              <div>
+                <p className="text-sm font-semibold text-neutral-950">
+                  Personas seleccionadas
+                </p>
+
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {selectedUsers.map((user) => (
+                    <span
+                      key={user.id}
+                      className="inline-flex h-8 items-center gap-2 bg-neutral-100 px-3 text-sm text-neutral-700"
+                    >
+                      {user.name}
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveUser(user.id)}
+                        className="text-neutral-500 transition hover:text-neutral-900"
+                        aria-label={`Quitar ${user.name}`}
+                      >
+                        <X size={14} />
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              </div>
             )}
+
+            <div>
+              <div className="mb-3 flex items-center justify-between">
+                <p className="text-sm font-semibold text-neutral-950">
+                  Resultados
+                </p>
+
+                <p className="text-xs text-neutral-500">
+                  {selectedUsers.length} seleccionados
+                </p>
+              </div>
+
+              <div className="border border-neutral-200">
+                {filteredSuggestions.length > 0 ? (
+                  <div className="max-h-[360px] overflow-y-auto divide-y divide-neutral-100">
+                    {filteredSuggestions.map((person) => {
+                      const isSelected = selectedUsers.some(
+                        (user) => user.id === person.id,
+                      );
+
+                      const isDisabled =
+                        person.status === "pending" ||
+                        person.status === "already-friend";
+
+                      return (
+                        <button
+                          key={person.id}
+                          type="button"
+                          disabled={isDisabled}
+                          onClick={() => handleToggleUser(person)}
+                          className={[
+                            "grid w-full grid-cols-[1fr_auto] items-center gap-4 px-4 py-4 text-left transition",
+                            isDisabled
+                              ? "cursor-not-allowed bg-neutral-50 opacity-70"
+                              : "hover:bg-neutral-50",
+                            isSelected ? "bg-purple-50" : "",
+                          ].join(" ")}
+                        >
+                          <div className="flex min-w-0 items-center gap-3">
+                            <Avatar
+                              name={person.name}
+                              avatarUrl={person.avatarUrl}
+                            />
+
+                            <div className="min-w-0">
+                              <p className="truncate text-sm font-semibold text-neutral-950">
+                                {person.name}
+                              </p>
+
+                              <p className="truncate text-xs text-neutral-500">
+                                {person.email}
+                              </p>
+                            </div>
+                          </div>
+
+                          <FriendRequestStatus
+                            isSelected={isSelected}
+                            status={person.status}
+                          />
+                        </button>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center px-5 py-10 text-center">
+                    <div className="mb-3 grid size-12 place-items-center bg-neutral-100 text-neutral-500">
+                      <Users size={22} />
+                    </div>
+
+                    <h3 className="text-sm font-semibold text-neutral-950">
+                      No hay resultados
+                    </h3>
+
+                    <p className="mt-1 max-w-sm text-sm text-neutral-500">
+                      Intenta buscar por nombre, correo o usuario.
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
 
             <div>
               <label
@@ -459,6 +594,7 @@ function InviteFriendsMode({
     </>
   );
 }
+
 function FriendRequestStatus({
   isSelected,
   status,
