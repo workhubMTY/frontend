@@ -113,48 +113,11 @@ export function FloorMapCard({
         <div className="absolute left-[18%] top-[38%] h-[5%] w-[72%] border-y border-slate-300 bg-white" />
         <div className="absolute left-[48%] top-[36%] h-[55%] w-[5%] border-x border-slate-300 bg-white" />
 
-        {/* espacios seleccionables */}
-        {spaces.map((space) => {
-          const isSelected = selectedSpaceId === space.id;
-
-          return (
-            <button
-              key={space.id}
-              type="button"
-              onClick={() => onSelectSpace(space.id)}
-              className={[
-                "absolute flex flex-col items-center justify-center rounded-md border text-center text-xs transition",
-                getMapSpaceClass(space.status, isSelected),
-              ].join(" ")}
-              style={{
-                left: space.map.x,
-                top: space.map.y,
-                width: space.map.w,
-                height: space.map.h,
-              }}
-            >
-              <Armchair className="mb-1 h-5 w-5" />
-              <span className="font-semibold">{space.code}</span>
-              <span>{space.name}</span>
-            </button>
-          );
-        })}
-
         {/* thumbnail */}
         <div className="absolute bottom-5 left-5 h-24 w-40 overflow-hidden rounded-lg border border-slate-200 bg-slate-100 shadow-sm">
           <div className="flex h-full items-end bg-gradient-to-br from-slate-100 to-slate-300 p-3">
             <div className="h-8 w-full rounded bg-white/70" />
           </div>
-        </div>
-
-        {/* floor control */}
-        <div className="absolute bottom-5 right-5 flex flex-col items-center gap-1 text-slate-700">
-          <ChevronUp className="h-5 w-5" />
-          <div className="grid h-10 w-12 place-items-center rounded-md border border-slate-400 bg-white text-lg font-semibold">
-            1
-          </div>
-          <ChevronDown className="h-5 w-5" />
-          <span className="text-xs text-slate-500">Piso</span>
         </div>
       </div>
     </section>

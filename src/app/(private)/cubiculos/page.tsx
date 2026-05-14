@@ -24,8 +24,7 @@ export default function ReservableSpacesSearchPage() {
     return reservableSpaces.filter((space) => {
       return (
         space.code.toLowerCase().includes(normalizedSearch) ||
-        space.name.toLowerCase().includes(normalizedSearch) ||
-        space.displayName.toLowerCase().includes(normalizedSearch)
+        space.name.toLowerCase().includes(normalizedSearch)
       );
     });
   }, [search]);

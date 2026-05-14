@@ -18,12 +18,6 @@ export const reservableSpaces: ReservableSpace[] = [
       { id: "t5", start: "15:00", end: "16:00", status: "occupied" },
       { id: "t6", start: "16:00", end: "18:00", status: "free" },
     ],
-    map: {
-      x: "54%",
-      y: "45%",
-      w: "18%",
-      h: "18%",
-    },
   },
   {
     id: "sj1",
@@ -35,12 +29,6 @@ export const reservableSpaces: ReservableSpace[] = [
     status: "occupied",
     statusLabel: "Ocupado",
     timeline: [],
-    map: {
-      x: "74%",
-      y: "45%",
-      w: "16%",
-      h: "18%",
-    },
   },
   {
     id: "sj3",
@@ -52,12 +40,6 @@ export const reservableSpaces: ReservableSpace[] = [
     status: "soon",
     statusLabel: "Por comenzar",
     timeline: [],
-    map: {
-      x: "54%",
-      y: "68%",
-      w: "18%",
-      h: "15%",
-    },
   },
   {
     id: "cw1",
@@ -69,12 +51,6 @@ export const reservableSpaces: ReservableSpace[] = [
     status: "available",
     statusLabel: "Disponible",
     timeline: [],
-    map: {
-      x: "36%",
-      y: "72%",
-      w: "28%",
-      h: "15%",
-    },
   },
   {
     id: "of1",
@@ -86,11 +62,5 @@ export const reservableSpaces: ReservableSpace[] = [
     status: "available",
     statusLabel: "Disponible",
     timeline: [],
-    map: {
-      x: "20%",
-      y: "20%",
-      w: "16%",
-      h: "15%",
-    },
   },
 ];

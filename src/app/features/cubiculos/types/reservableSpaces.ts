@@ -1,5 +1,8 @@
 export type SpaceStatus = "available" | "occupied" | "soon" | "partial";
 
+// Display Name es calculable a partir del codigo y el nombre concatenados
+// status label igual.
+// timeline no necesita search
 export type ReservableSpace = {
   id: string;
   code: string;
@@ -10,12 +13,12 @@ export type ReservableSpace = {
   status: SpaceStatus;
   statusLabel: string;
   timeline: TimelineBlock[];
-  map: {
-    x: string;
-    y: string;
-    w: string;
-    h: string;
-  };
+  // map: {
+  //   x: string;
+  //   y: string;
+  //   w: string;
+  //   h: string;
+  // };
 };
 
 export type TimelineBlock = {
