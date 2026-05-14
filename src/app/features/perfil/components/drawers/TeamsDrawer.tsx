@@ -38,6 +38,7 @@ type TeamsDrawerProps = {
   open: boolean;
   teams: TeamSummary[];
   initialOpenTeamId?: string | null;
+  initialTeamDrawerMode?: "list" | "create";
   inviteCandidates?: User[];
   onClose: () => void;
   onGetTeamMembers: (teamId: string) => Promise<User[]>;
@@ -89,10 +90,13 @@ export function TeamsDrawer({
   onClose,
   initialOpenTeamId,
   inviteCandidates = [],
+  initialTeamDrawerMode = "list",
   onCreateTeam,
   onGetTeamMembers,
 }: TeamsDrawerProps) {
-  const [drawerMode, setDrawerMode] = useState<DrawerMode>("list");
+  const [drawerMode, setDrawerMode] = useState<DrawerMode>(
+    initialTeamDrawerMode,
+  );
   const [search, setSearch] = useState("");
   const [openTeamId, setOpenTeamId] = useState<string | null>(null);
 
@@ -113,7 +117,7 @@ export function TeamsDrawer({
   useEffect(() => {
     if (!open) return;
 
-    setDrawerMode("list");
+    setDrawerMode(initialTeamDrawerMode);
 
     if (!initialOpenTeamId) {
       setOpenTeamId(null);
@@ -122,8 +126,7 @@ export function TeamsDrawer({
 
     setOpenTeamId(initialOpenTeamId);
     loadTeamMembersIfNeeded(initialOpenTeamId);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, initialOpenTeamId]);
+  }, [open, initialOpenTeamId, initialTeamDrawerMode]);
 
   async function loadTeamMembersIfNeeded(teamId: string) {
     let shouldFetch = false;

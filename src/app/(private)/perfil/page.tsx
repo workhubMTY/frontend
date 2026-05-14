@@ -46,6 +46,9 @@ export default function UserProfilePage() {
   const [initialOpenTeamId, setInitialOpenTeamId] = useState<string | null>(
     null,
   );
+  const [initialTeamDrawerMode, setInitialTeamDrawerMode] = useState<
+    "list" | "create"
+  >("list");
   const [initialFriendDrawerMode, setInitialFriendDrawerMode] = useState<
     "list" | "invite"
   >("list");
@@ -100,6 +103,13 @@ export default function UserProfilePage() {
     setIsAchievementDrawerOpen(true);
     setIsFriendDrawerOpen(false);
     setIsTeamDrawerOpen(false);
+  }
+
+  function handleCreateTeamShortcut() {
+    setInitialTeamDrawerMode("create");
+    setIsTeamDrawerOpen(true);
+    setIsAchievementDrawerOpen(false);
+    setIsFriendDrawerOpen(false);
   }
 
   function handleSelectFriendInsideAchievementDrawer(friendId: string | null) {
@@ -231,6 +241,7 @@ export default function UserProfilePage() {
               <TeamsCard
                 teams={teams}
                 onDisplayAll={handleDisplayAllTeams}
+                onCreateTeamShortcut={handleCreateTeamShortcut}
                 onDisplayMembers={handleDisplayTeamMembers}
               />
             </div>
@@ -245,14 +256,6 @@ export default function UserProfilePage() {
         </div>
       </main>
 
-      {/* <FriendsDrawer
-        isOpen={isFriendDrawerOpen}
-        friends={friends}
-        selectedFriendId={selectedFriendId}
-        onCompareFriend={handleCompareFriend}
-        onClearComparison={handleClearComparison}
-        onClose={() => setIsFriendDrawerOpen(false)}
-      /> */}
       <FriendsDrawer
         isOpen={isFriendDrawerOpen}
         friends={friends}
@@ -273,6 +276,7 @@ export default function UserProfilePage() {
         teams={teams}
         onClose={() => setIsTeamDrawerOpen(false)}
         initialOpenTeamId={initialOpenTeamId}
+        initialTeamDrawerMode={initialTeamDrawerMode}
         onGetTeamMembers={mockGetTeamMembers}
         inviteCandidates={friends}
         onCreateTeam={async (payload) => {

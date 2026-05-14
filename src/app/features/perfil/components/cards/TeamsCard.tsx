@@ -5,12 +5,14 @@ import { getInitials } from "../../lib/formatting";
 type TeamsCardProps = {
   teams: Team[];
   onDisplayAll: () => void;
+  onCreateTeamShortcut: () => void;
   onDisplayMembers: (teamId: string) => void;
 };
 
 export function TeamsCard({
   teams,
   onDisplayAll,
+  onCreateTeamShortcut,
   onDisplayMembers,
 }: TeamsCardProps) {
   return (
@@ -68,11 +70,11 @@ export function TeamsCard({
       <footer className="mt-auto border-t border-neutral-100 px-7 py-5">
         <button
           type="button"
-          onClick={() => alert("Crear o unirse a un equipo")}
+          onClick={onCreateTeamShortcut}
           className="inline-flex items-center gap-3 text-sm font-medium text-purple-700 transition hover:text-purple-900"
         >
           <UsersRound size={20} />
-          Crear o unirse a un equipo
+          Crear equipo
         </button>
       </footer>
     </section>
