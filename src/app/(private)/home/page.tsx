@@ -2,150 +2,6 @@
 
 import { useState, useMemo } from "react";
 import {
-<<<<<<< Updated upstream
-  Search,
-  UserPlus,
-  Clock,
-  MapPin,
-  ChevronLeft,
-  ChevronRight,
-  Star,
-  Calendar,
-  CalendarDays,
-  Users,
-  MailOpen,
-} from "lucide-react";
-import AgendaRapida, {
-  ExternalEvent,
-} from "@/app/components/AgendaRapida/AgendaRapida";
-import PageTransition from "@/app/components/PageTransition/PageTransition";
-
-interface Invitacion {
-  nombre: string;
-  sala: string;
-  hora: string;
-  tipo: string;
-  day: number;
-  start: number;
-  end: number;
-}
-interface DiaInvitaciones {
-  dia: string;
-  dayIndex: number;
-  items: Invitacion[];
-}
-interface Reserva {
-  titulo: string;
-  hora: string;
-  lugar: string;
-  estado: "Confirmada" | "Pendiente";
-  day: number;
-  start: number;
-  end: number;
-}
-interface Persona {
-  initials: string;
-  name: string;
-  role: string;
-  reservas: Reserva[];
-}
-interface EventoGeneral {
-  titulo: string;
-  descripcion: string;
-  tipo: "Festivo" | "Corporativo" | "Social";
-  icono: string;
-  day: number;
-  start: number;
-  end: number;
-}
-type MobileTab = "agenda" | "red" | "invitaciones";
-
-const EVENTOS_GENERALES: EventoGeneral[] = [
-  {
-    titulo: "Día del Trabajo",
-    descripcion: "Día festivo nacional — oficinas cerradas",
-    tipo: "Festivo",
-    icono: "🎉",
-    day: 3,
-    start: 0,
-    end: 24,
-  },
-  {
-    titulo: "All-Hands Accenture MX",
-    descripcion: "Sesión global transmitida en vivo",
-    tipo: "Corporativo",
-    icono: "📡",
-    day: 0,
-    start: 10,
-    end: 11.5,
-  },
-  {
-    titulo: "Happy Hour Workhub",
-    descripcion: "Terraza · Todos bienvenidos",
-    tipo: "Social",
-    icono: "🍹",
-    day: 4,
-    start: 17,
-    end: 19,
-  },
-];
-
-const INVITACIONES: DiaInvitaciones[] = [
-  {
-    dia: "Lunes",
-    dayIndex: 0,
-    items: [
-      {
-        nombre: "Junta de seguimiento",
-        sala: "ISJ03 · Sierra Madre",
-        hora: "7:00–13:00",
-        tipo: "Reunión",
-        day: 0,
-        start: 7,
-        end: 13,
-      },
-      {
-        nombre: "Refinamiento de req.",
-        sala: "ABC02 · Sala 2",
-        hora: "8:00–17:00",
-        tipo: "Planning",
-        day: 0,
-        start: 8,
-        end: 17,
-      },
-    ],
-  },
-  {
-    dia: "Martes",
-    dayIndex: 1,
-    items: [
-      {
-        nombre: "Junta con Stakeholders",
-        sala: "DS340 · Sala 4",
-        hora: "7:00–13:00",
-        tipo: "Reunión",
-        day: 1,
-        start: 7,
-        end: 13,
-      },
-    ],
-  },
-  {
-    dia: "Miércoles",
-    dayIndex: 2,
-    items: [
-      {
-        nombre: "Junta de seguimiento",
-        sala: "ISJ03 · Sierra Madre",
-        hora: "7:00–13:00",
-        tipo: "Reunión",
-        day: 2,
-        start: 7,
-        end: 13,
-      },
-    ],
-  },
-=======
   Search, UserPlus, Clock, MapPin,
   ChevronLeft, ChevronRight, Star, Calendar,
   CalendarDays, Users, MailOpen,
@@ -177,7 +33,6 @@ const INVITACIONES: DiaInvitaciones[] = [
   { dia: "Miércoles", dayIndex: 2, items: [
     { nombre: "Junta de seguimiento", sala: "ISJ03 · Sierra Madre", hora: "7:00–13:00", tipo: "Reunión", day: 2, start: 7, end: 13 },
   ]},
->>>>>>> Stashed changes
 ];
 
 const PERSONAS: Persona[] = [
@@ -186,39 +41,9 @@ const PERSONAS: Persona[] = [
     name: "Cristina González",
     role: "Senior Developer",
     reservas: [
-<<<<<<< Updated upstream
-      {
-        titulo: "Sprint Planning",
-        hora: "9:00–11:00",
-        lugar: "Sala Magna",
-        estado: "Confirmada",
-        day: 0,
-        start: 9,
-        end: 11,
-      },
-      {
-        titulo: "Design Review",
-        hora: "11:00–12:30",
-        lugar: "ISJ03",
-        estado: "Confirmada",
-        day: 0,
-        start: 11,
-        end: 12.5,
-      },
-      {
-        titulo: "Retrospectiva",
-        hora: "11:00–13:00",
-        lugar: "Sala 2",
-        estado: "Pendiente",
-        day: 2,
-        start: 11,
-        end: 13,
-      },
-=======
       { titulo: "Sprint Planning", hora: "9:00–11:00", lugar: "Sala Magna", estado: "Confirmada", day: 0, start: 9, end: 11 },
       { titulo: "Design Review", hora: "11:00–12:30", lugar: "ISJ03", estado: "Confirmada", day: 0, start: 11, end: 12.5 },
       { titulo: "Retrospectiva", hora: "11:00–13:00", lugar: "Sala 2", estado: "Pendiente", day: 2, start: 11, end: 13 },
->>>>>>> Stashed changes
     ],
   },
   {
@@ -226,29 +51,8 @@ const PERSONAS: Persona[] = [
     name: "María Jesús",
     role: "Tester",
     reservas: [
-<<<<<<< Updated upstream
-      {
-        titulo: "Standup",
-        hora: "8:00–9:00",
-        lugar: "Sala Virtual",
-        estado: "Confirmada",
-        day: 1,
-        start: 8,
-        end: 9,
-      },
-      {
-        titulo: "Revisión QA",
-        hora: "13:00–14:00",
-        lugar: "ISJ04",
-        estado: "Confirmada",
-        day: 1,
-        start: 13,
-        end: 14,
-      },
-=======
       { titulo: "Standup", hora: "8:00–9:00", lugar: "Sala Virtual", estado: "Confirmada", day: 1, start: 8, end: 9 },
       { titulo: "Revisión QA", hora: "13:00–14:00", lugar: "ISJ04", estado: "Confirmada", day: 1, start: 13, end: 14 },
->>>>>>> Stashed changes
     ],
   },
   {
@@ -256,39 +60,9 @@ const PERSONAS: Persona[] = [
     name: "Mia Clements",
     role: "Junior Developer",
     reservas: [
-<<<<<<< Updated upstream
-      {
-        titulo: "Standup",
-        hora: "8:00–9:00",
-        lugar: "Sala Virtual",
-        estado: "Confirmada",
-        day: 0,
-        start: 8,
-        end: 9,
-      },
-      {
-        titulo: "Workshop UX",
-        hora: "10:00–12:00",
-        lugar: "Sala UX",
-        estado: "Confirmada",
-        day: 2,
-        start: 10,
-        end: 12,
-      },
-      {
-        titulo: "1:1 con manager",
-        hora: "14:00–15:00",
-        lugar: "Oficina Dir.",
-        estado: "Pendiente",
-        day: 3,
-        start: 14,
-        end: 15,
-      },
-=======
       { titulo: "Standup", hora: "8:00–9:00", lugar: "Sala Virtual", estado: "Confirmada", day: 0, start: 8, end: 9 },
       { titulo: "Workshop UX", hora: "10:00–12:00", lugar: "Sala UX", estado: "Confirmada", day: 2, start: 10, end: 12 },
       { titulo: "1:1 con manager", hora: "14:00–15:00", lugar: "Oficina Dir.", estado: "Pendiente", day: 3, start: 14, end: 15 },
->>>>>>> Stashed changes
     ],
   },
 ];
@@ -299,14 +73,7 @@ const PERSON_COLORS = [
   { bg: "#D6F5E6", text: "#0F6E56" },
 ];
 
-<<<<<<< Updated upstream
-const TIPO_EVENTO_COLORS: Record<
-  EventoGeneral["tipo"],
-  { bg: string; text: string; border: string }
-> = {
-=======
 const TIPO_EVENTO_COLORS: Record<EventoGeneral["tipo"], { bg: string; text: string; border: string }> = {
->>>>>>> Stashed changes
   Festivo: { bg: "#FEF9C3", text: "#713F12", border: "#EAB308" },
   Corporativo: { bg: "#EDE9FE", text: "#4C1D95", border: "#7C3AED" },
   Social: { bg: "#D6F5E6", text: "#065F46", border: "#10B981" },
@@ -320,17 +87,12 @@ function EventoGeneralDetail({
   dotActive,
   onDot,
 }: {
-<<<<<<< Updated upstream
   evento: EventoGeneral;
   onPrev: () => void;
   onNext: () => void;
   dotCount: number;
   dotActive: number;
   onDot: (i: number) => void;
-=======
-  evento: EventoGeneral; onPrev: () => void; onNext: () => void;
-  dotCount: number; dotActive: number; onDot: (i: number) => void;
->>>>>>> Stashed changes
 }) {
   const c = TIPO_EVENTO_COLORS[evento.tipo];
   return (
@@ -340,7 +102,6 @@ function EventoGeneralDetail({
           Eventos & Festivos
         </h3>
         <div className="flex gap-1.5">
-<<<<<<< Updated upstream
           <button
             onClick={onPrev}
             className="flex h-7 w-7 items-center justify-center rounded-md border border-gray-200 text-gray-400 hover:border-violet-500 hover:text-violet-500 active:bg-gray-100 transition-colors cursor-pointer bg-white"
@@ -351,14 +112,6 @@ function EventoGeneralDetail({
             onClick={onNext}
             className="flex h-7 w-7 items-center justify-center rounded-md border border-gray-200 text-gray-400 hover:border-violet-500 hover:text-violet-500 active:bg-gray-100 transition-colors cursor-pointer bg-white"
           >
-=======
-          <button onClick={onPrev}
-            className="flex h-7 w-7 items-center justify-center rounded-md border border-gray-200 text-gray-400 hover:border-violet-500 hover:text-violet-500 active:bg-gray-100 transition-colors cursor-pointer bg-white">
-            <ChevronLeft size={13} />
-          </button>
-          <button onClick={onNext}
-            className="flex h-7 w-7 items-center justify-center rounded-md border border-gray-200 text-gray-400 hover:border-violet-500 hover:text-violet-500 active:bg-gray-100 transition-colors cursor-pointer bg-white">
->>>>>>> Stashed changes
             <ChevronRight size={13} />
           </button>
         </div>
@@ -372,7 +125,6 @@ function EventoGeneralDetail({
         </div>
         <div className="flex flex-1 flex-col gap-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-<<<<<<< Updated upstream
             <p className="text-[13px] font-semibold text-gray-900 leading-tight">
               {evento.titulo}
             </p>
@@ -382,11 +134,6 @@ function EventoGeneralDetail({
             >
               {evento.tipo}
             </span>
-=======
-            <p className="text-[13px] font-semibold text-gray-900 leading-tight">{evento.titulo}</p>
-            <span className="rounded-full px-2 py-0.5 text-[10px] font-medium shrink-0"
-              style={{ background: c.bg, color: c.text }}>{evento.tipo}</span>
->>>>>>> Stashed changes
           </div>
           <p className="text-[11px] text-gray-400 leading-snug">
             {evento.descripcion}
@@ -402,15 +149,11 @@ function EventoGeneralDetail({
             key={i}
             onClick={() => onDot(i)}
             className="h-1.5 rounded-full border-none cursor-pointer transition-all"
-<<<<<<< Updated upstream
             style={{
               width: i === dotActive ? "16px" : "6px",
               background: i === dotActive ? "#7C3AED" : "#D1D5DB",
             }}
           />
-=======
-            style={{ width: i === dotActive ? "16px" : "6px", background: i === dotActive ? "#7C3AED" : "#D1D5DB" }} />
->>>>>>> Stashed changes
         ))}
       </div>
     </div>
@@ -580,7 +323,6 @@ export default function Home() {
     const evts: ExternalEvent[] = [];
 
     if (selectedPerson !== null) {
-<<<<<<< Updated upstream
       PERSONAS[selectedPerson].reservas.forEach((r) =>
         evts.push({
           day: r.day,
@@ -590,10 +332,6 @@ export default function Home() {
           sublabel: r.lugar,
           kind: "friend",
         }),
-=======
-      PERSONAS[selectedPerson].reservas.forEach(r =>
-        evts.push({ day: r.day, start: r.start, end: r.end, label: r.titulo, sublabel: r.lugar, kind: "friend" })
->>>>>>> Stashed changes
       );
     }
 
@@ -601,7 +339,6 @@ export default function Home() {
       INVITACIONES.forEach((sec) =>
         sec.items.forEach((item, ii) => {
           if (selInv === `inv_${sec.dayIndex}_${ii}`)
-<<<<<<< Updated upstream
             evts.push({
               day: item.day,
               start: item.start,
@@ -623,16 +360,6 @@ export default function Home() {
           label: eg.titulo,
           kind: "holiday",
         });
-=======
-            evts.push({ day: item.day, start: item.start, end: item.end, label: item.nombre, sublabel: item.sala, kind: "invitation" });
-        })
-      );
-    }
-
-    EVENTOS_GENERALES.forEach(eg => {
-      if (eg.tipo === "Festivo")
-        evts.push({ day: eg.day, start: 6, end: 18, label: eg.titulo, kind: "holiday" });
->>>>>>> Stashed changes
     });
 
     return evts;
@@ -735,14 +462,10 @@ export default function Home() {
           </h1>
           <div className="desktop-grid hidden sm:flex flex-1 min-h-0 flex-col">
             <div className="col-left flex flex-col rounded-xl bg-white shadow-sm border border-gray-100 overflow-hidden p-4 min-h-0">
-<<<<<<< Updated upstream
               <PanelRed
                 selectedPerson={selectedPerson}
                 onPersonClick={handlePersonClick}
               />
-=======
-              <PanelRed selectedPerson={selectedPerson} onPersonClick={handlePersonClick} />
->>>>>>> Stashed changes
             </div>
             <div className="col-center flex flex-col min-h-0 gap-3">
               <div className="flex-1 min-h-0 overflow-hidden rounded-xl shadow-sm border border-gray-100 bg-white">
