@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   CalendarDays,
   ChevronDown,
@@ -8,6 +8,17 @@ import {
   Search,
   UsersRound,
 } from "lucide-react";
+import { MonthCalendar } from "@/app/features/reservaciones/components/Calendar/MonthCalendar";
+import {
+  createCalendarCells,
+  getFirstAvailableDateId,
+} from "@/app/features/reservaciones/lib/dates";
+import { uniqueSortedIds } from "@/app/features/reservaciones/lib/formatting";
+import type {
+  CalendarSelectionAction,
+  SelectionMode,
+} from "@/app/features/reservaciones/types/reservaciones";
+import { cn } from "../../lib/cn";
 
 type ReservationFiltersProps = {
   search: string;
@@ -168,6 +179,14 @@ function getCapacityButtonLabel(minCapacity: string, maxCapacity: string) {
 
   return "Capacidad";
 }
+
+function formatDateLabel(date: Date) {
+  return date.toLocaleDateString("es-MX", {
+    day: "numeric",
+    month: "short",
+  });
+}
+
 export function ReservationFilters({
   search,
   onSearchChange,
@@ -199,10 +218,74 @@ export function ReservationFilters({
   const [maxCapacityError, setMaxCapacityError] = useState(false);
 
   const capacityFilterRef = useRef<HTMLDivElement | null>(null);
+  const [showPeriodFilter, setShowPeriodFilter] = useState(false);
 
+  const periodCalendarCells = useMemo(() => createCalendarCells(), []);
+
+  const [periodSelectionMode, setPeriodSelectionMode] =
+    useState<SelectionMode>("multiple");
+
+  const [appliedPeriodDateIds, setAppliedPeriodDateIds] = useState<string[]>(
+    [],
+  );
+  const [draftPeriodDateIds, setDraftPeriodDateIds] = useState<string[]>([]);
+
+  const [periodActiveDayId, setPeriodActiveDayId] = useState(
+    getFirstAvailableDateId(periodCalendarCells),
+  );
+  const [hasAppliedPeriodSelection, setHasAppliedPeriodSelection] =
+    useState(false);
+
+  const periodFilterRef = useRef<HTMLDivElement | null>(null);
+
+  const hasActivePeriodFilter = appliedPeriodDateIds.length > 0;
+  function getPeriodButtonLabel(dateIds: string[]) {
+    if (dateIds.length === 0) return "Periodo";
+
+    if (dateIds.length === 1) {
+      const cell = periodCalendarCells.find((calendarCell) =>
+        dateIds.includes(calendarCell.id),
+      );
+
+      return (
+        cell?.date.toLocaleDateString("es-MX", {
+          day: "numeric",
+          month: "short",
+        }) ?? "1 día"
+      );
+    }
+
+    return `${dateIds.length} días seleccionados`;
+  }
   const hasActiveCapacityFilter = Boolean(
     appliedMinCapacity || appliedMaxCapacity,
   );
+
+  function isWeekendDateId(dateId: string) {
+    return (
+      periodCalendarCells.find((cell) => cell.id === dateId)?.isWeekend ?? false
+    );
+  }
+
+  function mergeOrRemoveRange(
+    previousDateIds: string[],
+    rangeDateIds: string[],
+  ) {
+    const previousDateIdsSet = new Set(previousDateIds);
+
+    const fullRangeAlreadySelected = rangeDateIds.every((dateId) =>
+      previousDateIdsSet.has(dateId),
+    );
+
+    if (fullRangeAlreadySelected) {
+      return uniqueSortedIds(
+        previousDateIds.filter((dateId) => !rangeDateIds.includes(dateId)),
+      );
+    }
+
+    return uniqueSortedIds([...previousDateIds, ...rangeDateIds]);
+  }
+
   function openCapacityFilter() {
     setDraftMinCapacity(appliedMinCapacity);
     setDraftMaxCapacity(appliedMaxCapacity);
@@ -292,6 +375,13 @@ export function ReservationFilters({
         setMinCapacityError(false);
         setMaxCapacityError(false);
       }
+      if (
+        periodFilterRef.current &&
+        !periodFilterRef.current.contains(event.target as Node)
+      ) {
+        setShowPeriodFilter(false);
+        setDraftPeriodDateIds(appliedPeriodDateIds);
+      }
     }
 
     function handleEscape(event: KeyboardEvent) {
@@ -307,6 +397,9 @@ export function ReservationFilters({
         setDraftMaxCapacity(appliedMaxCapacity);
         setMinCapacityError(false);
         setMaxCapacityError(false);
+
+        setShowPeriodFilter(false);
+        setDraftPeriodDateIds(appliedPeriodDateIds);
       }
     }
 
@@ -395,6 +488,118 @@ export function ReservationFilters({
 
     if (normalized.isValid) {
       setDraftEndTime(normalized.value);
+    }
+  }
+  function openPeriodFilter() {
+    setDraftPeriodDateIds(appliedPeriodDateIds);
+    setShowPeriodFilter((current) => !current);
+  }
+  function handleCancelPeriodFilter() {
+    setAppliedPeriodDateIds([]);
+    setDraftPeriodDateIds([]);
+    setHasAppliedPeriodSelection(false);
+    setShowPeriodFilter(false);
+  }
+  function handleApplyPeriodFilter() {
+    setAppliedPeriodDateIds(draftPeriodDateIds);
+    setHasAppliedPeriodSelection(true);
+    setShowPeriodFilter(false);
+  }
+  function handlePeriodModeChange(mode: SelectionMode) {
+    setPeriodSelectionMode(mode);
+
+    if (mode === "single") {
+      const nextDayId = !isWeekendDateId(periodActiveDayId)
+        ? periodActiveDayId
+        : (draftPeriodDateIds.find((dateId) => !isWeekendDateId(dateId)) ??
+          getFirstAvailableDateId(periodCalendarCells));
+
+      setDraftPeriodDateIds([nextDayId]);
+      setPeriodActiveDayId(nextDayId);
+    }
+  }
+  function handlePeriodCalendarSelect(action: CalendarSelectionAction) {
+    if (action.type === "day") {
+      const dayId = action.dayId;
+
+      if (isWeekendDateId(dayId)) return;
+
+      if (periodSelectionMode === "single") {
+        setDraftPeriodDateIds([dayId]);
+        setPeriodActiveDayId(dayId);
+        return;
+      }
+
+      if (periodSelectionMode === "repeat") {
+        const selectedCell = periodCalendarCells.find(
+          (cell) => cell.id === dayId,
+        );
+
+        if (!selectedCell) return;
+
+        const repeatedDateIds = periodCalendarCells
+          .filter(
+            (cell) =>
+              !cell.isWeekend &&
+              cell.date >= selectedCell.date &&
+              cell.date.getDay() === selectedCell.date.getDay(),
+          )
+          .map((cell) => cell.id);
+
+        setDraftPeriodDateIds(uniqueSortedIds(repeatedDateIds));
+        setPeriodActiveDayId(dayId);
+        return;
+      }
+
+      if (periodSelectionMode === "multiple") {
+        if (hasAppliedPeriodSelection) {
+          setDraftPeriodDateIds([dayId]);
+          setPeriodActiveDayId(dayId);
+          setHasAppliedPeriodSelection(false);
+          return;
+        }
+        setDraftPeriodDateIds((previousDateIds) => {
+          const alreadySelected = previousDateIds.includes(dayId);
+          const alreadyActive = periodActiveDayId === dayId;
+
+          if (!alreadySelected) {
+            return uniqueSortedIds([...previousDateIds, dayId]);
+          }
+
+          if (alreadySelected && !alreadyActive) {
+            return previousDateIds;
+          }
+
+          return uniqueSortedIds(
+            previousDateIds.filter((selectedDayId) => selectedDayId !== dayId),
+          );
+        });
+
+        setPeriodActiveDayId(dayId);
+        return;
+      }
+    }
+
+    if (action.type === "range") {
+      if (periodSelectionMode !== "multiple") return;
+
+      const draggedDateIds = uniqueSortedIds(
+        action.dateIds.filter((dateId) => !isWeekendDateId(dateId)),
+      );
+
+      if (draggedDateIds.length === 0) return;
+
+      setDraftPeriodDateIds((previousDateIds) => {
+        if (hasAppliedPeriodSelection) {
+          return draggedDateIds;
+        }
+
+        return mergeOrRemoveRange(previousDateIds, draggedDateIds);
+      });
+
+      setHasAppliedPeriodSelection(false);
+
+      setPeriodActiveDayId(draggedDateIds[0] ?? periodActiveDayId);
     }
   }
 
@@ -645,18 +850,114 @@ export function ReservationFilters({
             </div>
           )}
         </div>
+        <div ref={periodFilterRef} className="relative">
+          <button
+            type="button"
+            onClick={openPeriodFilter}
+            className={`flex h-12 w-full items-center justify-between border bg-white px-4 text-sm font-medium transition ${
+              showPeriodFilter || hasActivePeriodFilter
+                ? "border-primary-2 text-primary-2 ring-2 ring-purple-100"
+                : "border-neutral-300 text-neutral-700 hover:border-primary-2 hover:text-primary-2"
+            }`}
+          >
+            <span className="flex min-w-0 items-center gap-3">
+              <CalendarDays className="h-5 w-5 shrink-0 text-neutral-700" />
 
-        <button
-          type="button"
-          className="flex h-12 items-center justify-between border border-neutral-300 px-4 text-sm font-semibold text-neutral-700 transition hover:border-primary-2 hover:text-primary-2"
-        >
-          <span className="flex items-center gap-3">
-            <CalendarDays className="h-5 w-5" />
-            Periodo
-          </span>
+              <span className="truncate">
+                {getPeriodButtonLabel(appliedPeriodDateIds)}
+              </span>
+            </span>
 
-          <ChevronDown className="h-4 w-4" />
-        </button>
+            <ChevronDown
+              className={`h-4 w-4 shrink-0 text-neutral-700 transition ${
+                showPeriodFilter ? "rotate-180" : ""
+              }`}
+            />
+          </button>
+
+          {showPeriodFilter && (
+            <div className="absolute right-0 top-[calc(100%+10px)] z-40 w-[420px] border border-neutral-200 bg-white p-4 shadow-lg">
+              <div className="mb-4">
+                <p className="text-sm font-semibold text-neutral-900">
+                  Selecciona periodo
+                </p>
+
+                <p className="mt-1 text-xs text-neutral-500">
+                  Elige un día, un rango de días o una repetición.
+                </p>
+              </div>
+
+              <div className="mb-5 grid grid-cols-3 border border-neutral-200 bg-neutral-50 p-1">
+                <button
+                  type="button"
+                  onClick={() => handlePeriodModeChange("single")}
+                  className={cn(
+                    "h-10 text-sm font-medium transition",
+                    periodSelectionMode === "single"
+                      ? "bg-primary-2 text-on-primary shadow-sm"
+                      : "text-neutral-700 hover:bg-white",
+                  )}
+                >
+                  Un día
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => handlePeriodModeChange("multiple")}
+                  className={cn(
+                    "h-10 text-sm font-medium transition",
+                    periodSelectionMode === "multiple"
+                      ? "bg-primary-2 text-on-primary shadow-sm"
+                      : "text-neutral-700 hover:bg-white",
+                  )}
+                >
+                  Varios días
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => handlePeriodModeChange("repeat")}
+                  className={cn(
+                    "h-10 text-sm font-medium transition",
+                    periodSelectionMode === "repeat"
+                      ? "bg-primary-2 text-on-primary shadow-sm"
+                      : "text-neutral-700 hover:bg-white",
+                  )}
+                >
+                  Repetir
+                </button>
+              </div>
+              <MonthCalendar
+                activeDayId={periodActiveDayId}
+                selectionMode={periodSelectionMode}
+                selectedDateIds={draftPeriodDateIds}
+                modifiedDateIds={[]}
+                conflictDateIds={[]}
+                calendarCells={periodCalendarCells}
+                // variant="compact"
+                onSelect={handlePeriodCalendarSelect}
+              />
+
+              <div className="mt-5 flex items-center justify-between border-t border-neutral-100 pt-4">
+                <button
+                  type="button"
+                  onClick={handleCancelPeriodFilter}
+                  className="h-10 border border-neutral-300 px-4 text-sm font-medium text-neutral-700 transition hover:border-neutral-400 hover:bg-neutral-50"
+                >
+                  Cancelar
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleApplyPeriodFilter}
+                  className="h-10 border border-primary-2 bg-primary-2 px-4 text-sm font-medium text-on-primary transition hover:opacity-90"
+                >
+                  Aplicar
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
 
         <button
           type="button"
