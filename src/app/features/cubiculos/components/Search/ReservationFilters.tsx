@@ -128,6 +128,46 @@ function getTimeButtonLabel(startTime: string, endTime: string) {
   return "Horario";
 }
 
+function normalizeCapacityInput(value: string) {
+  const trimmedValue = value.trim();
+
+  if (!trimmedValue) {
+    return {
+      isValid: true,
+      value: "",
+    };
+  }
+
+  const numberValue = Number(trimmedValue);
+
+  if (!Number.isInteger(numberValue) || numberValue < 1) {
+    return {
+      isValid: false,
+      value: trimmedValue,
+    };
+  }
+
+  return {
+    isValid: true,
+    value: String(numberValue),
+  };
+}
+
+function getCapacityButtonLabel(minCapacity: string, maxCapacity: string) {
+  if (minCapacity && maxCapacity) {
+    return `${minCapacity} - ${maxCapacity} personas`;
+  }
+
+  if (minCapacity) {
+    return `Desde ${minCapacity} personas`;
+  }
+
+  if (maxCapacity) {
+    return `Hasta ${maxCapacity} personas`;
+  }
+
+  return "Capacidad";
+}
 export function ReservationFilters({
   search,
   onSearchChange,
@@ -147,6 +187,89 @@ export function ReservationFilters({
 
   const hasActiveHourFilter = Boolean(appliedStartTime || appliedEndTime);
 
+  const [showCapacityFilter, setShowCapacityFilter] = useState(false);
+
+  const [appliedMinCapacity, setAppliedMinCapacity] = useState("");
+  const [appliedMaxCapacity, setAppliedMaxCapacity] = useState("");
+
+  const [draftMinCapacity, setDraftMinCapacity] = useState("");
+  const [draftMaxCapacity, setDraftMaxCapacity] = useState("");
+
+  const [minCapacityError, setMinCapacityError] = useState(false);
+  const [maxCapacityError, setMaxCapacityError] = useState(false);
+
+  const capacityFilterRef = useRef<HTMLDivElement | null>(null);
+
+  const hasActiveCapacityFilter = Boolean(
+    appliedMinCapacity || appliedMaxCapacity,
+  );
+  function openCapacityFilter() {
+    setDraftMinCapacity(appliedMinCapacity);
+    setDraftMaxCapacity(appliedMaxCapacity);
+    setMinCapacityError(false);
+    setMaxCapacityError(false);
+    setShowCapacityFilter((current) => !current);
+  }
+
+  function handleCancelCapacityFilter() {
+    setAppliedMinCapacity("");
+    setAppliedMaxCapacity("");
+    setDraftMinCapacity("");
+    setDraftMaxCapacity("");
+    setMinCapacityError(false);
+    setMaxCapacityError(false);
+    setShowCapacityFilter(false);
+  }
+
+  function handleApplyCapacityFilter() {
+    const normalizedMin = normalizeCapacityInput(draftMinCapacity);
+    const normalizedMax = normalizeCapacityInput(draftMaxCapacity);
+
+    setMinCapacityError(!normalizedMin.isValid);
+    setMaxCapacityError(!normalizedMax.isValid);
+
+    if (!normalizedMin.isValid || !normalizedMax.isValid) {
+      return;
+    }
+
+    const minValue = normalizedMin.value ? Number(normalizedMin.value) : null;
+    const maxValue = normalizedMax.value ? Number(normalizedMax.value) : null;
+
+    if (minValue !== null && maxValue !== null && minValue > maxValue) {
+      setMinCapacityError(true);
+      setMaxCapacityError(true);
+      return;
+    }
+
+    setAppliedMinCapacity(normalizedMin.value);
+    setAppliedMaxCapacity(normalizedMax.value);
+
+    setDraftMinCapacity(normalizedMin.value);
+    setDraftMaxCapacity(normalizedMax.value);
+
+    setShowCapacityFilter(false);
+  }
+
+  function handleMinCapacityBlur() {
+    const normalized = normalizeCapacityInput(draftMinCapacity);
+
+    setMinCapacityError(!normalized.isValid);
+
+    if (normalized.isValid) {
+      setDraftMinCapacity(normalized.value);
+    }
+  }
+
+  function handleMaxCapacityBlur() {
+    const normalized = normalizeCapacityInput(draftMaxCapacity);
+
+    setMaxCapacityError(!normalized.isValid);
+
+    if (normalized.isValid) {
+      setDraftMaxCapacity(normalized.value);
+    }
+  }
+
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (
@@ -159,6 +282,16 @@ export function ReservationFilters({
         setStartTimeError(false);
         setEndTimeError(false);
       }
+      if (
+        capacityFilterRef.current &&
+        !capacityFilterRef.current.contains(event.target as Node)
+      ) {
+        setShowCapacityFilter(false);
+        setDraftMinCapacity(appliedMinCapacity);
+        setDraftMaxCapacity(appliedMaxCapacity);
+        setMinCapacityError(false);
+        setMaxCapacityError(false);
+      }
     }
 
     function handleEscape(event: KeyboardEvent) {
@@ -168,6 +301,12 @@ export function ReservationFilters({
         setDraftEndTime(appliedEndTime);
         setStartTimeError(false);
         setEndTimeError(false);
+
+        setShowCapacityFilter(false);
+        setDraftMinCapacity(appliedMinCapacity);
+        setDraftMaxCapacity(appliedMaxCapacity);
+        setMinCapacityError(false);
+        setMaxCapacityError(false);
       }
     }
 
@@ -178,7 +317,12 @@ export function ReservationFilters({
       document.removeEventListener("mousedown", handleClickOutside);
       document.removeEventListener("keydown", handleEscape);
     };
-  }, [appliedStartTime, appliedEndTime]);
+  }, [
+    appliedStartTime,
+    appliedEndTime,
+    appliedMinCapacity,
+    appliedMaxCapacity,
+  ]);
 
   function openHourFilter() {
     setDraftStartTime(appliedStartTime);
@@ -384,17 +528,123 @@ export function ReservationFilters({
           )}
         </div>
 
-        <button
-          type="button"
-          className="flex h-12 items-center justify-between border border-neutral-300 bg-white px-4 text-sm font-medium text-neutral-700 transition hover:border-primary-2 hover:text-primary-2"
-        >
-          <span className="flex items-center gap-3">
-            <UsersRound className="h-5 w-5 text-neutral-700" />
-            Capacidad
-          </span>
+        <div ref={capacityFilterRef} className="relative">
+          <button
+            type="button"
+            onClick={openCapacityFilter}
+            className={`flex h-12 w-full items-center justify-between border bg-white px-4 text-sm font-medium transition ${
+              showCapacityFilter || hasActiveCapacityFilter
+                ? "border-primary-2 text-primary-2 ring-2 ring-purple-100"
+                : "border-neutral-300 text-neutral-700 hover:border-primary-2 hover:text-primary-2"
+            }`}
+          >
+            <span className="flex min-w-0 items-center gap-3">
+              <UsersRound className="h-5 w-5 shrink-0 text-neutral-700" />
 
-          <ChevronDown className="h-4 w-4 text-neutral-700" />
-        </button>
+              <span className="truncate">
+                {getCapacityButtonLabel(appliedMinCapacity, appliedMaxCapacity)}
+              </span>
+            </span>
+
+            <ChevronDown
+              className={`h-4 w-4 shrink-0 text-neutral-700 transition ${
+                showCapacityFilter ? "rotate-180" : ""
+              }`}
+            />
+          </button>
+
+          {showCapacityFilter && (
+            <div className="absolute left-0 top-[calc(100%+10px)] z-30 w-[430px] border border-neutral-200 bg-white p-4 shadow-lg">
+              <div className="mb-3">
+                <p className="text-sm font-semibold text-neutral-900">
+                  Selecciona capacidad
+                </p>
+
+                <p className="mt-1 text-xs text-neutral-500">
+                  Puedes indicar capacidad mínima, máxima o un rango.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <label className="flex flex-col gap-2">
+                  <span className="text-sm font-medium text-neutral-800">
+                    Capacidad mínima
+                  </span>
+
+                  <input
+                    value={draftMinCapacity}
+                    onChange={(event) => {
+                      setDraftMinCapacity(event.target.value);
+                      setMinCapacityError(false);
+                    }}
+                    onBlur={handleMinCapacityBlur}
+                    inputMode="numeric"
+                    placeholder="Ej. 4"
+                    className={`h-12 border bg-white px-3 text-sm font-medium text-neutral-900 outline-none transition placeholder:text-neutral-400 focus:ring-2 focus:ring-purple-100 ${
+                      minCapacityError
+                        ? "border-red-500 focus:border-red-500"
+                        : "border-neutral-300 hover:border-primary-2 focus:border-primary-2"
+                    }`}
+                  />
+
+                  {minCapacityError && (
+                    <span className="text-xs font-medium text-red-600">
+                      Usa un número válido y menor o igual a la capacidad
+                      máxima.
+                    </span>
+                  )}
+                </label>
+
+                <label className="flex flex-col gap-2">
+                  <span className="text-sm font-medium text-neutral-800">
+                    Capacidad máxima
+                  </span>
+
+                  <input
+                    value={draftMaxCapacity}
+                    onChange={(event) => {
+                      setDraftMaxCapacity(event.target.value);
+                      setMaxCapacityError(false);
+                    }}
+                    onBlur={handleMaxCapacityBlur}
+                    inputMode="numeric"
+                    placeholder="Ej. 12"
+                    className={`h-12 border bg-white px-3 text-sm font-medium text-neutral-900 outline-none transition placeholder:text-neutral-400 focus:ring-2 focus:ring-purple-100 ${
+                      maxCapacityError
+                        ? "border-red-500 focus:border-red-500"
+                        : "border-neutral-300 hover:border-primary-2 focus:border-primary-2"
+                    }`}
+                  />
+
+                  {maxCapacityError && (
+                    <span className="text-xs font-medium text-red-600">
+                      Usa un número válido y mayor o igual a la capacidad
+                      mínima.
+                    </span>
+                  )}
+                </label>
+              </div>
+
+              <div className="mt-4 flex items-center justify-between border-t border-neutral-100 pt-4">
+                <button
+                  type="button"
+                  onClick={handleCancelCapacityFilter}
+                  className="h-10 border border-neutral-300 px-4 text-sm font-medium text-neutral-700 transition hover:border-neutral-400 hover:bg-neutral-50"
+                >
+                  Cancelar
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleApplyCapacityFilter}
+                  className="h-10 border border-primary-2 bg-primary-2 px-4 text-sm font-medium text-on-primary transition hover:opacity-90"
+                >
+                  Aplicar
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
 
         <button
           type="button"
