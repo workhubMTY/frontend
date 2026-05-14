@@ -1,6 +1,7 @@
 import { Check, Trophy, UsersRound } from "lucide-react";
 import type { Friend } from "../../types/profile";
 import React from "react";
+import { getInitials } from "../../lib/formatting";
 
 type FriendsCardProps = {
   friends: Friend[];
@@ -35,11 +36,17 @@ const FriendRow = React.memo(
         ].join(" ")}
       >
         <div className="flex min-w-0 items-center gap-4">
-          <img
-            src={friend.avatarUrl}
-            alt={friend.name}
-            className="h-12 w-12 rounded-full object-cover"
-          />
+          {friend.avatarUrl ? (
+            <img
+              src={friend.avatarUrl}
+              alt={friend.name}
+              className="h-12 w-12 rounded-full object-cover"
+            />
+          ) : (
+            <div className="h-36 w-36 flex rounded-full border-4 border-purple-100 text-center justify-center items-center uppercase text-primary-1 text-4xl font-semibold bg-purple-100 ">
+              {getInitials(friend.name)}
+            </div>
+          )}
 
           <div className="min-w-0">
             <h3 className="truncate font-semibold text-neutral-950">
