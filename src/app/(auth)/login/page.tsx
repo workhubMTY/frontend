@@ -28,7 +28,6 @@ export default function Login() {
       return;
     }
     try {
-      // await loginFetch(user);
       router.push("/home");
     } catch (err: any) {
       setError(err.message || "Ocurrió un error al iniciar sesión.");
@@ -157,9 +156,6 @@ export default function Login() {
         }
         .acc-tog:hover { transform:rotate(20deg) scale(1.08); }
 
-        /* ── LAYOUT ── */
-
-        /* Desktop: side by side */
         .login-root {
           display: flex;
           flex-direction: row;
@@ -167,7 +163,6 @@ export default function Login() {
           width: 100%;
           overflow: hidden;
         }
-
         .login-left {
           position: relative;
           flex: 1;
@@ -177,7 +172,6 @@ export default function Login() {
           overflow: hidden;
           padding: 2.5rem;
         }
-
         .login-right {
           position: relative;
           display: flex;
@@ -189,7 +183,6 @@ export default function Login() {
           border-left: 1px solid ${t.border};
         }
 
-        /* Tablet: adjust proportions */
         @media (max-width: 1024px) and (min-width: 768px) {
           .login-left {
             padding: 2rem;
@@ -200,42 +193,33 @@ export default function Login() {
           }
         }
 
-        /* Mobile: stack vertically */
         @media (max-width: 767px) {
           .login-root {
             flex-direction: column;
             height: 100svh;
             overflow-y: auto;
           }
-
-          /* Left = compact header strip */
           .login-left {
             flex: none;
             justify-content: flex-start;
             padding: 1.4rem 1.4rem 1rem;
             min-height: 0;
           }
-
           .login-left-bottom {
             margin-top: 1rem;
           }
-
           .login-left h1 {
             font-size: clamp(1.4rem, 5vw, 1.8rem) !important;
           }
-
           .login-left p {
             font-size: .8rem !important;
           }
-
           .acc-orb {
             width: 260px;
             height: 260px;
             bottom: -60px;
             left: -40px;
           }
-
-          /* Right = main content, fills remaining space */
           .login-right {
             width: 100% !important;
             border-left: none !important;
@@ -244,15 +228,12 @@ export default function Login() {
             justify-content: flex-start;
             flex: 1;
           }
-
-          /* On mobile the toggle goes to top-right of the right panel */
           .acc-tog {
             top: 1rem;
             right: 1rem;
           }
         }
 
-        /* Small phones (≤ 375px) */
         @media (max-width: 375px) {
           .login-left {
             padding: 1.1rem 1.1rem .8rem;
@@ -262,7 +243,6 @@ export default function Login() {
           }
         }
 
-        /* Landscape mobile */
         @media (max-width: 767px) and (orientation: landscape) {
           .login-root {
             flex-direction: row;
@@ -289,7 +269,6 @@ export default function Login() {
           }
         }
       `}</style>
-
       <section
         style={{
           fontFamily: "'DM Sans', sans-serif",
@@ -299,11 +278,9 @@ export default function Login() {
         }}
         className="login-root"
       >
-        {/* ── LEFT ───────────────────────────────────────────── */}
         <div className="login-left">
           <div className="acc-grid absolute inset-0" />
           <div className="acc-orb" />
-
           <div className="acc-fd relative z-10 flex items-center gap-3">
             <Image
               src={AccentureLogo}
@@ -314,7 +291,6 @@ export default function Login() {
               priority
             />
           </div>
-
           <div className="login-left-bottom relative z-10">
             <h1
               className="login-left acc-fu font-bold leading-[1.1] tracking-tight"
@@ -327,28 +303,17 @@ export default function Login() {
               Workhub<br />
               <span style={{ color: "#a100ff" }}>Monterrey</span>
             </h1>
-            <p
-              className="acc-fu2 mt-2 text-[.88rem]"
-              style={{ color: t.textSub, transition: "color .4s" }}
-            >
-              Gestión de tareas, sprints y KPIs para tu equipo.
-            </p>
             <div className="acc-divider mt-4 w-full" />
           </div>
         </div>
-
-        {/* ── RIGHT ──────────────────────────────────────────── */}
         <div
           className="login-right acc-panel"
           style={{
-            background:  t.panel,
-            transition:  "background .4s, border-color .4s",
+            background: t.panel,
+            transition: "background .4s, border-color .4s",
           }}
         >
-          {/* accent bar */}
           <div className="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-[#a100ff] to-transparent" />
-
-          {/* toggle */}
           <button
             className="acc-tog"
             style={{ background: t.toggleBg, borderColor: t.border }}
@@ -362,7 +327,6 @@ export default function Login() {
               {dark ? "light_mode" : "dark_mode"}
             </span>
           </button>
-
           <p
             className="acc-fd mb-1 text-[.7rem] font-medium uppercase tracking-widest"
             style={{ fontFamily: "'DM Mono', monospace", color: "#a100ff" }}
@@ -381,7 +345,6 @@ export default function Login() {
           >
             Ingresa tus credenciales corporativas
           </p>
-
           <form className="flex flex-col gap-[.9rem]" onSubmit={onSubmitLogin}>
             <label className="acc-iw acc-r1">
               <span
@@ -401,7 +364,6 @@ export default function Login() {
                 autoComplete="username"
               />
             </label>
-
             <label className="acc-iw acc-r2">
               <span
                 className="material-symbols-outlined pointer-events-none select-none text-base"
@@ -420,13 +382,11 @@ export default function Login() {
                 autoComplete="current-password"
               />
             </label>
-
             {error && (
               <p className="border-l-2 border-[#ff4d6d] bg-[rgba(255,77,109,0.06)] px-3 py-2 text-[.78rem] text-[#ff4d6d]">
                 {error}
               </p>
             )}
-
             <button
               type="submit"
               className="acc-sub acc-rbtn mt-1 rounded-[.85rem] bg-[#a100ff] py-[.82rem] text-[.9rem] font-semibold tracking-wide text-white"
@@ -434,7 +394,6 @@ export default function Login() {
               Iniciar sesión
             </button>
           </form>
-
           <p
             className="acc-rft mt-5 text-center text-[.74rem]"
             style={{ color: t.textSub, transition: "color .4s" }}
@@ -444,7 +403,6 @@ export default function Login() {
               Contacta a IT Support
             </a>
           </p>
-
           <div className="absolute bottom-5 right-5 flex items-center gap-1.5 opacity-25">
             <div className="h-1.5 w-1.5 rounded-full bg-[#a100ff]" />
             <span
