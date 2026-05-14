@@ -779,3 +779,26 @@ export async function mockGetTeamMembers(teamId: string): Promise<User[]> {
 
   return membersByTeamId[teamId] ?? [];
 }
+
+export async function mockGetSuggestions() {
+  return [
+    {
+      id: "u-1",
+      name: "Mariana López",
+      email: "mariana@empresa.com",
+      status: "available",
+    },
+    {
+      id: "u-2",
+      name: "Diego Fernández",
+      email: "diego@empresa.com",
+      status: "available",
+    },
+    {
+      id: "u-3",
+      name: "Sofía Martínez",
+      email: "sofia@empresa.com",
+      status: "pending",
+    },
+  ];
+}

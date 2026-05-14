@@ -35,7 +35,7 @@ export default function ReservableSpacesSearchPage() {
   }, [selectedSpaceId]);
 
   return (
-    <main className="min-h-screen bg-background-page px-4 py-6 text-slate-950 sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-background-page px-4 py-6 text-neutral-700 sm:px-6 lg:px-8">
       <div className="mx-auto flex flex-col gap-5">
         <ReservationSearchHeader />
 

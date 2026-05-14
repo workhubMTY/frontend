@@ -8,6 +8,7 @@ type FriendsCardProps = {
   onCompareFriend: (friendId: string) => void;
   onClearComparison: () => void;
   onDisplayAll: () => void;
+  onInviteFriends: () => void;
 };
 
 const FriendRow = React.memo(
@@ -76,6 +77,7 @@ export function FriendsCard({
   onCompareFriend,
   onDisplayAll,
   onClearComparison,
+  onInviteFriends,
 }: FriendsCardProps) {
   return (
     <section className="border border-neutral-200 bg-white shadow-sm h-full flex flex-col">
@@ -115,7 +117,7 @@ export function FriendsCard({
       <footer className="border-t border-neutral-100 px-7 py-5 mt-auto">
         <button
           type="button"
-          onClick={() => alert("Invitar a más amigos")}
+          onClick={onInviteFriends}
           className="inline-flex items-center gap-3 text-sm font-medium text-purple-700 transition hover:text-purple-900"
         >
           <UsersRound size={20} />

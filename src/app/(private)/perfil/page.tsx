@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   type UserProfile,
   type Friend,
@@ -14,6 +14,7 @@ import {
   getAchievementsByUserId,
   getTeamsByUserId,
   mockGetTeamMembers,
+  mockGetSuggestions,
 } from "@/app/features/perfil/data/mockProfileApi";
 import { ProfileHeaderCard } from "@/app/features/perfil/components/cards/ProfileHeaderCard";
 import { ProgressSummaryCard } from "@/app/features/perfil/components/cards/ProgressSumaryCard";
@@ -45,6 +46,9 @@ export default function UserProfilePage() {
   const [initialOpenTeamId, setInitialOpenTeamId] = useState<string | null>(
     null,
   );
+  const [initialFriendDrawerMode, setInitialFriendDrawerMode] = useState<
+    "list" | "invite"
+  >("list");
 
   const personalAchievementData = useMemo<AchievementUserData | null>(() => {
     if (!profile || !achievements) return null;
@@ -69,21 +73,30 @@ export default function UserProfilePage() {
     setIsAchievementDrawerOpen(false);
   }
 
-  function handleDisplayAllFriends() {
-    setIsFriendDrawerOpen(true);
-    setIsTeamDrawerOpen(false);
-    setIsAchievementDrawerOpen(false);
-  }
-
   function handleDisplayAllAchievements() {
     setIsAchievementDrawerOpen(true);
     setIsFriendDrawerOpen(false);
     setIsTeamDrawerOpen(false);
   }
 
+  const handleSearchSuggestions = useCallback(async () => {
+    return await mockGetSuggestions();
+  }, []);
+
+  function handleDisplayAllFriends() {
+    setInitialFriendDrawerMode("list");
+    setIsFriendDrawerOpen(true);
+    setIsTeamDrawerOpen(false);
+  }
+
+  function handleInviteFriends() {
+    setInitialFriendDrawerMode("invite");
+    setIsFriendDrawerOpen(true);
+    setIsAchievementDrawerOpen(false);
+    setIsTeamDrawerOpen(false);
+  }
   function handleCompareFriend(friendId: string) {
     setSelectedFriendId(friendId);
-
     setIsAchievementDrawerOpen(true);
     setIsFriendDrawerOpen(false);
     setIsTeamDrawerOpen(false);
@@ -95,12 +108,6 @@ export default function UserProfilePage() {
 
   function handleClearComparison() {
     setSelectedFriendId(null);
-  }
-
-  function handleChangeFriend() {
-    setIsAchievementDrawerOpen(true);
-    setIsFriendDrawerOpen(false);
-    setIsTeamDrawerOpen(false);
   }
 
   useEffect(() => {
@@ -216,6 +223,7 @@ export default function UserProfilePage() {
                 onCompareFriend={handleCompareFriend}
                 onClearComparison={handleClearComparison}
                 onDisplayAll={handleDisplayAllFriends}
+                onInviteFriends={handleInviteFriends}
               />
             </div>
 
@@ -230,10 +238,6 @@ export default function UserProfilePage() {
             <div className="min-w-0 lg:col-span-4">
               <AchievementComparisonCard
                 achievements={achievements}
-                /*
-                  Agrega esta prop a tu AchievementComparisonCard.
-                  El botón "Ver todos" debería llamar onDisplayAll().
-                */
                 onDisplayAll={handleDisplayAllAchievements}
               />
             </div>
@@ -241,13 +245,27 @@ export default function UserProfilePage() {
         </div>
       </main>
 
-      <FriendsDrawer
+      {/* <FriendsDrawer
         isOpen={isFriendDrawerOpen}
         friends={friends}
         selectedFriendId={selectedFriendId}
         onCompareFriend={handleCompareFriend}
         onClearComparison={handleClearComparison}
         onClose={() => setIsFriendDrawerOpen(false)}
+      /> */}
+      <FriendsDrawer
+        isOpen={isFriendDrawerOpen}
+        friends={friends}
+        selectedFriendId={selectedFriendId}
+        initialMode={initialFriendDrawerMode}
+        onSearchSuggestions={handleSearchSuggestions}
+        onCompareFriend={handleCompareFriend}
+        onClearComparison={handleClearComparison}
+        onClose={() => setIsFriendDrawerOpen(false)}
+        onSendFriendRequests={async (payload) => {
+          console.log("Solicitudes enviadas:", payload);
+          // AQUI HACEMOS POST
+        }}
       />
 
       <TeamsDrawer
@@ -259,7 +277,7 @@ export default function UserProfilePage() {
         inviteCandidates={friends}
         onCreateTeam={async (payload) => {
           console.log("Crear equipo:", payload);
-          // aquí luego llamas tu API
+          // Aqui metemos la llamada a la api
         }}
       />
 

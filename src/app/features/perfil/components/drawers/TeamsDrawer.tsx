@@ -715,7 +715,7 @@ function CreateTeamMode({
             <button
               type="submit"
               disabled={!canCreateTeam}
-              className="inline-flex h-11 min-w-40 items-center justify-center bg-purple-700 px-5 text-sm font-medium text-white transition hover:bg-purple-800 disabled:cursor-not-allowed disabled:bg-purple-300"
+              className="inline-flex h-11 min-w-40 items-center justify-center bg-primary-2 px-5 text-sm font-medium text-white transition hover:bg-purple-800 disabled:cursor-not-allowed disabled:bg-purple-300"
             >
               {isSubmitting ? "Creando..." : "Crear equipo"}
             </button>

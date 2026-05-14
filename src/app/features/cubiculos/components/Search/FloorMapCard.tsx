@@ -42,7 +42,7 @@ export function FloorMapCard({
   onSelectSpace,
 }: FloorMapCardProps) {
   return (
-    <section className="min-h-[560px] rounded-xl border border-slate-200 bg-white p-4 shadow-sm md:p-5">
+    <section className="min-h-[560px] border border-slate-200 bg-container p-4 shadow-sm md:p-5">
       <div className="mb-5 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
         <div>
           <h2 className="text-lg font-semibold text-slate-950">
@@ -53,7 +53,7 @@ export function FloorMapCard({
           </p>
         </div>
 
-        <div className="inline-grid w-fit grid-cols-3 overflow-hidden rounded-lg border border-slate-200 bg-white text-sm">
+        <div className="inline-grid w-fit grid-cols-3 overflow-hidden border border-slate-200 bg-white text-sm">
           <button className="border-r border-slate-200 bg-purple-50 px-5 py-2 font-semibold text-purple-700">
             Piso 1
           </button>

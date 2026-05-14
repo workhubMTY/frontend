@@ -30,7 +30,7 @@ export function SpacesResultsList({
   onSelectSpace,
 }: SpacesResultsListProps) {
   return (
-    <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+    <section className="border border-slate-200 bg-container p-5 shadow-sm">
       <h2 className="text-lg font-semibold text-slate-950">
         Espacios encontrados
       </h2>

@@ -39,12 +39,12 @@ export function SelectedSpacePanel({ selectedSpace }: SelectedSpacePanelProps) {
   const router = useRouter();
   if (!selectedSpace) {
     return (
-      <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+      <section className="border border-slate-200 bg-white p-5 shadow-sm">
         <h2 className="text-lg font-semibold text-slate-950">
           Espacio seleccionado
         </h2>
 
-        <div className="mt-6 rounded-lg border border-dashed border-slate-300 bg-slate-50 p-6 text-center">
+        <div className="mt-6 border border-dashed border-slate-300 bg-slate-50 p-6 text-center">
           <p className="font-medium text-slate-700">
             Selecciona un espacio en el mapa
           </p>
@@ -57,7 +57,7 @@ export function SelectedSpacePanel({ selectedSpace }: SelectedSpacePanelProps) {
   }
 
   return (
-    <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+    <section className="border border-slate-200 bg-white p-5 shadow-sm">
       <div className="flex items-start justify-between gap-4">
         <div>
           <h2 className="text-lg font-semibold text-slate-950">
@@ -143,7 +143,7 @@ export function SelectedSpacePanel({ selectedSpace }: SelectedSpacePanelProps) {
         onClick={() => {
           router.push("/cubiculos/reservacion");
         }}
-        className="mt-6 h-11 w-full rounded-lg bg-purple-700 text-sm font-semibold text-white shadow-sm transition hover:bg-purple-800"
+        className="mt-6 h-11 w-full bg-primary-2 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-1"
       >
         Continuar con este espacio
       </button>
