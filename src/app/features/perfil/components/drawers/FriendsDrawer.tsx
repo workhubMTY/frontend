@@ -12,16 +12,8 @@ import {
   Users,
   X,
 } from "lucide-react";
-import type { Friend } from "../../types/profile";
+import type { Friend, FriendSuggestion } from "../../types/profile";
 import { useMemo, useState, useEffect } from "react";
-
-type FriendSuggestion = {
-  id: string;
-  name: string;
-  email?: string;
-  avatarUrl?: string;
-  status?: string;
-};
 
 type SendFriendRequestsPayload = {
   userIds: string[];
@@ -33,7 +25,7 @@ type FriendsDrawerProps = {
   friends: Friend[];
   selectedFriendId?: string | null;
   initialMode?: DrawerMode;
-  onSearchSuggestions: () => Promise<FriendSuggestion[]>;
+  onGetUsers: () => Promise<FriendSuggestion[]>;
   onClose: () => void;
   onCompareFriend: (id: string) => void;
   onClearComparison: () => void;
@@ -50,7 +42,7 @@ export function FriendsDrawer({
   friends,
   selectedFriendId,
   initialMode = "list",
-  onSearchSuggestions,
+  onGetUsers,
   onClose,
   onCompareFriend,
   onClearComparison,
@@ -92,7 +84,7 @@ export function FriendsDrawer({
           <InviteFriendsMode
             onBack={() => setDrawerMode("list")}
             onClose={handleClose}
-            onSearchSuggestions={onSearchSuggestions}
+            onGetUsers={onGetUsers}
             onSendFriendRequests={async (payload) => {
               await onSendFriendRequests?.(payload);
               setDrawerMode("list");
@@ -282,16 +274,15 @@ function FriendsListMode({
     </>
   );
 }
-
 type InviteFriendsModeProps = {
-  onSearchSuggestions: () => Promise<FriendSuggestion[]>;
+  onGetUsers: () => Promise<FriendSuggestion[]>;
   onBack: () => void;
   onClose: () => void;
   onSendFriendRequests: (payload: SendFriendRequestsPayload) => Promise<void>;
 };
 
 function InviteFriendsMode({
-  onSearchSuggestions,
+  onGetUsers,
   onBack,
   onClose,
   onSendFriendRequests,
@@ -300,51 +291,60 @@ function InviteFriendsMode({
   const [selectedUsers, setSelectedUsers] = useState<FriendSuggestion[]>([]);
   const [message, setMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [suggestions, setSuggestions] = useState<FriendSuggestion[] | null>(
-    null,
-  );
+  const [isLoadingUsers, setIsLoadingUsers] = useState(false);
+  const [users, setUsers] = useState<FriendSuggestion[]>([]);
 
   useEffect(() => {
     let isMounted = true;
 
-    async function loadSuggestions() {
+    async function loadUsers() {
       try {
-        const incomingSuggestions = await onSearchSuggestions();
+        setIsLoadingUsers(true);
+
+        const incomingUsers = await onGetUsers();
 
         if (isMounted) {
-          setSuggestions(incomingSuggestions);
+          setUsers(incomingUsers);
         }
       } catch (error) {
-        console.error("Error loading friend suggestions:", error);
+        console.error("Error loading users:", error);
 
         if (isMounted) {
-          setSuggestions([]);
+          setUsers([]);
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoadingUsers(false);
         }
       }
     }
 
-    loadSuggestions();
+    loadUsers();
 
     return () => {
       isMounted = false;
     };
-  }, [onSearchSuggestions]);
+  }, [onGetUsers]);
 
-  const filteredSuggestions = useMemo(() => {
+  const filteredUsers = useMemo(() => {
     const normalizedSearch = searchTerm.trim().toLowerCase();
-    if (!suggestions) return [];
 
-    if (!normalizedSearch) return suggestions;
+    if (!normalizedSearch) {
+      return selectedUsers;
+    }
 
-    return suggestions.filter((person) => {
+    return users.filter((person) => {
       const name = person.name.toLowerCase();
-      const email = person.email?.toLowerCase() ?? "";
+      const email = person.email.toLowerCase();
+      const role = person.role.toLowerCase();
 
       return (
-        name.includes(normalizedSearch) || email.includes(normalizedSearch)
+        name.includes(normalizedSearch) ||
+        email.includes(normalizedSearch) ||
+        role.includes(normalizedSearch)
       );
     });
-  }, [suggestions, searchTerm]);
+  }, [users, selectedUsers, searchTerm]);
 
   const canSend = selectedUsers.length > 0 && !isSubmitting;
 
@@ -406,6 +406,7 @@ function InviteFriendsMode({
             <h2 className="text-xl font-semibold tracking-tight text-neutral-950">
               Invitar a más amigos
             </h2>
+
             <p className="mt-1 text-sm text-neutral-500">
               Busca personas y envía solicitudes de amistad.
             </p>
@@ -443,7 +444,7 @@ function InviteFriendsMode({
                   id="friend-search"
                   value={searchTerm}
                   onChange={(event) => setSearchTerm(event.target.value)}
-                  placeholder="Buscar por nombre o correo"
+                  placeholder="Buscar por nombre, correo o rol"
                   className="h-11 w-full border border-neutral-200 bg-white pl-11 pr-4 text-sm outline-none transition placeholder:text-neutral-400 focus:border-purple-700 focus:ring-2 focus:ring-purple-100"
                 />
               </div>
@@ -462,6 +463,7 @@ function InviteFriendsMode({
                       className="inline-flex h-8 items-center gap-2 bg-neutral-100 px-3 text-sm text-neutral-700"
                     >
                       {user.name}
+
                       <button
                         type="button"
                         onClick={() => handleRemoveUser(user.id)}
@@ -488,9 +490,13 @@ function InviteFriendsMode({
               </div>
 
               <div className="border border-neutral-200">
-                {filteredSuggestions.length > 0 ? (
+                {isLoadingUsers ? (
+                  <div className="px-5 py-10 text-center text-sm text-neutral-500">
+                    Cargando usuarios...
+                  </div>
+                ) : filteredUsers.length > 0 ? (
                   <div className="max-h-[360px] overflow-y-auto divide-y divide-neutral-100">
-                    {filteredSuggestions.map((person) => {
+                    {filteredUsers.map((person) => {
                       const isSelected = selectedUsers.some(
                         (user) => user.id === person.id,
                       );
@@ -527,6 +533,10 @@ function InviteFriendsMode({
                               <p className="truncate text-xs text-neutral-500">
                                 {person.email}
                               </p>
+
+                              <p className="truncate text-xs text-neutral-400">
+                                {person.role}
+                              </p>
                             </div>
                           </div>
 
@@ -545,11 +555,15 @@ function InviteFriendsMode({
                     </div>
 
                     <h3 className="text-sm font-semibold text-neutral-950">
-                      No hay resultados
+                      {searchTerm.trim()
+                        ? "No hay resultados"
+                        : "Busca personas para invitar"}
                     </h3>
 
                     <p className="mt-1 max-w-sm text-sm text-neutral-500">
-                      Intenta buscar por nombre, correo o usuario.
+                      {searchTerm.trim()
+                        ? "Intenta buscar por otro nombre, correo o rol."
+                        : "Escribe un nombre, correo o rol para encontrar usuarios."}
                     </p>
                   </div>
                 )}
@@ -617,7 +631,6 @@ function InviteFriendsMode({
     </>
   );
 }
-
 function FriendRequestStatus({
   isSelected,
   status,
