@@ -1,9 +1,13 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { reservableSpaces } from "@/app/features/cubiculos/data/reservableSpaces";
+import {
+  fetchReservableSpaces,
+  reservableSpaces,
+} from "@/app/features/cubiculos/data/reservableSpaces";
+import type { SpaceSearchFilters } from "@/app/features/cubiculos/types/searchFilters";
 import { FloorMapCard } from "@/app/features/cubiculos/components/panels/FloorMapCard";
-import { ReservationFilters } from "@/app/features/cubiculos/components/others/ReservationFilters";
+import { ReservationFilters } from "@/app/features/cubiculos/components/filters/ReservationFilters";
 import { ReservationSearchHeader } from "@/app/features/cubiculos/components/others/ReservationSearchHeader";
 import { SelectedSpacePanel } from "@/app/features/cubiculos/components/panels/SelectedSpacePanel";
 import { SpacesResultsList } from "@/app/features/cubiculos/components/panels/SpacesResultsList";
@@ -14,20 +18,31 @@ export default function ReservableSpacesSearchPage() {
     "sm1",
   );
 
-  const filteredSpaces = useMemo(() => {
-    const normalizedSearch = search.trim().toLowerCase();
+  const [filters, setFilters] = useState<SpaceSearchFilters>({
+    search: "",
+    time: {
+      startTime: "",
+      endTime: "",
+    },
+    capacity: {
+      minCapacity: "",
+      maxCapacity: "",
+    },
+    period: {
+      dateIds: [],
+    },
+  });
+  const [spaces, setSpaces] = useState(reservableSpaces);
+  const [isLoading, setIsLoading] = useState(false);
 
-    if (!normalizedSearch) {
-      return reservableSpaces;
-    }
+  async function handleSubmitFilters(filters: SpaceSearchFilters) {
+    setIsLoading(true);
 
-    return reservableSpaces.filter((space) => {
-      return (
-        space.code.toLowerCase().includes(normalizedSearch) ||
-        space.name.toLowerCase().includes(normalizedSearch)
-      );
-    });
-  }, [search]);
+    const result = await fetchReservableSpaces(filters);
+
+    setSpaces(result);
+    setIsLoading(false);
+  }
 
   const selectedSpace = useMemo(() => {
     return reservableSpaces.find((space) => space.id === selectedSpaceId);
@@ -38,11 +53,15 @@ export default function ReservableSpacesSearchPage() {
       <div className="mx-auto flex flex-col gap-5">
         <ReservationSearchHeader />
 
-        <ReservationFilters search={search} onSearchChange={setSearch} />
+        <ReservationFilters
+          value={filters}
+          onChange={setFilters}
+          onSubmit={handleSubmitFilters}
+        />
 
         <section className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_420px]">
           <FloorMapCard
-            spaces={filteredSpaces}
+            spaces={spaces}
             selectedSpaceId={selectedSpaceId}
             onSelectSpace={setSelectedSpaceId}
           />
@@ -51,7 +70,7 @@ export default function ReservableSpacesSearchPage() {
             <SelectedSpacePanel selectedSpace={selectedSpace} />
 
             <SpacesResultsList
-              spaces={filteredSpaces}
+              spaces={spaces}
               selectedSpaceId={selectedSpaceId}
               onSelectSpace={setSelectedSpaceId}
             />

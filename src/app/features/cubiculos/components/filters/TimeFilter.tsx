@@ -1,22 +1,27 @@
 "use client";
 
 import { Clock3 } from "lucide-react";
-
-import { FilterFlyout } from "./FilterFlyout";
 import { useTimeFilter } from "../../hooks/useTimeFilter";
 import { getTimeButtonLabel } from "../../lib/filterLabels";
+import type { TimeFilterValue } from "../../types/searchFilters";
+import { FilterFlyout } from "./FilterFlyout";
 
-export function TimeFilter() {
-  const timeFilter = useTimeFilter();
+type TimeFilterProps = {
+  value: TimeFilterValue;
+  onChange: (value: TimeFilterValue) => void;
+};
+
+export function TimeFilter({ value, onChange }: TimeFilterProps) {
+  const timeFilter = useTimeFilter({
+    value,
+    onChange,
+  });
 
   return (
     <div ref={timeFilter.timeFilterRef} className="relative">
       <FilterFlyout
         icon={<Clock3 className="h-5 w-5 shrink-0 text-neutral-700" />}
-        label={getTimeButtonLabel(
-          timeFilter.appliedStartTime,
-          timeFilter.appliedEndTime,
-        )}
+        label={getTimeButtonLabel(value.startTime, value.endTime)}
         isOpen={timeFilter.isOpen}
         isActive={timeFilter.hasActiveTimeFilter}
         onToggle={timeFilter.openTimeFilter}

@@ -13,8 +13,14 @@ import type {
 } from "@/app/features/reservaciones/types/reservaciones";
 
 import { useCloseOnOutsideClick } from "./useCloseOnOutsideClick";
+import type { PeriodFilterValue } from "../types/searchFilters";
 
-export function usePeriodFilter() {
+type UsePeriodFilterParams = {
+  value: PeriodFilterValue;
+  onChange: (value: PeriodFilterValue) => void;
+};
+
+export function usePeriodFilter({ value, onChange }: UsePeriodFilterParams) {
   const [isOpen, setIsOpen] = useState(false);
 
   const periodCalendarCells = useMemo(() => createCalendarCells(), []);
@@ -22,11 +28,9 @@ export function usePeriodFilter() {
   const [periodSelectionMode, setPeriodSelectionMode] =
     useState<SelectionMode>("multiple");
 
-  const [appliedPeriodDateIds, setAppliedPeriodDateIds] = useState<string[]>(
-    [],
+  const [draftPeriodDateIds, setDraftPeriodDateIds] = useState<string[]>(
+    value.dateIds,
   );
-
-  const [draftPeriodDateIds, setDraftPeriodDateIds] = useState<string[]>([]);
 
   const [periodActiveDayId, setPeriodActiveDayId] = useState(() =>
     getFirstAvailableDateId(periodCalendarCells),
@@ -37,7 +41,7 @@ export function usePeriodFilter() {
 
   const periodFilterRef = useRef<HTMLDivElement | null>(null);
 
-  const hasActivePeriodFilter = appliedPeriodDateIds.length > 0;
+  const hasActivePeriodFilter = value.dateIds.length > 0;
 
   function isWeekendDateId(dateId: string) {
     return (
@@ -65,9 +69,9 @@ export function usePeriodFilter() {
   }
 
   const closeAndRevert = useCallback(() => {
-    setDraftPeriodDateIds(appliedPeriodDateIds);
+    setDraftPeriodDateIds(value.dateIds);
     setIsOpen(false);
-  }, [appliedPeriodDateIds]);
+  }, [value.dateIds]);
 
   useCloseOnOutsideClick({
     ref: periodFilterRef,
@@ -76,19 +80,25 @@ export function usePeriodFilter() {
   });
 
   function openPeriodFilter() {
-    setDraftPeriodDateIds(appliedPeriodDateIds);
+    setDraftPeriodDateIds(value.dateIds);
     setIsOpen((current) => !current);
   }
 
   function handleCancelPeriodFilter() {
-    setAppliedPeriodDateIds([]);
+    onChange({
+      dateIds: [],
+    });
+
     setDraftPeriodDateIds([]);
     setHasAppliedPeriodSelection(false);
     setIsOpen(false);
   }
 
   function handleApplyPeriodFilter() {
-    setAppliedPeriodDateIds(draftPeriodDateIds);
+    onChange({
+      dateIds: draftPeriodDateIds,
+    });
+
     setHasAppliedPeriodSelection(true);
     setIsOpen(false);
   }
@@ -205,7 +215,6 @@ export function usePeriodFilter() {
 
     periodCalendarCells,
     periodSelectionMode,
-    appliedPeriodDateIds,
     draftPeriodDateIds,
     periodActiveDayId,
 

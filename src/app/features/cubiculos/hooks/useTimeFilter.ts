@@ -1,33 +1,39 @@
 "use client";
 
 import { useCallback, useRef, useState } from "react";
-
 import { normalizeTimeInput, timeToMinutes } from "../lib/time";
 import { useCloseOnOutsideClick } from "./useCloseOnOutsideClick";
 
-export function useTimeFilter() {
+type TimeFilterValue = {
+  startTime: string;
+  endTime: string;
+};
+
+type UseTimeFilterParams = {
+  value: TimeFilterValue;
+  onChange: (value: TimeFilterValue) => void;
+};
+
+export function useTimeFilter({ value, onChange }: UseTimeFilterParams) {
   const [isOpen, setIsOpen] = useState(false);
 
-  const [appliedStartTime, setAppliedStartTime] = useState("");
-  const [appliedEndTime, setAppliedEndTime] = useState("");
-
-  const [draftStartTime, setDraftStartTime] = useState("");
-  const [draftEndTime, setDraftEndTime] = useState("");
+  const [draftStartTime, setDraftStartTime] = useState(value.startTime);
+  const [draftEndTime, setDraftEndTime] = useState(value.endTime);
 
   const [startTimeError, setStartTimeError] = useState(false);
   const [endTimeError, setEndTimeError] = useState(false);
 
   const timeFilterRef = useRef<HTMLDivElement | null>(null);
 
-  const hasActiveTimeFilter = Boolean(appliedStartTime || appliedEndTime);
+  const hasActiveTimeFilter = Boolean(value.startTime || value.endTime);
 
   const closeAndRevert = useCallback(() => {
-    setDraftStartTime(appliedStartTime);
-    setDraftEndTime(appliedEndTime);
+    setDraftStartTime(value.startTime);
+    setDraftEndTime(value.endTime);
     setStartTimeError(false);
     setEndTimeError(false);
     setIsOpen(false);
-  }, [appliedStartTime, appliedEndTime]);
+  }, [value.startTime, value.endTime]);
 
   useCloseOnOutsideClick({
     ref: timeFilterRef,
@@ -36,16 +42,19 @@ export function useTimeFilter() {
   });
 
   function openTimeFilter() {
-    setDraftStartTime(appliedStartTime);
-    setDraftEndTime(appliedEndTime);
+    setDraftStartTime(value.startTime);
+    setDraftEndTime(value.endTime);
     setStartTimeError(false);
     setEndTimeError(false);
     setIsOpen((current) => !current);
   }
 
   function handleCancelTimeFilter() {
-    setAppliedStartTime("");
-    setAppliedEndTime("");
+    onChange({
+      startTime: "",
+      endTime: "",
+    });
+
     setDraftStartTime("");
     setDraftEndTime("");
     setStartTimeError(false);
@@ -77,12 +86,13 @@ export function useTimeFilter() {
       return;
     }
 
-    setAppliedStartTime(normalizedStart.value);
-    setAppliedEndTime(normalizedEnd.value);
+    onChange({
+      startTime: normalizedStart.value,
+      endTime: normalizedEnd.value,
+    });
 
     setDraftStartTime(normalizedStart.value);
     setDraftEndTime(normalizedEnd.value);
-
     setIsOpen(false);
   }
 
@@ -111,9 +121,6 @@ export function useTimeFilter() {
 
     isOpen,
     hasActiveTimeFilter,
-
-    appliedStartTime,
-    appliedEndTime,
 
     draftStartTime,
     draftEndTime,

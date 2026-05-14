@@ -8,9 +8,18 @@ import { cn } from "@/app/features/reservaciones/lib/cn";
 import { FilterFlyout } from "./FilterFlyout";
 import { usePeriodFilter } from "../../hooks/usePeriodFilter";
 import { getPeriodButtonLabel } from "../../lib/filterLabels";
+import type { PeriodFilterValue } from "../../types/searchFilters";
 
-export function PeriodFilter() {
-  const periodFilter = usePeriodFilter();
+type PeriodFilterProps = {
+  value: PeriodFilterValue;
+  onChange: (value: PeriodFilterValue) => void;
+};
+
+export function PeriodFilter({ value, onChange }: PeriodFilterProps) {
+  const periodFilter = usePeriodFilter({
+    value,
+    onChange,
+  });
 
   return (
     <div ref={periodFilter.periodFilterRef} className="relative">
@@ -18,14 +27,14 @@ export function PeriodFilter() {
         align="right"
         icon={<CalendarDays className="h-5 w-5 shrink-0 text-neutral-700" />}
         label={getPeriodButtonLabel(
-          periodFilter.appliedPeriodDateIds,
+          value.dateIds,
           periodFilter.periodCalendarCells,
         )}
         isOpen={periodFilter.isOpen}
         isActive={periodFilter.hasActivePeriodFilter}
         onToggle={periodFilter.openPeriodFilter}
       >
-        <div className="w-[420px]">
+        <div className="w-[620px]">
           <div className="mb-4">
             <p className="text-sm font-semibold text-neutral-900">
               Selecciona periodo

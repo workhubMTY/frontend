@@ -5,18 +5,24 @@ import { UsersRound } from "lucide-react";
 import { FilterFlyout } from "./FilterFlyout";
 import { useCapacityFilter } from "../../hooks/useCapacityFilter";
 import { getCapacityButtonLabel } from "../../lib/filterLabels";
+import type { CapacityFilterValue } from "../../types/searchFilters";
 
-export function CapacityFilter() {
-  const capacityFilter = useCapacityFilter();
+type CapacityFilterProps = {
+  value: CapacityFilterValue;
+  onChange: (value: CapacityFilterValue) => void;
+};
+
+export function CapacityFilter({ value, onChange }: CapacityFilterProps) {
+  const capacityFilter = useCapacityFilter({
+    value,
+    onChange,
+  });
 
   return (
     <div ref={capacityFilter.capacityFilterRef} className="relative">
       <FilterFlyout
         icon={<UsersRound className="h-5 w-5 shrink-0 text-neutral-700" />}
-        label={getCapacityButtonLabel(
-          capacityFilter.appliedMinCapacity,
-          capacityFilter.appliedMaxCapacity,
-        )}
+        label={getCapacityButtonLabel(value.minCapacity, value.maxCapacity)}
         isOpen={capacityFilter.isOpen}
         isActive={capacityFilter.hasActiveCapacityFilter}
         onToggle={capacityFilter.openCapacityFilter}

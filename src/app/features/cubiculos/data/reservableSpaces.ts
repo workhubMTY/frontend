@@ -1,4 +1,5 @@
 import type { ReservableSpace } from "../types/reservableSpaces";
+import { SpaceSearchFilters } from "../types/searchFilters";
 
 export const reservableSpaces: ReservableSpace[] = [
   {
@@ -64,3 +65,24 @@ export const reservableSpaces: ReservableSpace[] = [
     timeline: [],
   },
 ];
+
+export async function fetchReservableSpaces(filters: SpaceSearchFilters) {
+  await new Promise((resolve) => setTimeout(resolve, 600));
+
+  return reservableSpaces.filter((space) => {
+    const normalizedSearch = filters.search.trim().toLowerCase();
+
+    const matchesSearch =
+      !normalizedSearch ||
+      space.code.toLowerCase().includes(normalizedSearch) ||
+      space.name.toLowerCase().includes(normalizedSearch);
+
+    const matchesCapacity =
+      (!filters.capacity.minCapacity ||
+        space.capacity >= Number(filters.capacity.minCapacity)) &&
+      (!filters.capacity.maxCapacity ||
+        space.capacity <= Number(filters.capacity.maxCapacity));
+
+    return matchesSearch && matchesCapacity;
+  });
+}

@@ -3,15 +3,21 @@
 import { useCallback, useRef, useState } from "react";
 import { normalizeCapacityInput } from "../lib/capacity";
 import { useCloseOnOutsideClick } from "./useCloseOnOutsideClick";
+import type { CapacityFilterValue } from "../types/searchFilters";
 
-export function useCapacityFilter() {
+type UseCapacityFilterParams = {
+  value: CapacityFilterValue;
+  onChange: (value: CapacityFilterValue) => void;
+};
+
+export function useCapacityFilter({
+  value,
+  onChange,
+}: UseCapacityFilterParams) {
   const [isOpen, setIsOpen] = useState(false);
 
-  const [appliedMinCapacity, setAppliedMinCapacity] = useState("");
-  const [appliedMaxCapacity, setAppliedMaxCapacity] = useState("");
-
-  const [draftMinCapacity, setDraftMinCapacity] = useState("");
-  const [draftMaxCapacity, setDraftMaxCapacity] = useState("");
+  const [draftMinCapacity, setDraftMinCapacity] = useState(value.minCapacity);
+  const [draftMaxCapacity, setDraftMaxCapacity] = useState(value.maxCapacity);
 
   const [minCapacityError, setMinCapacityError] = useState(false);
   const [maxCapacityError, setMaxCapacityError] = useState(false);
@@ -19,16 +25,16 @@ export function useCapacityFilter() {
   const capacityFilterRef = useRef<HTMLDivElement | null>(null);
 
   const hasActiveCapacityFilter = Boolean(
-    appliedMinCapacity || appliedMaxCapacity,
+    value.minCapacity || value.maxCapacity,
   );
 
   const closeAndRevert = useCallback(() => {
-    setDraftMinCapacity(appliedMinCapacity);
-    setDraftMaxCapacity(appliedMaxCapacity);
+    setDraftMinCapacity(value.minCapacity);
+    setDraftMaxCapacity(value.maxCapacity);
     setMinCapacityError(false);
     setMaxCapacityError(false);
     setIsOpen(false);
-  }, [appliedMinCapacity, appliedMaxCapacity]);
+  }, [value.minCapacity, value.maxCapacity]);
 
   useCloseOnOutsideClick({
     ref: capacityFilterRef,
@@ -37,16 +43,19 @@ export function useCapacityFilter() {
   });
 
   function openCapacityFilter() {
-    setDraftMinCapacity(appliedMinCapacity);
-    setDraftMaxCapacity(appliedMaxCapacity);
+    setDraftMinCapacity(value.minCapacity);
+    setDraftMaxCapacity(value.maxCapacity);
     setMinCapacityError(false);
     setMaxCapacityError(false);
     setIsOpen((current) => !current);
   }
 
   function handleCancelCapacityFilter() {
-    setAppliedMinCapacity("");
-    setAppliedMaxCapacity("");
+    onChange({
+      minCapacity: "",
+      maxCapacity: "",
+    });
+
     setDraftMinCapacity("");
     setDraftMaxCapacity("");
     setMinCapacityError(false);
@@ -74,12 +83,13 @@ export function useCapacityFilter() {
       return;
     }
 
-    setAppliedMinCapacity(normalizedMin.value);
-    setAppliedMaxCapacity(normalizedMax.value);
+    onChange({
+      minCapacity: normalizedMin.value,
+      maxCapacity: normalizedMax.value,
+    });
 
     setDraftMinCapacity(normalizedMin.value);
     setDraftMaxCapacity(normalizedMax.value);
-
     setIsOpen(false);
   }
 
@@ -109,9 +119,6 @@ export function useCapacityFilter() {
     isOpen,
     hasActiveCapacityFilter,
 
-    appliedMinCapacity,
-    appliedMaxCapacity,
-
     draftMinCapacity,
     draftMaxCapacity,
 
@@ -124,10 +131,10 @@ export function useCapacityFilter() {
     setMaxCapacityError,
 
     openCapacityFilter,
+    closeAndRevert,
     handleCancelCapacityFilter,
     handleApplyCapacityFilter,
     handleMinCapacityBlur,
     handleMaxCapacityBlur,
-    closeAndRevert,
   };
 }
