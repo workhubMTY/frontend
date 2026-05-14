@@ -114,7 +114,7 @@ export function ReservationTimelineCard({
         </div>
       </div>
 
-      <div className="mt-4 flex flex-wrap items-center gap-5 border-b border-slate-200 pb-4 text-xs text-slate-600">
+      <div className="mt-4 flex flex-wrap items-center gap-5 text-xs text-slate-600">
         <span className="flex items-center gap-2">
           <span className="h-4 w-7 rounded border border-slate-400 bg-slate-100" />
           Horario guardado
