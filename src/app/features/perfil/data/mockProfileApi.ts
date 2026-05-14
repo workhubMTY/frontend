@@ -4,6 +4,7 @@ import type {
   Team,
   Friend,
   User,
+  FriendSuggestion,
 } from "../types/profile";
 
 const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -14,58 +15,66 @@ const FRIENDS: FriendList = {
     {
       id: "CM",
       name: "Carlos Méndez",
-      role: "Compañero",
+      role: "Product Owner",
       avatarUrl:
         "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&h=200&fit=crop&crop=face",
+      email: "carlos.mendez@accenture.com",
     },
     {
       id: "VR",
       name: "Valeria Ruiz",
-      role: "Compañera",
+      role: "Scrum Master",
       avatarUrl:
         "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&h=200&fit=crop&crop=face",
+      email: "valeria.ruiz@accenture.com",
     },
     {
       id: "AG",
       name: "Andrés Gómez",
-      role: "Organizador",
+      role: "Developer",
       avatarUrl:
         "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=200&h=200&fit=crop&crop=face",
+      email: "andres.gomez@accenture.com",
     },
     {
       id: "LP",
       name: "Laura Pérez",
-      role: "Compañera",
+      role: "Developer",
       avatarUrl:
         "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=200&h=200&fit=crop&crop=face",
+      email: "laura.perez@accenture.com",
     },
     {
       id: "JM",
       name: "Jorge Martínez",
-      role: "Amigo cercano",
+      role: "Developer",
       avatarUrl:
         "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=200&h=200&fit=crop&crop=face",
+      email: "jorge.martinez@accenture.com",
     },
     {
       id: "SR",
       name: "Sofía Ramírez",
-      role: "Compañera",
+      role: "Developer",
       avatarUrl:
         "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=200&h=200&fit=crop&crop=face",
+      email: "sofia.ramirez@accenture.com",
     },
     {
       id: "MT",
       name: "Miguel Torres",
-      role: "Mentor",
+      role: "Developer",
       avatarUrl:
         "https://images.unsplash.com/photo-1527980965255-d3b416303d12?w=200&h=200&fit=crop&crop=face",
+      email: "miguel.torres@accenture.com",
     },
     {
       id: "AC",
       name: "Ana Castillo",
-      role: "Compañera",
+      role: "Developer",
       avatarUrl:
         "https://images.unsplash.com/photo-1544723795-3fb6469f5b39?w=200&h=200&fit=crop&crop=face",
+      email: "ana.castillo@accenture.com",
     },
   ],
 };
@@ -583,22 +592,26 @@ export async function mockGetTeamMembers(teamId: string): Promise<User[]> {
         name: "Valeria Ruiz",
         role: "Líder",
         avatarUrl: "/avatars/valeria.jpg",
+        email: "valeria.ruiz@accenture.com",
       },
       {
         id: "member-2",
         name: "Carlos Méndez",
         role: "Miembro",
         avatarUrl: "/avatars/carlos.jpg",
+        email: "carlos.mendez@accenture.com",
       },
       {
         id: "member-3",
         name: "Mariana López",
         role: "Miembro",
+        email: "mariana.lopez@accenture.com",
       },
       {
         id: "member-4",
         name: "Diego Fernández",
         role: "Miembro",
+        email: "diego.fernandez@accenture.com",
       },
     ],
     "team-beta": [
@@ -606,11 +619,13 @@ export async function mockGetTeamMembers(teamId: string): Promise<User[]> {
         id: "member-5",
         name: "Ana Torres",
         role: "Líder",
+        email: "ana.torres@accenture.com",
       },
       {
         id: "member-6",
         name: "Sofía Martínez",
         role: "Miembro",
+        email: "sofia.martinez@accenture.com",
       },
     ],
     "team-gamma": [
@@ -618,6 +633,7 @@ export async function mockGetTeamMembers(teamId: string): Promise<User[]> {
         id: "member-7",
         name: "Javier Torres",
         role: "Miembro",
+        email: "javier.torres@accenture.com",
       },
     ],
   };
@@ -625,25 +641,98 @@ export async function mockGetTeamMembers(teamId: string): Promise<User[]> {
   return membersByTeamId[teamId] ?? [];
 }
 
-export async function mockGetSuggestions() {
+export async function mockGetSuggestions(): Promise<FriendSuggestion[]> {
   return [
     {
       id: "u-1",
       name: "Mariana López",
       email: "mariana@empresa.com",
       status: "available",
+      role: "backend developer",
     },
     {
       id: "u-2",
       name: "Diego Fernández",
       email: "diego@empresa.com",
       status: "available",
+      role: "frontend developer",
     },
     {
       id: "u-3",
       name: "Sofía Martínez",
       email: "sofia@empresa.com",
       status: "pending",
+      role: "QA Lead",
+    },
+  ];
+}
+
+export async function mockGetUsers() {
+  await wait(500);
+  return [
+    {
+      id: "CM",
+      name: "Carlos Méndez",
+      role: "Product Owner",
+      avatarUrl:
+        "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&h=200&fit=crop&crop=face",
+      email: "carlos.mendez@accenture.com",
+    },
+    {
+      id: "VR",
+      name: "Valeria Ruiz",
+      role: "Scrum Master",
+      avatarUrl:
+        "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&h=200&fit=crop&crop=face",
+      email: "valeria.ruiz@accenture.com",
+    },
+    {
+      id: "AG",
+      name: "Andrés Gómez",
+      role: "Developer",
+      avatarUrl:
+        "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=200&h=200&fit=crop&crop=face",
+      email: "andres.gomez@accenture.com",
+    },
+    {
+      id: "LP",
+      name: "Laura Pérez",
+      role: "Developer",
+      avatarUrl:
+        "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=200&h=200&fit=crop&crop=face",
+      email: "laura.perez@accenture.com",
+    },
+    {
+      id: "JM",
+      name: "Jorge Martínez",
+      role: "Developer",
+      avatarUrl:
+        "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=200&h=200&fit=crop&crop=face",
+      email: "jorge.martinez@accenture.com",
+    },
+    {
+      id: "SR",
+      name: "Sofía Ramírez",
+      role: "Developer",
+      avatarUrl:
+        "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=200&h=200&fit=crop&crop=face",
+      email: "sofia.ramirez@accenture.com",
+    },
+    {
+      id: "MT",
+      name: "Miguel Torres",
+      role: "Developer",
+      avatarUrl:
+        "https://images.unsplash.com/photo-1527980965255-d3b416303d12?w=200&h=200&fit=crop&crop=face",
+      email: "miguel.torres@accenture.com",
+    },
+    {
+      id: "AC",
+      name: "Ana Castillo",
+      role: "Developer",
+      avatarUrl:
+        "https://images.unsplash.com/photo-1544723795-3fb6469f5b39?w=200&h=200&fit=crop&crop=face",
+      email: "ana.castillo@accenture.com",
     },
   ];
 }

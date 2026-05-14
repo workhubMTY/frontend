@@ -12,24 +12,17 @@ import {
   Users,
   X,
 } from "lucide-react";
-import type { Friend } from "../../types/profile";
-import { useMemo, useState, useEffect } from "react";
-import { UserMultiSelect } from "../utils/UserMultiSelect";
+import { useEffect, useMemo, useState } from "react";
+import type { Friend, FriendSuggestion } from "../../types/profile";
 import { Avatar } from "../utils/Avatar";
-import { EmptyUsersState } from "../utils/EmptyUsersState";
-
-type FriendSuggestion = {
-  id: string;
-  name: string;
-  email?: string;
-  avatarUrl?: string;
-  status?: string;
-};
 
 type SendFriendRequestsPayload = {
   userIds: string[];
   message?: string;
 };
+
+type DrawerMode = "list" | "invite";
+type SortOption = "name-asc" | "name-desc";
 
 type FriendsDrawerProps = {
   isOpen: boolean;
@@ -44,8 +37,7 @@ type FriendsDrawerProps = {
     payload: SendFriendRequestsPayload,
   ) => Promise<void> | void;
 };
-type SortOption = "name-asc" | "name-desc";
-type DrawerMode = "list" | "invite";
+
 export function FriendsDrawer({
   isOpen,
   friends,
@@ -106,6 +98,7 @@ export function FriendsDrawer({
     </div>
   );
 }
+
 type FriendsListModeProps = {
   friends: Friend[];
   selectedFriendId?: string | null;
@@ -156,6 +149,7 @@ function FriendsListMode({
             <h2 className="text-xl font-semibold tracking-tight text-neutral-950">
               Todas las amistades
             </h2>
+
             <p className="mt-1 text-sm text-neutral-500">
               Consulta tus amistades y elige con quién comparar logros.
             </p>
@@ -230,6 +224,7 @@ function FriendsListMode({
                       <h3 className="truncate font-semibold text-neutral-950">
                         {friend.name}
                       </h3>
+
                       <p className="text-sm text-neutral-500">{friend.role}</p>
                     </div>
                   </div>
@@ -258,10 +253,7 @@ function FriendsListMode({
             })}
           </ul>
         ) : (
-          <EmptyUsersState
-            title="No se encontraron amistades"
-            description="Intenta buscar con otro nombre o invita a más amigos."
-          />
+          <EmptyFriendsState />
         )}
       </div>
 
@@ -292,13 +284,13 @@ function InviteFriendsMode({
   onClose,
   onSendFriendRequests,
 }: InviteFriendsModeProps) {
-  const [users, setUsers] = useState<User[]>([]);
-  const [selectedUsers, setSelectedUsers] = useState<User[]>([]);
-  const [message, setMessage] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
   const [suggestions, setSuggestions] = useState<FriendSuggestion[] | null>(
     null,
   );
+  const [selectedUsers, setSelectedUsers] = useState<FriendSuggestion[]>([]);
+  const [message, setMessage] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -328,6 +320,7 @@ function InviteFriendsMode({
 
   const filteredSuggestions = useMemo(() => {
     const normalizedSearch = searchTerm.trim().toLowerCase();
+
     if (!suggestions) return [];
 
     if (!normalizedSearch) return suggestions;
@@ -344,6 +337,28 @@ function InviteFriendsMode({
 
   const canSend = selectedUsers.length > 0 && !isSubmitting;
 
+  function handleToggleUser(person: FriendSuggestion) {
+    if (person.status === "pending" || person.status === "already-friend") {
+      return;
+    }
+
+    setSelectedUsers((current) => {
+      const exists = current.some((user) => user.id === person.id);
+
+      if (exists) {
+        return current.filter((user) => user.id !== person.id);
+      }
+
+      return [...current, person];
+    });
+  }
+
+  function handleRemoveUser(userId: string) {
+    setSelectedUsers((current) => {
+      return current.filter((user) => user.id !== userId);
+    });
+  }
+
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
@@ -359,6 +374,7 @@ function InviteFriendsMode({
 
       setSelectedUsers([]);
       setMessage("");
+      setSearchTerm("");
       onBack();
     } finally {
       setIsSubmitting(false);
@@ -382,6 +398,7 @@ function InviteFriendsMode({
             <h2 className="text-xl font-semibold tracking-tight text-neutral-950">
               Invitar a más amigos
             </h2>
+
             <p className="mt-1 text-sm text-neutral-500">
               Busca personas y envía solicitudes de amistad.
             </p>
@@ -438,6 +455,7 @@ function InviteFriendsMode({
                       className="inline-flex h-8 items-center gap-2 bg-neutral-100 px-3 text-sm text-neutral-700"
                     >
                       {user.name}
+
                       <button
                         type="button"
                         onClick={() => handleRemoveUser(user.id)}
@@ -464,7 +482,11 @@ function InviteFriendsMode({
               </div>
 
               <div className="border border-neutral-200">
-                {filteredSuggestions.length > 0 ? (
+                {suggestions === null ? (
+                  <div className="px-5 py-10 text-center text-sm text-neutral-500">
+                    Cargando sugerencias...
+                  </div>
+                ) : filteredSuggestions.length > 0 ? (
                   <div className="max-h-[360px] overflow-y-auto divide-y divide-neutral-100">
                     {filteredSuggestions.map((person) => {
                       const isSelected = selectedUsers.some(
@@ -515,19 +537,7 @@ function InviteFriendsMode({
                     })}
                   </div>
                 ) : (
-                  <div className="flex flex-col items-center justify-center px-5 py-10 text-center">
-                    <div className="mb-3 grid size-12 place-items-center bg-neutral-100 text-neutral-500">
-                      <Users size={22} />
-                    </div>
-
-                    <h3 className="text-sm font-semibold text-neutral-950">
-                      No hay resultados
-                    </h3>
-
-                    <p className="mt-1 max-w-sm text-sm text-neutral-500">
-                      Intenta buscar por nombre, correo o usuario.
-                    </p>
-                  </div>
+                  <EmptySearchState />
                 )}
               </div>
             </div>
@@ -631,5 +641,41 @@ function FriendRequestStatus({
     <span className="whitespace-nowrap border border-neutral-300 bg-white px-3 py-1 text-xs font-medium text-neutral-700">
       Seleccionar
     </span>
+  );
+}
+
+function EmptyFriendsState() {
+  return (
+    <div className="flex h-full flex-col items-center justify-center px-8 text-center">
+      <div className="mb-4 grid size-12 place-items-center bg-neutral-100 text-neutral-500">
+        <Users size={22} />
+      </div>
+
+      <h3 className="text-base font-semibold text-neutral-950">
+        No se encontraron amistades
+      </h3>
+
+      <p className="mt-1 max-w-sm text-sm text-neutral-500">
+        Intenta buscar con otro nombre o invita a más amigos.
+      </p>
+    </div>
+  );
+}
+
+function EmptySearchState() {
+  return (
+    <div className="flex flex-col items-center justify-center px-5 py-10 text-center">
+      <div className="mb-3 grid size-12 place-items-center bg-neutral-100 text-neutral-500">
+        <Users size={22} />
+      </div>
+
+      <h3 className="text-sm font-semibold text-neutral-950">
+        No hay resultados
+      </h3>
+
+      <p className="mt-1 max-w-sm text-sm text-neutral-500">
+        Intenta buscar por nombre, correo o usuario.
+      </p>
+    </div>
   );
 }

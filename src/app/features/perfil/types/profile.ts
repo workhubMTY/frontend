@@ -2,6 +2,7 @@ export type User = {
   id: string;
   name: string;
   role: string;
+  email: string;
   avatarUrl?: string;
 };
 
@@ -56,3 +57,12 @@ export type UserProfile = {
 // export type ProfileApiResponse = {
 //   profile: UserProfile;
 // };
+
+export type FriendSuggestion = {
+  id: string;
+  name: string;
+  email?: string;
+  avatarUrl?: string;
+  role: string;
+  status?: "available" | "pending" | "already-friend";
+};

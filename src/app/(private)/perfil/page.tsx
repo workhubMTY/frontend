@@ -46,6 +46,7 @@ export default function UserProfilePage() {
   const [initialOpenTeamId, setInitialOpenTeamId] = useState<string | null>(
     null,
   );
+
   const [initialTeamDrawerMode, setInitialTeamDrawerMode] = useState<
     "list" | "create"
   >("list");
