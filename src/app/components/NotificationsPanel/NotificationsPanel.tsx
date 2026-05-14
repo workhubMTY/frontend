@@ -1,7 +1,10 @@
 "use client";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { api, TYPE_ICON, TYPE_COLOR } from "./Data";
-import { Notification, FriendRequest} from '../../types/notificationInterfaces'
+import {
+  Notification,
+  FriendRequest,
+} from "../../types/notificationInterfaces";
 
 function timeAgo(dateStr: string): string {
   const diff = Date.now() - new Date(dateStr).getTime();
@@ -30,7 +33,10 @@ function NotificationItem({
     >
       <div
         className="notif-icon"
-        style={{ background: TYPE_COLOR[n.type] + "18", color: TYPE_COLOR[n.type] }}
+        style={{
+          background: TYPE_COLOR[n.type] + "18",
+          color: TYPE_COLOR[n.type],
+        }}
       >
         <span className="material-symbols-outlined" style={{ fontSize: 18 }}>
           {TYPE_ICON[n.type]}
@@ -46,10 +52,15 @@ function NotificationItem({
       </div>
       <button
         className="notif-delete"
-        onClick={(e) => { e.stopPropagation(); onDelete(n.id); }}
+        onClick={(e) => {
+          e.stopPropagation();
+          onDelete(n.id);
+        }}
         title="Eliminar"
       >
-        <span className="material-symbols-outlined" style={{ fontSize: 16 }}>close</span>
+        <span className="material-symbols-outlined" style={{ fontSize: 16 }}>
+          close
+        </span>
       </button>
     </div>
   );
@@ -66,8 +77,13 @@ function FriendRequestItem({
 }) {
   return (
     <div className="notification-item" style={{ alignItems: "center" }}>
-      <div className="notif-icon" style={{ background: "#7c3aed18", color: "#7c3aed" }}>
-        <span className="material-symbols-outlined" style={{ fontSize: 18 }}>person_add</span>
+      <div
+        className="notif-icon"
+        style={{ background: "#7c3aed18", color: "#7c3aed" }}
+      >
+        <span className="material-symbols-outlined" style={{ fontSize: 18 }}>
+          person_add
+        </span>
       </div>
       <div className="notif-body" style={{ flex: 1 }}>
         <div className="notif-title">{req.fromName}</div>
@@ -106,8 +122,10 @@ export default function NotificationsPanel() {
       setNotifications(notifs);
       setUnreadCount(count.count);
       setRequests(reqs);
-    } catch {}
-    finally { setLoading(false); }
+    } catch {
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   useEffect(() => {
@@ -127,7 +145,9 @@ export default function NotificationsPanel() {
 
   const handleRead = async (id: number) => {
     await api.markRead([id]);
-    setNotifications((prev) => prev.map((n) => n.id === id ? { ...n, is_read: true } : n));
+    setNotifications((prev) =>
+      prev.map((n) => (n.id === id ? { ...n, is_read: true } : n)),
+    );
     setUnreadCount((c) => Math.max(0, c - 1));
   };
 
@@ -227,7 +247,7 @@ export default function NotificationsPanel() {
         }
         .notif-header-top {
           display: flex; align-items: center; justify-content: space-between;
-          margin-bottom: 12px;
+          // margin-bottom: 12px;
         }
         .notif-header-title {
           font-size: 15px; font-weight: 700;
@@ -375,22 +395,30 @@ export default function NotificationsPanel() {
             notifications
           </span>
           {totalBadge > 0 && (
-            <span className="notif-badge">{totalBadge > 99 ? "99+" : totalBadge}</span>
+            <span className="notif-badge">
+              {totalBadge > 99 ? "99+" : totalBadge}
+            </span>
           )}
         </button>
         {open && (
           <div className="notif-panel">
             <div className="notif-header">
               <div className="notif-header-top">
-                <span className="notif-header-title">Actividad</span>
+                {/* <span className="notif-header-title">Actividad</span> */}
                 {tab === "notifs" && notifications.length > 0 && (
                   <div className="notif-header-actions">
                     {unreadCount > 0 && (
-                      <button className="notif-action-btn" onClick={handleMarkAllRead}>
+                      <button
+                        className="notif-action-btn"
+                        onClick={handleMarkAllRead}
+                      >
                         Marcar todas leídas
                       </button>
                     )}
-                    <button className="notif-action-btn" onClick={handleDeleteAll}>
+                    <button
+                      className="notif-action-btn"
+                      onClick={handleDeleteAll}
+                    >
                       Eliminar todas
                     </button>
                   </div>
@@ -403,7 +431,9 @@ export default function NotificationsPanel() {
                   onClick={() => setTab("notifs")}
                 >
                   Notificaciones
-                  {unreadCount > 0 && <span className="tab-badge">{unreadCount}</span>}
+                  {unreadCount > 0 && (
+                    <span className="tab-badge">{unreadCount}</span>
+                  )}
                 </button>
                 <button
                   className="notif-tab"
@@ -411,7 +441,9 @@ export default function NotificationsPanel() {
                   onClick={() => setTab("requests")}
                 >
                   Solicitudes
-                  {requests.length > 0 && <span className="tab-badge">{requests.length}</span>}
+                  {requests.length > 0 && (
+                    <span className="tab-badge">{requests.length}</span>
+                  )}
                 </button>
               </div>
             </div>
@@ -421,7 +453,9 @@ export default function NotificationsPanel() {
               ) : tab === "notifs" ? (
                 notifications.length === 0 ? (
                   <div className="notif-empty">
-                    <span className="material-symbols-outlined">notifications_off</span>
+                    <span className="material-symbols-outlined">
+                      notifications_off
+                    </span>
                     <p>No tienes notificaciones</p>
                   </div>
                 ) : (
