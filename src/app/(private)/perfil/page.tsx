@@ -233,7 +233,7 @@ export default function UserProfilePage() {
                 onCompareFriend={handleCompareFriend}
                 onClearComparison={handleClearComparison}
                 onDisplayAll={handleDisplayAllFriends}
-                onInviteFriends={handleInviteFriends}
+                onInviteFriendsShortcut={handleInviteFriends}
               />
             </div>
 
