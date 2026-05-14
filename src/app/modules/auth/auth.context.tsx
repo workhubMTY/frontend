@@ -7,7 +7,6 @@ import {
 } from "react";
 
 import type { AuthContextType, LoginInput, User } from "./auth.types";
-import { getMe, postLogout } from "./api";
 import { authService } from "./auth.service";
 import { Finlandica } from "next/font/google";
 
@@ -21,7 +20,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     async function loadUser() {
       try {
         setIsLoading(true);
-        const me = await getMe();
+        const me = await authService.me();
         setUser(me);
       } catch (error) {
         setUser(null);
@@ -44,7 +43,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = async () => {
     try {
-      await postLogout();
+      await authService.logout();
     } finally {
       setUser(null);
     }

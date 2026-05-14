@@ -1,13 +1,19 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import {
   Search, UserPlus, Clock, MapPin,
   ChevronLeft, ChevronRight, X,
 } from "lucide-react";
 import AgendaRapida from "@/app/components/AgendaRapida/AgendaRapida";
 import PageTransition from "@/app/components/PageTransition/PageTransition";
-import { CalEvent, EventColorKey, EVENT_COLORS } from "@/app/types/Agenda";
+import { CalEvent, EventColorKey, EVENT_COLORS, CAL_EVENTS } from "@/app/types/Agenda";
+import { useHome } from "@/app/modules/home/useHome";
+import {
+  useFriends,
+  useSentFriendRequests,
+  useReceivedFriendRequests,
+} from "@/app/modules/friendships/hooks";
 
 interface Invitacion { nombre: string; sala: string; hora: string; tipo: string; }
 interface DiaInvitaciones { dia: string; items: Invitacion[]; }
@@ -16,47 +22,10 @@ interface Reserva { titulo: string; hora: string; lugar: string; estado: "Confir
 interface Persona { initials: string; name: string; role: string; reservas: Reserva[]; }
 interface SelectedEvent { titulo: string; hora: string; lugar: string; tipo: string; color?: EventColorKey; }
 
-const EVENTOS: Evento[] = [
-  { titulo: "Día del taco", hora: "10:00 am – 12:00 pm", lugar: "Piso 3",            tipo: "Evento"  },
-  { titulo: "Team Happy Hour", hora: "5:00 pm – 7:00 pm", lugar: "Terraza",           tipo: "Social"  },
-  { titulo: "Carrera Accenture", hora: "7:00 am – 9:00 am", lugar: "Parque industrial", tipo: "Deporte" },
-];
-
-const INVITACIONES: DiaInvitaciones[] = [
-  { dia: "Lunes", items: [
-    { nombre: "Junta de seguimiento", sala: "ISJ03 · Sierra Madre", hora: "7:00–13:00", tipo: "Reunión"  },
-    { nombre: "Refinamiento de req.", sala: "ABC02 · Sala 2", hora: "8:00–17:00", tipo: "Planning" },
-  ]},
-  { dia: "Martes", items: [
-    { nombre: "Junta con Stakeholders", sala: "DS340 · Sala 4", hora: "7:00–13:00", tipo: "Reunión"  },
-  ]},
-  { dia: "Miércoles", items: [
-    { nombre: "Junta de seguimiento", sala: "ISJ03 · Sierra Madre", hora: "7:00–13:00", tipo: "Reunión"  },
-  ]},
-];
-
-const PERSONAS: Persona[] = [
-  { initials: "CG", name: "Cristina González", role: "Senior Developer",
-    reservas: [
-      { titulo: "Sprint Planning", hora: "9:00–11:00",  lugar: "Sala Magna", estado: "Confirmada" },
-      { titulo: "Design Review", hora: "11:00–12:30", lugar: "ISJ03", estado: "Confirmada" },
-      { titulo: "Retrospectiva", hora: "11:00–13:00", lugar: "Sala 2", estado: "Pendiente"  },
-    ],
-  },
-  { initials: "MJ", name: "María Jesús", role: "Tester",
-    reservas: [
-      { titulo: "Standup", hora: "8:00–9:00", lugar: "Sala Virtual", estado: "Confirmada" },
-      { titulo: "Revisión QA", hora: "13:00–14:00", lugar: "ISJ04", estado: "Confirmada" },
-    ],
-  },
-  { initials: "MC", name: "Mia Clements", role: "Junior Developer",
-    reservas: [
-      { titulo: "Standup", hora: "8:00–9:00", lugar: "Sala Virtual", estado: "Confirmada" },
-      { titulo: "Workshop UX", hora: "10:00–12:00", lugar: "Sala UX", estado: "Confirmada" },
-      { titulo: "1:1 con manager", hora: "14:00–15:00", lugar: "Oficina Dir.", estado: "Pendiente"  },
-    ],
-  },
-];
+// Helper to extract initials from a name
+function getInitials(name: string): string {
+  return name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2);
+}
 
 const PERSON_COLORS = [
   { bg: "#EEEDFE", text: "#534AB7" },
@@ -98,10 +67,10 @@ function EventDetail({
         >
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
             stroke={c?.border ?? "#7F77DD"} strokeWidth="1.5">
-            <rect x="3" y="4" width="18" height="18" rx="2"/>
-            <line x1="16" y1="2" x2="16" y2="6"/>
-            <line x1="8"  y1="2" x2="8"  y2="6"/>
-            <line x1="3"  y1="10" x2="21" y2="10"/>
+            <rect x="3" y="4" width="18" height="18" rx="2" />
+            <line x1="16" y1="2" x2="16" y2="6" />
+            <line x1="8" y1="2" x2="8" y2="6" />
+            <line x1="3" y1="10" x2="21" y2="10" />
           </svg>
         </div>
 
@@ -193,15 +162,21 @@ function ReservacionesModal({ persona, idx, onClose }: { persona: Persona; idx: 
 }
 
 export default function Home() {
-  const [selectedPerson, setSelectedPerson] = useState<number | null>(null);
-  const [modalIdx, setModalIdx]             = useState<number | null>(null);
-  const [curEv, setCurEv]                   = useState(0);
-  const [selInv, setSelInv]                 = useState<string | null>(null);
-  const [activeEvent, setActiveEvent]       = useState<SelectedEvent | null>(null);
-  const [eventSource, setEventSource]       = useState<"carousel" | "cal" | "inv">("carousel");
+  const { invitaciones, eventos, loading, error } = useHome();
 
-  const shownEvent: SelectedEvent = activeEvent ?? { ...EVENTOS[curEv] };
-  const showDots    = eventSource === "carousel" && !activeEvent;
+  const friends = useFriends();
+  const { data: sentRequests, createFriendRequest, cancelFriendRequest } = useSentFriendRequests();
+  const { data: receivedRequests, acceptFriendRequest, rejectFriendRequest } = useReceivedFriendRequests();
+
+  const [selectedPerson, setSelectedPerson] = useState<number | null>(null);
+  const [modalIdx, setModalIdx] = useState<number | null>(null);
+  const [curEv, setCurEv] = useState(0);
+  const [selInv, setSelInv] = useState<string | null>(null);
+  const [activeEvent, setActiveEvent] = useState<SelectedEvent | null>(null);
+  const [eventSource, setEventSource] = useState<"carousel" | "cal" | "inv">("carousel");
+
+  const shownEvent: SelectedEvent = activeEvent ?? (eventos.length > 0 ? { ...eventos[curEv] } : { titulo: "Sin eventos", hora: "N/A", lugar: "N/A", tipo: "N/A" });
+  const showDots = eventSource === "carousel" && !activeEvent;
   const showNavBtns = eventSource === "carousel";
 
   const handleCalEvent = useCallback((ev: CalEvent) => {
@@ -247,26 +222,34 @@ export default function Home() {
                 </button>
               </div>
               <div className="flex flex-1 flex-col gap-1 overflow-y-auto min-h-0">
-                {PERSONAS.map((p, i) => (
-                  <button key={i} onClick={() => handlePersonClick(i)}
-                    className="flex w-full cursor-pointer items-center gap-2.5 rounded-lg border-none px-2 py-2 text-left font-[inherit] transition-colors"
-                    style={{ background: selectedPerson === i ? "#EEEDFE" : "transparent" }}>
-                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold"
-                      style={{ background: PERSON_COLORS[i].bg, color: PERSON_COLORS[i].text }}>
-                      {p.initials}
-                    </div>
-                    <div>
-                      <p className="text-[12px] font-medium leading-tight"
-                        style={{ color: selectedPerson === i ? "#534AB7" : "#111827" }}>
-                        {p.name}
-                      </p>
-                      <p className="text-[10px] leading-tight"
-                        style={{ color: selectedPerson === i ? "#8B7FCC" : "#9CA3AF" }}>
-                        {p.role}
-                      </p>
-                    </div>
-                  </button>
-                ))}
+                {friends.isLoading ? (
+                  <p className="text-[12px] text-gray-500 text-center py-4">Cargando...</p>
+                ) : friends.isError ? (
+                  <p className="text-[12px] text-red-500 text-center py-4">Error al cargar datos</p>
+                ) : !friends.data || friends.data.length === 0 ? (
+                  <p className="text-[12px] text-gray-500 text-center py-4">Sin amigos</p>
+                ) : (
+                  friends.data.map((friend, i) => (
+                    <button key={i} onClick={() => handlePersonClick(i)}
+                      className="flex w-full cursor-pointer items-center gap-2.5 rounded-lg border-none px-2 py-2 text-left font-[inherit] transition-colors"
+                      style={{ background: selectedPerson === i ? "#EEEDFE" : "transparent" }}>
+                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold"
+                        style={{ background: PERSON_COLORS[i % PERSON_COLORS.length].bg, color: PERSON_COLORS[i % PERSON_COLORS.length].text }}>
+                        {getInitials(friend.name)}
+                      </div>
+                      <div>
+                        <p className="text-[12px] font-medium leading-tight"
+                          style={{ color: selectedPerson === i ? "#534AB7" : "#111827" }}>
+                          {friend.name}
+                        </p>
+                        <p className="text-[10px] leading-tight"
+                          style={{ color: selectedPerson === i ? "#8B7FCC" : "#9CA3AF" }}>
+                          {friend.roleName}
+                        </p>
+                      </div>
+                    </button>
+                  ))
+                )}
               </div>
               <div className="shrink-0 flex items-center gap-2 rounded-lg bg-gray-100 px-3 py-2">
                 <Search size={11} className="shrink-0 text-gray-400" />
@@ -282,10 +265,10 @@ export default function Home() {
 
               <EventDetail
                 event={shownEvent}
-                onPrev={showNavBtns ? () => handleCarousel((curEv - 1 + EVENTOS.length) % EVENTOS.length) : undefined}
-                onNext={showNavBtns ? () => handleCarousel((curEv + 1) % EVENTOS.length) : undefined}
+                onPrev={showNavBtns ? () => handleCarousel((curEv - 1 + eventos.length) % eventos.length) : undefined}
+                onNext={showNavBtns ? () => handleCarousel((curEv + 1) % eventos.length) : undefined}
                 showDots={showDots}
-                dotCount={EVENTOS.length}
+                dotCount={eventos.length}
                 dotActive={curEv}
                 onDot={handleCarousel}
               />
@@ -294,37 +277,45 @@ export default function Home() {
             <div className="flex flex-col rounded-xl bg-white shadow-sm border border-gray-100 overflow-hidden p-4 gap-3">
               <span className="shrink-0 text-[0.85rem] font-semibold text-gray-900">Invitaciones</span>
               <div className="flex-1 overflow-y-auto min-h-0">
-                {INVITACIONES.map((sec, si) => (
-                  <div key={si}>
-                    <p className="py-1 text-[9px] font-bold uppercase tracking-wider text-gray-400">
-                      {sec.dia}
-                    </p>
-                    {sec.items.map((item, ii) => {
-                      const id         = `inv_${si}_${ii}`;
-                      const isSelected = selInv === id;
-                      return (
-                        <div key={ii}
-                          onClick={() => handleInvClick(item, id)}
-                          className="mb-1 cursor-pointer rounded-lg px-2 py-2 transition-colors"
-                          style={{ background: isSelected ? "#EEEDFE" : "transparent" }}
-                          onMouseEnter={(e) => { if (!isSelected) (e.currentTarget as HTMLDivElement).style.background = "#F9FAFB"; }}
-                          onMouseLeave={(e) => { if (!isSelected) (e.currentTarget as HTMLDivElement).style.background = "transparent"; }}
-                        >
-                          <p className="text-[11px] font-semibold leading-tight mb-1"
-                            style={{ color: isSelected ? "#534AB7" : "#111827" }}>
-                            {item.nombre}
-                          </p>
-                          <div className="flex items-center gap-1 text-[10px] text-gray-400 mb-0.5">
-                            <MapPin size={8} /> {item.sala}
+                {loading ? (
+                  <p className="text-[12px] text-gray-500 text-center py-4">Cargando...</p>
+                ) : error ? (
+                  <p className="text-[12px] text-red-500 text-center py-4">Error al cargar</p>
+                ) : invitaciones.length === 0 ? (
+                  <p className="text-[12px] text-gray-500 text-center py-4">Sin invitaciones</p>
+                ) : (
+                  invitaciones.map((sec, si) => (
+                    <div key={si}>
+                      <p className="py-1 text-[9px] font-bold uppercase tracking-wider text-gray-400">
+                        {sec.dia}
+                      </p>
+                      {sec.items.map((item, ii) => {
+                        const id = `inv_${si}_${ii}`;
+                        const isSelected = selInv === id;
+                        return (
+                          <div key={ii}
+                            onClick={() => handleInvClick(item, id)}
+                            className="mb-1 cursor-pointer rounded-lg px-2 py-2 transition-colors"
+                            style={{ background: isSelected ? "#EEEDFE" : "transparent" }}
+                            onMouseEnter={(e) => { if (!isSelected) (e.currentTarget as HTMLDivElement).style.background = "#F9FAFB"; }}
+                            onMouseLeave={(e) => { if (!isSelected) (e.currentTarget as HTMLDivElement).style.background = "transparent"; }}
+                          >
+                            <p className="text-[11px] font-semibold leading-tight mb-1"
+                              style={{ color: isSelected ? "#534AB7" : "#111827" }}>
+                              {item.nombre}
+                            </p>
+                            <div className="flex items-center gap-1 text-[10px] text-gray-400 mb-0.5">
+                              <MapPin size={8} /> {item.sala}
+                            </div>
+                            <div className="flex items-center gap-1 text-[10px] text-gray-400">
+                              <Clock size={8} /> {item.hora}
+                            </div>
                           </div>
-                          <div className="flex items-center gap-1 text-[10px] text-gray-400">
-                            <Clock size={8} /> {item.hora}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                ))}
+                        );
+                      })}
+                    </div>
+                  ))
+                )}
               </div>
               <button className="shrink-0 w-full cursor-pointer rounded-lg border border-gray-200 py-1.5 text-[11px] text-gray-500 hover:border-violet-600 hover:text-violet-600 transition-colors bg-transparent">
                 Mostrar todas
@@ -334,13 +325,7 @@ export default function Home() {
         </div>
       </section>
 
-      {modalIdx !== null && (
-        <ReservacionesModal
-          persona={PERSONAS[modalIdx]}
-          idx={modalIdx}
-          onClose={() => { setModalIdx(null); setSelectedPerson(null); }}
-        />
-      )}
+      {/* Modal de reservaciones deshabilitado - se activará cuando se integren datos de reservaciones con amigos */}
     </PageTransition>
   );
 }

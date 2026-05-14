@@ -1,16 +1,46 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { Search, Calendar, Clock, Users, LogOut, X, Check } from "lucide-react";
 import ListaInvitados from "@/app/components/ScrollInivitados/ListaInvitados";
 import PageTransition from "@/app/components/PageTransition/PageTransition";
 import { label } from "framer-motion/client";
+import { reservacionesApi } from "@/app/modules/reservaciones/api";
 
 interface Invitado {
   id: string;
   nombre: string;
   email: string;
-  tipo: "colaborador" | "invitado";
+  tipo: "colaborador" | "invitado" | "equipo";
+}
+
+interface BackendOfficeSlot {
+  id: number;
+  name: string;
+  capacity: number;
+  floor_id: number;
+  is_blocked: boolean;
+  floor_name: string;
+}
+
+interface BackendUser {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+}
+
+interface BackendGuest {
+  id: number;
+  name: string;
+  email: string;
+}
+
+interface BackendWorkGroup {
+  id: number;
+  name: string;
+  description: string | null;
+  memberCount?: number;
 }
 
 interface Sesion {
@@ -37,38 +67,13 @@ const SESIONES: Sesion[] = [
   { fecha: "04/13", inicio: "02:00 PM", fin: "04:00 PM" },
 ];
 
-const EQUIPOS_MOCK: Equipo[] = [
-  { id: "e1", nombre: "Equipo Alpha", miembros: 5, color: "bg-violet-100" },
-  { id: "e2", nombre: "Equipo Beta", miembros: 8, color: "bg-pink-100" },
-  { id: "e3", nombre: "Design Team", miembros: 4, color: "bg-sky-100" },
-  { id: "e4", nombre: "Dev Team", miembros: 6, color: "bg-green-100" },
-];
-
-const RECIENTES_MOCK: Persona[] = [
-  {
-    id: "r1",
-    nombre: "Cristian Ricardo Luque Arámbula",
-    email: "cristian@accenture.com",
-  },
-  {
-    id: "r2",
-    nombre: "Jesús Eduardo Escobar Meza",
-    email: "piti@accenture.com",
-  },
-  {
-    id: "r3",
-    nombre: "María Fernanda Torres",
-    email: "mfernanda@accenture.com",
-  },
-];
-
 const Avatar = ({
   nombre,
   variant = "colaborador",
   size = "md",
 }: {
   nombre: string;
-  variant?: "colaborador" | "invitado";
+  variant?: "colaborador" | "invitado" | "equipo";
   size?: "sm" | "md";
 }) => {
   const initials = nombre
@@ -94,41 +99,64 @@ const Avatar = ({
 };
 
 export default function Cubiculo() {
-    const [invitados, setInvitados] = useState<Invitado[]>([
-        {
-            id: "1",
-            nombre: "Cristian Ricardo",
-            email: "cristian@accenture.com",
-            tipo: "colaborador",
-        },
-        {
-            id: "2",
-            nombre: "Invitado",
-            email: "juan@empresainteresada.com",
-            tipo: "invitado",
-        },
-    ]);
+    const [invitados, setInvitados] = useState<Invitado[]>([]);
     const [busqueda, setBusqueda] = useState("");
     const [nombreEquipo, setNombreEquipo] = useState("");
     const [dropdownAbierto, setDropdownAbierto] = useState(false);
     const [crearEquipo, setCrearEquipo] = useState(true);
     const [modalAbierto, setModalAbierto] = useState(false);
     const [mensajeError, setMensajeError] = useState("");
+    const [apiError, setApiError] = useState<string | null>(null);
+    const [isLoadingData, setIsLoadingData] = useState(true);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [availableUsers, setAvailableUsers] = useState<BackendUser[]>([]);
+    const [availableGuests, setAvailableGuests] = useState<BackendGuest[]>([]);
+    const [availableWorkGroups, setAvailableWorkGroups] = useState<BackendWorkGroup[]>([]);
+    const [officeSlots, setOfficeSlots] = useState<BackendOfficeSlot[]>([]);
+    const [selectedOfficeSlotId, setSelectedOfficeSlotId] = useState<number | null>(null);
     const searchRef = useRef<HTMLDivElement>(null);
 
+    const availablePeople = useMemo(() => {
+        return [
+            ...availableUsers.map((user) => ({
+                id: user.id,
+                nombre: user.name,
+                email: user.email,
+                tipo: "colaborador" as const,
+            })),
+            ...availableGuests.map((guest) => ({
+                id: String(guest.id),
+                nombre: guest.name,
+                email: guest.email,
+                tipo: "invitado" as const,
+            })),
+        ];
+    }, [availableUsers, availableGuests]);
+
+    const availableTeams = useMemo(() => {
+        return availableWorkGroups.map((group) => ({
+            id: `equipo-${group.id}`,
+            nombre: group.name,
+            miembros: group.memberCount ?? 0,
+            color: "bg-violet-100",
+        }));
+    }, [availableWorkGroups]);
+
     const personasFiltradas =
-    busqueda.length > 1 ? RECIENTES_MOCK.filter(
-        (p) =>
-            p.nombre.toLowerCase().includes(busqueda.toLowerCase()) ||
-            p.email.toLowerCase().includes(busqueda.toLowerCase()),
-        )
-    : RECIENTES_MOCK;
+        busqueda.length > 1
+            ? availablePeople.filter(
+                  (p) =>
+                      p.nombre.toLowerCase().includes(busqueda.toLowerCase()) ||
+                      p.email.toLowerCase().includes(busqueda.toLowerCase()),
+              )
+            : availablePeople;
 
     const equiposFiltrados =
-    busqueda.length > 1 ? EQUIPOS_MOCK.filter((e) =>
-            e.nombre.toLowerCase().includes(busqueda.toLowerCase()),
-        )
-    : EQUIPOS_MOCK;
+        busqueda.length > 1
+            ? availableTeams.filter((e) =>
+                  e.nombre.toLowerCase().includes(busqueda.toLowerCase()),
+              )
+            : availableTeams;
 
     useEffect(() => {
         const handleClickOutside = (e: MouseEvent) => {
@@ -138,6 +166,35 @@ export default function Cubiculo() {
         };
         document.addEventListener("mousedown", handleClickOutside);
         return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
+
+    useEffect(() => {
+        async function loadReservationData() {
+            try {
+                const [slots, users, guests, groups] = await Promise.all([
+                    reservacionesApi.getOfficeSlots(),
+                    reservacionesApi.getUsers(),
+                    reservacionesApi.getGuests(),
+                    reservacionesApi.getWorkGroups(),
+                ]);
+
+                setOfficeSlots(slots);
+                setAvailableUsers(users);
+                setAvailableGuests(guests);
+                setAvailableWorkGroups(groups);
+                setSelectedOfficeSlotId(slots[0]?.id ?? null);
+            } catch (error) {
+                const message =
+                    error instanceof Error
+                        ? error.message
+                        : "Error al cargar los datos de reservación";
+                setApiError(message);
+            } finally {
+                setIsLoadingData(false);
+            }
+        }
+
+        loadReservationData();
     }, []);
 
     const eliminarInvitado = (id: string) => setInvitados((prev) => prev.filter((i) => i.id !== id));
@@ -165,7 +222,7 @@ export default function Cubiculo() {
                 id: `equipo-${equipo.id}`,
                 nombre: equipo.nombre,
                 email: `${equipo.miembros} miembros`,
-                tipo: "colaborador",
+                tipo: "equipo",
             },
         ]);
         setBusqueda("");
@@ -173,13 +230,84 @@ export default function Cubiculo() {
         setDropdownAbierto(false);
     };
 
-    const handleFinalizar = () => {
-        if(crearEquipo && nombreEquipo.trim() === "") {
+    const formatTimeTo24 = (time: string): string => {
+        const [value, period] = time.split(" ");
+        const [hours, minutes] = value.split(":").map(Number);
+        let hour24 = hours % 12;
+        if (period === "PM") hour24 += 12;
+        return `${String(hour24).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:00`;
+    };
+
+    const handleFinalizar = async () => {
+        if (crearEquipo && nombreEquipo.trim() === "") {
             setMensajeError("El nombre del equipo no puede estar vacio");
             return;
         }
-        setModalAbierto(true);
-    }
+
+        if (!selectedOfficeSlotId) {
+            setMensajeError("No se encontró ningún cubículo para reservar");
+            return;
+        }
+
+        if (invitados.length === 0) {
+            setMensajeError("Agrega al menos un invitado o colaborador");
+            return;
+        }
+
+        setMensajeError("");
+        setApiError(null);
+        setIsSubmitting(true);
+
+        const userIds = invitados
+            .filter((inv) => inv.tipo === "colaborador")
+            .map((inv) => inv.id);
+
+        const guestIds = invitados
+            .filter((inv) => inv.tipo === "invitado")
+            .map((inv) => Number(inv.id));
+
+        const workGroupIds = invitados
+            .filter((inv) => inv.tipo === "equipo")
+            .map((inv) => Number(inv.id.replace("equipo-", "")));
+
+        const today = new Date();
+        const isoDate = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(
+            today.getDate(),
+        ).padStart(2, "0")}`;
+
+        const schedules = SESIONES.map((sesion) => ({
+            start_time: `${isoDate}T${formatTimeTo24(sesion.inicio)}`,
+            end_time: `${isoDate}T${formatTimeTo24(sesion.fin)}`,
+        }));
+
+        try {
+            await reservacionesApi.createReservationBatch({
+                reservableId: selectedOfficeSlotId,
+                schedules,
+                workGroupIds: workGroupIds.length > 0 ? workGroupIds : undefined,
+                userIds: userIds.length > 0 ? userIds : undefined,
+                guestIds: guestIds.length > 0 ? guestIds : undefined,
+                canOverlap: false,
+            });
+            setModalAbierto(true);
+        } catch (error) {
+            const message =
+                error instanceof Error
+                    ? error.message
+                    : "Error al crear la reservación";
+            setApiError(message);
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    const selectedOfficeSlot = officeSlots.find((slot) => slot.id === selectedOfficeSlotId) ?? null;
+
+    const selectedRoomName = selectedOfficeSlot?.name ?? "Selecciona un cubículo";
+    const selectedFloorName = selectedOfficeSlot?.floor_name ?? "-";
+    const selectedCapacity = selectedOfficeSlot?.capacity ?? 0;
+    const selectedBlocked = selectedOfficeSlot?.is_blocked ?? false;
+
     const handleRegresar = () => setModalAbierto(false);
 
     return (
@@ -217,20 +345,50 @@ export default function Cubiculo() {
                         <div className="bg-white rounded-lg border border-gray-200 p-6 w-72 shrink-0 flex flex-col shadow-sm">
                             <div className="flex items-baseline justify-between mb-3">
                                 <span className="font-bold text-lg text-gray-900">
-                                    Sierra Madre
+                                    {isLoadingData ? "Cargando cubículo..." : selectedRoomName}
                                 </span>
                                 <span className="text-xs text-gray-400 font-medium">
-                                    ICSJ-3040
+                                    {selectedFloorName}
                                 </span>
+                            </div>
+                            <div className="mb-4">
+                                <label className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                                    Selecciona cubículo
+                                </label>
+                                <select
+                                    value={selectedOfficeSlotId ?? ""}
+                                    onChange={(e) => setSelectedOfficeSlotId(Number(e.target.value))}
+                                    className="mt-2 w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700 outline-none focus:border-violet-400"
+                                >
+                                    <option value="" disabled>
+                                        {isLoadingData ? "Cargando cubículos..." : "Elige un cubículo"}
+                                    </option>
+                                    {officeSlots.map((slot) => (
+                                        <option key={slot.id} value={slot.id}>
+                                            {slot.name} • {slot.floor_name}
+                                        </option>
+                                    ))}
+                                </select>
                             </div>
                             <div className="flex items-center gap-1.5 mb-3 text-gray-500">
                                 <Users size={16} />
-                                <span className="text-sm font-medium">16</span>
+                                <span className="text-sm font-medium">{selectedCapacity}</span>
                             </div>
-                            <div className="rounded-xl overflow-hidden w-full h-40 mb-5 bg-gradient-to-br from-slate-300 to-slate-400 flex items-center justify-center text-slate-500 text-sm">
-                                No me jalo la imagen
+                            <div className="rounded-xl overflow-hidden w-full h-40 mb-5 bg-gradient-to-br from-slate-300 to-slate-400 flex flex-col items-center justify-center text-slate-500 text-sm text-center px-4">
+                                {selectedOfficeSlot
+                                    ? `Cubículo disponible en ${selectedFloorName}`
+                                    : "Selecciona un cubículo para ver sus detalles"}
                             </div>
                             <div className="flex flex-col gap-5">
+                                <div className="flex items-center justify-between gap-3 mb-3">
+                                    <div className="flex items-center gap-1.5 text-gray-400 text-sm">
+                                        <Calendar size={15} />
+                                        <span>Horario de reserva</span>
+                                    </div>
+                                    <span className={`text-xs font-semibold ${selectedBlocked ? "text-red-600" : "text-slate-600"}`}>
+                                        {selectedBlocked ? "Cubículo bloqueado" : "Disponible"}
+                                    </span>
+                                </div>
                                 <div className="grid grid-cols-3 gap-1.5 px-2 mb-1">
                                     <div className="flex justify-center">
                                         <Calendar size={15} className="text-gray-400" />
@@ -284,47 +442,59 @@ export default function Cubiculo() {
                                         <div className="absolute top-full left-0 right-0 bg-white border border-violet-400 border-t-0 rounded-b-xl shadow-xl z-50">
                                             <div className="px-4 pt-2.5 pb-1">
                                                 <span className="text-[11px] font-bold text-gray-400 tracking-widest uppercase">
-                                                    Recientes
+                                                    Personas
                                                 </span>
                                             </div>
-                                            {personasFiltradas.map((p) => (
-                                                <button
-                                                    key={p.id}
-                                                    onClick={() => agregarPersona(p)}
-                                                    className="flex items-center gap-3 w-full px-4 py-2.5 bg-transparent border-none cursor-pointer text-left font-[inherit] hover:bg-gray-50 transition-colors"
-                                                >
-                                                    <Avatar
-                                                        nombre={p.nombre}
-                                                        variant="colaborador"
-                                                        size="sm"
-                                                    />
-                                                    <div>
-                                                        <div className="text-sm font-semibold text-gray-900">
-                                                            {p.nombre}
+                                            {personasFiltradas.length === 0 && !isLoadingData ? (
+                                                <div className="px-4 py-3 text-sm text-gray-500">
+                                                    No se encontraron colaboradores o invitados.
+                                                </div>
+                                            ) : (
+                                                personasFiltradas.map((p) => (
+                                                    <button
+                                                        key={p.id}
+                                                        onClick={() => agregarPersona(p)}
+                                                        className="flex items-center gap-3 w-full px-4 py-2.5 bg-transparent border-none cursor-pointer text-left font-[inherit] hover:bg-gray-50 transition-colors"
+                                                    >
+                                                        <Avatar
+                                                            nombre={p.nombre}
+                                                            variant="colaborador"
+                                                            size="sm"
+                                                        />
+                                                        <div>
+                                                            <div className="text-sm font-semibold text-gray-900">
+                                                                {p.nombre}
+                                                            </div>
+                                                            <div className="text-xs text-gray-400">{p.email}</div>
                                                         </div>
-                                                        <div className="text-xs text-gray-400">{p.email}</div>
-                                                    </div>
-                                                </button>
-                                            ))}
+                                                    </button>
+                                                ))
+                                            )}
                                             <div className="px-4 pt-2.5 pb-1 border-t border-gray-100 mt-1">
                                                 <span className="text-[11px] font-bold text-gray-400 tracking-widest uppercase">
                                                     Equipos
                                                 </span>
                                             </div>
                                             <div className="flex flex-wrap gap-2 px-4 pb-3.5 pt-2">
-                                                {equiposFiltrados.map((eq) => (
-                                                    <button
-                                                        key={eq.id}
-                                                        onClick={() => agregarEquipo(eq)}
-                                                        className={`flex items-center gap-1.5 ${eq.color} border-none rounded-full px-3.5 py-1.5 cursor-pointer text-sm font-semibold text-gray-700 font-[inherit] hover:opacity-75 transition-opacity`}
-                                                    >
-                                                        <Users size={13} />
-                                                        {eq.nombre}
-                                                        <span className="text-[11px] text-gray-500">
-                                                            ({eq.miembros})
-                                                        </span>
-                                                    </button>
-                                                ))}
+                                                {equiposFiltrados.length === 0 && !isLoadingData ? (
+                                                    <div className="text-sm text-gray-500 px-2 py-2">
+                                                        No hay equipos disponibles.
+                                                    </div>
+                                                ) : (
+                                                    equiposFiltrados.map((eq) => (
+                                                        <button
+                                                            key={eq.id}
+                                                            onClick={() => agregarEquipo(eq)}
+                                                            className={`flex items-center gap-1.5 ${eq.color} border-none rounded-full px-3.5 py-1.5 cursor-pointer text-sm font-semibold text-gray-700 font-[inherit] hover:opacity-75 transition-opacity`}
+                                                        >
+                                                            <Users size={13} />
+                                                            {eq.nombre}
+                                                            <span className="text-[11px] text-gray-500">
+                                                                ({eq.miembros})
+                                                            </span>
+                                                        </button>
+                                                    ))
+                                                )}
                                             </div>
                                         </div>
                                     )}
@@ -402,11 +572,21 @@ export default function Cubiculo() {
                             </div>
                         </div>
                     </div>
+                    {apiError && (
+                        <div className="mt-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                            {apiError}
+                        </div>
+                    )}
                     <button
                         onClick={handleFinalizar}
-                        className="shrink-0 mt-3 w-full p-3 bg-violet-700 text-white border-none rounded-lg text-lg font-bold cursor-pointer tracking-wide transition-all hover:bg-violet-800 active:scale-99 font-[inherit] no-select"
+                        disabled={isLoadingData || isSubmitting}
+                        className={`shrink-0 mt-3 w-full p-3 text-white border-none rounded-lg text-lg font-bold cursor-pointer tracking-wide transition-all font-[inherit] no-select ${
+                            isLoadingData || isSubmitting
+                                ? "bg-violet-300 cursor-not-allowed"
+                                : "bg-violet-700 hover:bg-violet-800 active:scale-99"
+                        }`}
                     >
-                        Finalizar
+                        {isSubmitting ? "Enviando..." : isLoadingData ? "Cargando..." : "Finalizar"}
                     </button>
                 </div>
             </section>

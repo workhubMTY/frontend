@@ -1,38 +1,12 @@
-const API_URL = `${process.env.NEXT_PUBLIC_API_URL}`;
+import { authFetch } from "@/lib/api";
 
-export async function postData<T>(endpoint: string, body: unknown): Promise<T> {
-  const response = await fetch(`${API_URL}${endpoint}`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    credentials: "include",
-    body: JSON.stringify(body),
-  });
-  const data = await response.json();
-  if (!response.ok) {
-    throw new Error(data.message || `${response.status} al hacer POST`);
-  }
-  return data;
-}
+export const authApi = {
+  postData: <T,>(endpoint: string, body: unknown): Promise<T> =>
+    authFetch<T>(endpoint, { method: "POST", body: JSON.stringify(body) }),
 
-export async function getMe() {
-  const response = await fetch(`${API_URL}/auth/me`, {
-    credentials: "include",
-  });
-  const data = await response.json();
+  getMe: () => authFetch<{ eId: string; name: string; role: string }>("/auth/me"),
 
-  if (!response.ok) {
-    throw new Error(data.message || `${response.status} al hacer POST`);
-  }
-  const user = data.data;
-
-  return user;
-}
-
-export async function postLogout(): Promise<void> {
-  await fetch(`${API_URL}/auth/logout`, {
-    method: "POST",
-    credentials: "include",
-  });
-}
+  postLogout: async (): Promise<void> => {
+    await authFetch<void>("/auth/logout", { method: "POST" });
+  },
+};
