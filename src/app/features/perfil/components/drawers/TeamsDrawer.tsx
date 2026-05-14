@@ -30,7 +30,6 @@ type TeamMembersState = {
 type CreateTeamPayload = {
   name: string;
   description: string;
-  privacy: "private" | "public";
   invitedMemberIds: string[];
 };
 
@@ -454,7 +453,7 @@ function CreateTeamMode({
 }: CreateTeamModeProps) {
   const [teamName, setTeamName] = useState("");
   const [description, setDescription] = useState("");
-  const [privacy, setPrivacy] = useState<"private" | "public">("private");
+  // const [privacy, setPrivacy] = useState<"private" | "public">("private");
   const [memberSearch, setMemberSearch] = useState("");
   const [selectedMembers, setSelectedMembers] = useState<User[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -488,7 +487,6 @@ function CreateTeamMode({
       await onCreateTeam({
         name: teamName.trim(),
         description: description.trim(),
-        privacy,
         invitedMemberIds: selectedMembers.map((member) => member.id),
       });
     } finally {
@@ -591,44 +589,6 @@ function CreateTeamMode({
                 </span>
               </div>
             </div>
-
-            <div>
-              <label
-                htmlFor="team-privacy"
-                className="text-sm font-semibold text-neutral-950"
-              >
-                Privacidad
-              </label>
-
-              <div className="relative mt-3">
-                <Lock
-                  size={18}
-                  className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-neutral-500"
-                />
-
-                <select
-                  id="team-privacy"
-                  value={privacy}
-                  onChange={(event) =>
-                    setPrivacy(event.target.value as "private" | "public")
-                  }
-                  className="h-14 w-full appearance-none border border-neutral-200 bg-white pl-12 pr-12 text-sm text-neutral-900 outline-none transition focus:border-purple-500 focus:ring-2 focus:ring-purple-100"
-                >
-                  <option value="private">
-                    Privado — Solo los miembros invitados pueden unirse
-                  </option>
-                  <option value="public">
-                    Público — Cualquier persona puede solicitar unirse
-                  </option>
-                </select>
-
-                <ChevronDown
-                  size={18}
-                  className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-neutral-500"
-                />
-              </div>
-            </div>
-
             <div>
               <label
                 htmlFor="member-search"
