@@ -16,9 +16,9 @@ import { ParkingReservationHeaderCard } from "@/app/features/estacionamientos/co
 
 import {
   apiGetExternalEventsInInterval,
-  createMockApiJson,
+  createApiJson,
   toTimelineEvent,
-} from "@/app/features/reservaciones/data/mockReservations";
+} from "@/app/features/reservaciones/data/reservationsApi";
 
 import { apiGetSpaceReservationsByDay } from "@/app/features/reservaciones/data/mockApisss";
 
@@ -87,10 +87,7 @@ export default function ParkingReservationSchedulerPage() {
 
   const [editedSavedDateIds, setEditedSavedDateIds] = useState<string[]>([]);
 
-  const apiJson = useMemo(
-    () => createMockApiJson(calendarCells),
-    [calendarCells],
-  );
+  const apiJson = useMemo(() => createApiJson(calendarCells), [calendarCells]);
 
   const modifiedDateIds = useMemo(
     () => uniqueSortedIds(Object.keys(dayBlocks)),

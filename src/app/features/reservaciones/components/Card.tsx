@@ -8,8 +8,6 @@ type CardProps = {
 
 export function Card({ children, className }: CardProps) {
   return (
-    <section className={cn("rounded-md bg-container", className)}>
-      {children}
-    </section>
+    <section className={cn(" bg-container", className)}>{children}</section>
   );
 }

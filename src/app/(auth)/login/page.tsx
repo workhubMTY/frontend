@@ -45,6 +45,7 @@ export default function Login() {
       await authService.login(user);
       router.push("/home");
     } catch (err: any) {
+      console.log(err);
       setError(err.message || "Ocurrió un error al iniciar sesión.");
     }
   }

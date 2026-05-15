@@ -41,7 +41,7 @@ export function PanelRed({
             return (
               <button
                 type="button"
-                key={p.id}
+                key={p.id + p.initials}
                 onClick={() => onPersonClick(i)}
                 className={[
                   "grid w-full cursor-pointer grid-cols-[auto_1fr_auto] items-center gap-3 px-3 py-4 text-left transition",
