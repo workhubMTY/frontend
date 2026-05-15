@@ -4,7 +4,6 @@ import { usePathname, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import AccentureLogo from "../../../../public/accenture_logo_purple1.png";
 import Image from "next/image";
-import "./navbar.css";
 import NotificationsPanel from "../NotificationsPanel/NotificationsPanel";
 
 const routes = [
@@ -20,13 +19,18 @@ export default function Navbar() {
   const route = useRouter();
   const [open, setOpen] = useState(false);
 
-  useEffect(() => { setOpen(false); }, [pathname]);
+  useEffect(() => {
+    setOpen(false);
+  }, [pathname]);
 
   useEffect(() => {
     if (!open) return;
     const handler = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
-      if (!target.closest("[data-mobile-menu]") && !target.closest("[data-hamburger]")) {
+      if (
+        !target.closest("[data-mobile-menu]") &&
+        !target.closest("[data-hamburger]")
+      ) {
         setOpen(false);
       }
     };
@@ -38,7 +42,12 @@ export default function Navbar() {
     <>
       <header className="w-full sticky top-0 h-16 z-40 bg-background flex flex-row items-center gap-2 px-4">
         <a href="/home" className="shrink-0 pl-1">
-          <Image src={AccentureLogo} alt="Accenture logo" width={40} height={40} />
+          <Image
+            src={AccentureLogo}
+            alt="Accenture logo"
+            width={40}
+            height={40}
+          />
         </a>
         <nav className="hidden md:flex flex-row text-white gap-1 ml-2 items-end h-full">
           <svg width="0" height="0" className="absolute">
@@ -61,7 +70,15 @@ export default function Navbar() {
                 }
                 style={
                   isActive
-                    ? { clipPath: "url(#tab-shape)", height: "44px", width: "120px", alignSelf: "flex-end", paddingTop: "4px" }
+                    ? {
+                        clipPath: "url(#tab-shape)",
+                        height: "44px",
+
+                        width: "clamp(100px, fit-content, 200px)", // 👈 aquí el clamp                        alignSelf: "flex-end",
+                        paddingTop: "4px",
+                        paddingLeft: "20px",
+                        paddingRight: "20px",
+                      }
                     : {}
                 }
               >
@@ -74,7 +91,10 @@ export default function Navbar() {
         <div className="ml-auto flex items-center gap-1.5">
           <label className="hidden sm:flex gap-2 bg-background-page self-center px-4 py-2 rounded-full text-xs text-on-background-2 cursor-pointer">
             <span className="material-symbols-outlined">chat_bubble</span>
-            <button onClick={() => route.push("/chatbot")} className="cursor-pointer whitespace-nowrap">
+            <button
+              onClick={() => route.push("/chatbot")}
+              className="cursor-pointer whitespace-nowrap"
+            >
               Pide al chatbot
             </button>
           </label>
@@ -82,7 +102,10 @@ export default function Navbar() {
           {/* 🔔 Notifications panel — replaces the static label */}
           <NotificationsPanel />
 
-          <Link href="/perfil" className="bg-background-page self-center select-none rounded-full text-on-background-2 font-semibold">
+          <Link
+            href="/perfil"
+            className="bg-background-page self-center select-none rounded-full text-on-background-2 font-semibold"
+          >
             <label className="bg-background-page self-center p-2 select-none rounded-full text-on-background-2 font-semibold material-symbols-outlined cursor-pointer">
               person
             </label>
@@ -121,8 +144,12 @@ export default function Navbar() {
                   href={r.href}
                   className="flex items-center gap-3 px-4 py-3 rounded-xl transition-colors"
                   style={{
-                    background: isActive ? "var(--color-background-page, #f5f5f5)" : "transparent",
-                    color:      isActive ? "var(--color-on-background, #111)"       : "var(--color-on-background-2, #555)",
+                    background: isActive
+                      ? "var(--color-background-page, #f5f5f5)"
+                      : "transparent",
+                    color: isActive
+                      ? "var(--color-on-background, #111)"
+                      : "var(--color-on-background-2, #555)",
                     fontWeight: isActive ? 600 : 400,
                   }}
                 >
@@ -135,11 +162,16 @@ export default function Navbar() {
             })}
             <div className="mt-2 pt-2 border-t border-background-page sm:hidden">
               <button
-                onClick={() => { route.push("/chatbot"); setOpen(false); }}
+                onClick={() => {
+                  route.push("/chatbot");
+                  setOpen(false);
+                }}
                 className="flex items-center gap-3 px-4 py-3 w-full rounded-xl transition-colors text-left"
                 style={{ color: "var(--color-on-background-2, #555)" }}
               >
-                <span className="material-symbols-outlined text-[18px]">chat_bubble</span>
+                <span className="material-symbols-outlined text-[18px]">
+                  chat_bubble
+                </span>
                 <span className="text-sm">Pide al chatbot</span>
               </button>
             </div>
