@@ -12,21 +12,17 @@ import {
   Users,
   X,
 } from "lucide-react";
-import type { Friend } from "../../types/profile";
-import { useMemo, useState, useEffect } from "react";
-
-type FriendSuggestion = {
-  id: string;
-  name: string;
-  email?: string;
-  avatarUrl?: string;
-  status?: string;
-};
+import { useEffect, useMemo, useState } from "react";
+import type { Friend, FriendSuggestion } from "../../types/profile";
+import { Avatar } from "../utils/Avatar";
 
 type SendFriendRequestsPayload = {
   userIds: string[];
   message?: string;
 };
+
+type DrawerMode = "list" | "invite";
+type SortOption = "name-asc" | "name-desc";
 
 type FriendsDrawerProps = {
   isOpen: boolean;
@@ -42,9 +38,6 @@ type FriendsDrawerProps = {
   ) => Promise<void> | void;
 };
 
-type SortOption = "name-asc" | "name-desc";
-type DrawerMode = "list" | "invite";
-
 export function FriendsDrawer({
   isOpen,
   friends,
@@ -57,11 +50,13 @@ export function FriendsDrawer({
   onSendFriendRequests,
 }: FriendsDrawerProps) {
   const [drawerMode, setDrawerMode] = useState<DrawerMode>(initialMode);
+
   useEffect(() => {
     if (!isOpen) return;
 
     setDrawerMode(initialMode);
   }, [isOpen, initialMode]);
+
   if (!isOpen) return null;
 
   function handleClose() {
@@ -127,14 +122,17 @@ function FriendsListMode({
   const filteredFriends = useMemo(() => {
     const normalizedSearch = searchTerm.trim().toLowerCase();
 
-    const filtered = friends.filter((friend) => {
-      const name = friend.name.toLowerCase();
-      const role = friend.role.toLowerCase();
+    const matchingFriends = friends.filter((friend) => {
+      if (!normalizedSearch) return true;
 
-      return name.includes(normalizedSearch) || role.includes(normalizedSearch);
+      return (
+        friend.name.toLowerCase().includes(normalizedSearch) ||
+        friend.email.toLowerCase().includes(normalizedSearch) ||
+        friend.role.toLowerCase().includes(normalizedSearch)
+      );
     });
 
-    return filtered.sort((a, b) => {
+    return [...matchingFriends].sort((a, b) => {
       if (sortOption === "name-desc") {
         return b.name.localeCompare(a.name);
       }
@@ -151,6 +149,7 @@ function FriendsListMode({
             <h2 className="text-xl font-semibold tracking-tight text-neutral-950">
               Todas las amistades
             </h2>
+
             <p className="mt-1 text-sm text-neutral-500">
               Consulta tus amistades y elige con quién comparar logros.
             </p>
@@ -225,6 +224,7 @@ function FriendsListMode({
                       <h3 className="truncate font-semibold text-neutral-950">
                         {friend.name}
                       </h3>
+
                       <p className="text-sm text-neutral-500">{friend.role}</p>
                     </div>
                   </div>
@@ -253,19 +253,7 @@ function FriendsListMode({
             })}
           </ul>
         ) : (
-          <div className="flex h-full flex-col items-center justify-center px-8 text-center">
-            <div className="mb-4 grid size-12 place-items-center bg-neutral-100 text-neutral-500">
-              <Users size={22} />
-            </div>
-
-            <h3 className="text-base font-semibold text-neutral-950">
-              No se encontraron amistades
-            </h3>
-
-            <p className="mt-1 max-w-sm text-sm text-neutral-500">
-              Intenta buscar con otro nombre o invita a más amigos.
-            </p>
-          </div>
+          <EmptyFriendsState />
         )}
       </div>
 
@@ -297,12 +285,12 @@ function InviteFriendsMode({
   onSendFriendRequests,
 }: InviteFriendsModeProps) {
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedUsers, setSelectedUsers] = useState<FriendSuggestion[]>([]);
-  const [message, setMessage] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [suggestions, setSuggestions] = useState<FriendSuggestion[] | null>(
     null,
   );
+  const [selectedUsers, setSelectedUsers] = useState<FriendSuggestion[]>([]);
+  const [message, setMessage] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -332,6 +320,7 @@ function InviteFriendsMode({
 
   const filteredSuggestions = useMemo(() => {
     const normalizedSearch = searchTerm.trim().toLowerCase();
+
     if (!suggestions) return [];
 
     if (!normalizedSearch) return suggestions;
@@ -365,10 +354,12 @@ function InviteFriendsMode({
   }
 
   function handleRemoveUser(userId: string) {
-    setSelectedUsers((current) => current.filter((user) => user.id !== userId));
+    setSelectedUsers((current) => {
+      return current.filter((user) => user.id !== userId);
+    });
   }
 
-  async function handleSubmit(event: React.SubmitEvent<HTMLFormElement>) {
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     if (!canSend) return;
@@ -384,6 +375,7 @@ function InviteFriendsMode({
       setSelectedUsers([]);
       setMessage("");
       setSearchTerm("");
+      onBack();
     } finally {
       setIsSubmitting(false);
     }
@@ -406,6 +398,7 @@ function InviteFriendsMode({
             <h2 className="text-xl font-semibold tracking-tight text-neutral-950">
               Invitar a más amigos
             </h2>
+
             <p className="mt-1 text-sm text-neutral-500">
               Busca personas y envía solicitudes de amistad.
             </p>
@@ -462,6 +455,7 @@ function InviteFriendsMode({
                       className="inline-flex h-8 items-center gap-2 bg-neutral-100 px-3 text-sm text-neutral-700"
                     >
                       {user.name}
+
                       <button
                         type="button"
                         onClick={() => handleRemoveUser(user.id)}
@@ -488,7 +482,11 @@ function InviteFriendsMode({
               </div>
 
               <div className="border border-neutral-200">
-                {filteredSuggestions.length > 0 ? (
+                {suggestions === null ? (
+                  <div className="px-5 py-10 text-center text-sm text-neutral-500">
+                    Cargando sugerencias...
+                  </div>
+                ) : filteredSuggestions.length > 0 ? (
                   <div className="max-h-[360px] overflow-y-auto divide-y divide-neutral-100">
                     {filteredSuggestions.map((person) => {
                       const isSelected = selectedUsers.some(
@@ -539,19 +537,7 @@ function InviteFriendsMode({
                     })}
                   </div>
                 ) : (
-                  <div className="flex flex-col items-center justify-center px-5 py-10 text-center">
-                    <div className="mb-3 grid size-12 place-items-center bg-neutral-100 text-neutral-500">
-                      <Users size={22} />
-                    </div>
-
-                    <h3 className="text-sm font-semibold text-neutral-950">
-                      No hay resultados
-                    </h3>
-
-                    <p className="mt-1 max-w-sm text-sm text-neutral-500">
-                      Intenta buscar por nombre, correo o usuario.
-                    </p>
-                  </div>
+                  <EmptySearchState />
                 )}
               </div>
             </div>
@@ -605,6 +591,7 @@ function InviteFriendsMode({
               className="inline-flex h-11 min-w-44 items-center justify-center gap-2 bg-purple-700 px-5 text-sm font-medium text-white transition hover:bg-purple-800 disabled:cursor-not-allowed disabled:bg-purple-300"
             >
               <Send size={16} />
+
               {isSubmitting
                 ? "Enviando..."
                 : selectedUsers.length === 1
@@ -657,30 +644,38 @@ function FriendRequestStatus({
   );
 }
 
-function Avatar({ name, avatarUrl }: { name: string; avatarUrl?: string }) {
-  const [hasImageError, setHasImageError] = useState(false);
-
-  if (avatarUrl && !hasImageError) {
-    return (
-      <img
-        src={avatarUrl}
-        alt={name}
-        onError={() => setHasImageError(true)}
-        className="size-12 shrink-0 rounded-full object-cover"
-      />
-    );
-  }
-
-  const initials = name
-    .split(" ")
-    .map((word) => word[0])
-    .slice(0, 2)
-    .join("")
-    .toUpperCase();
-
+function EmptyFriendsState() {
   return (
-    <div className="grid size-12 shrink-0 place-items-center rounded-full bg-purple-100 text-sm font-semibold text-purple-800">
-      {initials}
+    <div className="flex h-full flex-col items-center justify-center px-8 text-center">
+      <div className="mb-4 grid size-12 place-items-center bg-neutral-100 text-neutral-500">
+        <Users size={22} />
+      </div>
+
+      <h3 className="text-base font-semibold text-neutral-950">
+        No se encontraron amistades
+      </h3>
+
+      <p className="mt-1 max-w-sm text-sm text-neutral-500">
+        Intenta buscar con otro nombre o invita a más amigos.
+      </p>
+    </div>
+  );
+}
+
+function EmptySearchState() {
+  return (
+    <div className="flex flex-col items-center justify-center px-5 py-10 text-center">
+      <div className="mb-3 grid size-12 place-items-center bg-neutral-100 text-neutral-500">
+        <Users size={22} />
+      </div>
+
+      <h3 className="text-sm font-semibold text-neutral-950">
+        No hay resultados
+      </h3>
+
+      <p className="mt-1 max-w-sm text-sm text-neutral-500">
+        Intenta buscar por nombre, correo o usuario.
+      </p>
     </div>
   );
 }

@@ -46,6 +46,7 @@ export default function UserProfilePage() {
   const [initialOpenTeamId, setInitialOpenTeamId] = useState<string | null>(
     null,
   );
+
   const [initialTeamDrawerMode, setInitialTeamDrawerMode] = useState<
     "list" | "create"
   >("list");
@@ -274,7 +275,10 @@ export default function UserProfilePage() {
       <TeamsDrawer
         open={isTeamDrawerOpen}
         teams={teams}
-        onClose={() => setIsTeamDrawerOpen(false)}
+        onClose={() => {
+          setIsTeamDrawerOpen(false);
+          setInitialTeamDrawerMode("list");
+        }}
         initialOpenTeamId={initialOpenTeamId}
         initialTeamDrawerMode={initialTeamDrawerMode}
         onGetTeamMembers={mockGetTeamMembers}

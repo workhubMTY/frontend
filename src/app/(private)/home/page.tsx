@@ -2,91 +2,78 @@
 
 import { useMemo, useState } from "react";
 import {
-  Search,
-  Clock,
-  MapPin,
-  ChevronLeft,
-  ChevronRight,
-  Star,
-  Calendar,
-  CalendarDays,
-  Users,
-  MailOpen,
+  Search, UserPlus, Clock, MapPin,
+  ChevronLeft, ChevronRight, Star, Calendar,
+  CalendarDays, Users, MailOpen,
 } from "lucide-react";
-import AgendaRapida, {
-  ExternalEvent,
-} from "@/app/components/AgendaRapida/AgendaRapida";
+import AgendaRapida, { ExternalEvent } from "@/app/components/AgendaRapida/AgendaRapida";
 import PageTransition from "@/app/components/PageTransition/PageTransition";
-import { useFriends } from "@/app/modules/friendships/hooks";
-import {
-  useEvents,
-  useFriendsReservations,
-  useMyReservations,
-} from "@/app/modules/office-slots/hooks";
-import { getInitials, getUserColor } from "@/app/features/profile.utils";
-import type {
-  ReservationEvent,
-  ReservationSummary,
-} from "@/app/modules/office-slots/types";
 
+interface Invitacion { nombre: string; sala: string; hora: string; tipo: string; day: number; start: number; end: number; }
+interface DiaInvitaciones { dia: string; dayIndex: number; items: Invitacion[]; }
+interface Reserva { titulo: string; hora: string; lugar: string; estado: "Confirmada" | "Pendiente"; day: number; start: number; end: number; }
+interface Persona { initials: string; name: string; role: string; reservas: Reserva[]; }
+interface EventoGeneral { titulo: string; descripcion: string; tipo: "Festivo" | "Corporativo" | "Social"; icono: string; day: number; start: number; end: number; }
 type MobileTab = "agenda" | "red" | "invitaciones";
 
-type Invitacion = {
-  nombre: string;
-  sala: string;
-  hora: string;
-  tipo: string;
-  day: number;
-  start: number;
-  end: number;
-  startAt: string;
-  endAt: string;
-};
+const EVENTOS_GENERALES: EventoGeneral[] = [
+  { titulo: "Día del Trabajo", descripcion: "Día festivo nacional — oficinas cerradas", tipo: "Festivo", icono: "🎉", day: 3, start: 0, end: 24 },
+  { titulo: "All-Hands Accenture MX", descripcion: "Sesión global transmitida en vivo", tipo: "Corporativo", icono: "📡", day: 0, start: 10, end: 11.5 },
+  { titulo: "Happy Hour Workhub", descripcion: "Terraza · Todos bienvenidos", tipo: "Social", icono: "🍹", day: 4, start: 17, end: 19 },
+];
 
-type DiaInvitaciones = {
-  dia: string;
-  dayIndex: number;
-  items: Invitacion[];
-};
+const INVITACIONES: DiaInvitaciones[] = [
+  { dia: "Lunes", dayIndex: 0, items: [
+    { nombre: "Junta de seguimiento", sala: "ISJ03 · Sierra Madre", hora: "7:00–13:00", tipo: "Reunión", day: 0, start: 7, end: 13 },
+    { nombre: "Refinamiento de req.", sala: "ABC02 · Sala 2", hora: "8:00–17:00", tipo: "Planning", day: 0, start: 8, end: 17 },
+  ]},
+  { dia: "Martes", dayIndex: 1, items: [
+    { nombre: "Junta con Stakeholders", sala: "DS340 · Sala 4", hora: "7:00–13:00", tipo: "Reunión", day: 1, start: 7, end: 13 },
+  ]},
+  { dia: "Miércoles", dayIndex: 2, items: [
+    { nombre: "Junta de seguimiento", sala: "ISJ03 · Sierra Madre", hora: "7:00–13:00", tipo: "Reunión", day: 2, start: 7, end: 13 },
+  ]},
+];
 
-type Reserva = {
-  id: number;
-  titulo: string;
-  hora: string;
-  lugar: string;
-  estado: "Confirmada" | "Pendiente";
-  day: number;
-  start: number;
-  end: number;
-  startAt: string;
-  endAt: string;
-};
+const PERSONAS: Persona[] = [
+  {
+    initials: "CG",
+    name: "Cristina González",
+    role: "Senior Developer",
+    reservas: [
+      { titulo: "Sprint Planning", hora: "9:00–11:00", lugar: "Sala Magna", estado: "Confirmada", day: 0, start: 9, end: 11 },
+      { titulo: "Design Review", hora: "11:00–12:30", lugar: "ISJ03", estado: "Confirmada", day: 0, start: 11, end: 12.5 },
+      { titulo: "Retrospectiva", hora: "11:00–13:00", lugar: "Sala 2", estado: "Pendiente", day: 2, start: 11, end: 13 },
+    ],
+  },
+  {
+    initials: "MJ",
+    name: "María Jesús",
+    role: "Tester",
+    reservas: [
+      { titulo: "Standup", hora: "8:00–9:00", lugar: "Sala Virtual", estado: "Confirmada", day: 1, start: 8, end: 9 },
+      { titulo: "Revisión QA", hora: "13:00–14:00", lugar: "ISJ04", estado: "Confirmada", day: 1, start: 13, end: 14 },
+    ],
+  },
+  {
+    initials: "MC",
+    name: "Mia Clements",
+    role: "Junior Developer",
+    reservas: [
+      { titulo: "Standup", hora: "8:00–9:00", lugar: "Sala Virtual", estado: "Confirmada", day: 0, start: 8, end: 9 },
+      { titulo: "Workshop UX", hora: "10:00–12:00", lugar: "Sala UX", estado: "Confirmada", day: 2, start: 10, end: 12 },
+      { titulo: "1:1 con manager", hora: "14:00–15:00", lugar: "Oficina Dir.", estado: "Pendiente", day: 3, start: 14, end: 15 },
+    ],
+  },
+];
 
-type Persona = {
-  initials: string;
-  name: string;
-  role: string;
-  userId: string;
-  reservas: Reserva[];
-};
+const PERSON_COLORS = [
+  { bg: "#EEEDFE", text: "#534AB7" },
+  { bg: "#DDEEFE", text: "#185FA5" },
+  { bg: "#D6F5E6", text: "#0F6E56" },
+];
 
-type EventoGeneral = {
-  id?: number;
-  titulo: string;
-  descripcion: string;
-  tipo: "Festivo" | "Corporativo" | "Social";
-  icono: string;
-  day: number;
-  start: number;
-  end: number;
-  startAt?: string;
-  endAt?: string;
-};
-
-const TIPO_EVENTO_COLORS: Record<
-  EventoGeneral["tipo"],
-  { bg: string; text: string; border: string }
-> = {
+const TIPO_EVENTO_COLORS: Record<EventoGeneral["tipo"], { bg: string; text: string; border: string }> = {
   Festivo: { bg: "#FEF9C3", text: "#713F12", border: "#EAB308" },
   Corporativo: { bg: "#EDE9FE", text: "#4C1D95", border: "#7C3AED" },
   Social: { bg: "#D6F5E6", text: "#065F46", border: "#10B981" },

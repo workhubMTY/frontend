@@ -1,60 +1,64 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { reservableSpaces } from "@/app/features/cubiculos/data/reservableSpaces";
-import { FloorMapCard } from "@/app/features/cubiculos/components/Search/FloorMapCard";
-import { ReservationFilters } from "@/app/features/cubiculos/components/Search/ReservationFilters";
-import { ReservationSearchHeader } from "@/app/features/cubiculos/components/Search/ReservationSearchHeader";
-import { SelectedSpacePanel } from "@/app/features/cubiculos/components/Search/SelectedSpacePanel";
-import { SpacesResultsList } from "@/app/features/cubiculos/components/Search/SpacesResultsList";
+import { FloorMapCard } from "@/app/features/cubiculos/components/panels/FloorMapCard";
+import { ReservationFilters } from "@/app/features/cubiculos/components/filters/ReservationFilters";
+import { ReservationSearchHeader } from "@/app/features/cubiculos/components/others/ReservationSearchHeader";
+import { SelectedSpacePanel } from "@/app/features/cubiculos/components/panels/SelectedSpacePanel";
+import { SpacesResultsList } from "@/app/features/cubiculos/components/panels/SpacesResultsList";
+import { useReservableSpacesSearch } from "@/app/features/cubiculos/hooks/useReservableSpacesSearch";
+import { useEffect } from "react";
 
 export default function ReservableSpacesSearchPage() {
-  const [search, setSearch] = useState("");
-  const [selectedSpaceId, setSelectedSpaceId] = useState<string | undefined>(
-    "sm1",
-  );
-
-  const filteredSpaces = useMemo(() => {
-    const normalizedSearch = search.trim().toLowerCase();
-
-    if (!normalizedSearch) {
-      return reservableSpaces;
-    }
-
-    return reservableSpaces.filter((space) => {
-      return (
-        space.code.toLowerCase().includes(normalizedSearch) ||
-        space.name.toLowerCase().includes(normalizedSearch) ||
-        space.displayName.toLowerCase().includes(normalizedSearch)
-      );
-    });
-  }, [search]);
-
-  const selectedSpace = useMemo(() => {
-    return reservableSpaces.find((space) => space.id === selectedSpaceId);
-  }, [selectedSpaceId]);
+  const {
+    filters,
+    setFilters,
+    spaces,
+    isLoading,
+    selectedSpace,
+    selectedSpaceCode,
+    selectedMapId,
+    availableMapIds,
+    reservedMapIds,
+    disabledMapIds,
+    setSelectedSpaceCode,
+    handleSelectMapId,
+    handleSubmitFilters,
+  } = useReservableSpacesSearch();
+  useEffect(() => {
+    console.log("PAGE selectedSpaceCode:", selectedSpaceCode);
+    console.log("PAGE selectedMapId:", selectedMapId);
+    console.log("PAGE selectedSpace:", selectedSpace);
+  }, [selectedSpaceCode, selectedMapId, selectedSpace]);
 
   return (
     <main className="min-h-screen bg-background-page px-4 py-6 text-neutral-700 sm:px-6 lg:px-8">
       <div className="mx-auto flex flex-col gap-5">
         <ReservationSearchHeader />
 
-        <ReservationFilters search={search} onSearchChange={setSearch} />
+        <ReservationFilters
+          value={filters}
+          onChange={setFilters}
+          onSubmit={handleSubmitFilters}
+        />
 
         <section className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_420px]">
           <FloorMapCard
-            spaces={filteredSpaces}
-            selectedSpaceId={selectedSpaceId}
-            onSelectSpace={setSelectedSpaceId}
+            spaces={spaces}
+            isLoading={isLoading}
+            selectedMapId={selectedMapId}
+            availableMapIds={availableMapIds}
+            reservedMapIds={reservedMapIds}
+            disabledMapIds={disabledMapIds}
+            onSelectMapId={handleSelectMapId}
           />
 
           <aside className="flex flex-col gap-4">
             <SelectedSpacePanel selectedSpace={selectedSpace} />
 
             <SpacesResultsList
-              spaces={filteredSpaces}
-              selectedSpaceId={selectedSpaceId}
-              onSelectSpace={setSelectedSpaceId}
+              spaces={spaces}
+              selectedSpaceCode={selectedSpaceCode}
+              onSelectSpace={setSelectedSpaceCode}
             />
           </aside>
         </section>

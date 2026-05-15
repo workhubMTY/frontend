@@ -13,6 +13,7 @@ type MonthCalendarProps = {
   modifiedDateIds: string[];
   conflictDateIds: string[];
   calendarCells: CalendarCell[];
+  variant?: "default" | "compact";
   onSelect: (action: CalendarSelectionAction) => void;
 };
 
@@ -23,6 +24,7 @@ export function MonthCalendar({
   modifiedDateIds,
   conflictDateIds,
   calendarCells,
+  variant = "default",
   onSelect,
 }: MonthCalendarProps) {
   const [dragStartId, setDragStartId] = useState<string | null>(null);
@@ -94,7 +96,13 @@ export function MonthCalendar({
         </p>
       </div>
 
-      <div className="grid select-none grid-cols-7 gap-y-3 text-center text-xs">
+      <div
+        className={cn(
+          "grid select-none grid-cols-7 text-center text-xs",
+          variant === "compact" ? "gap-y-1" : "gap-y-3",
+        )}
+      >
+        {" "}
         {["D", "L", "M", "M", "J", "V", "S"].map((dayLabel, index) => (
           <div
             key={`${dayLabel}-${index}`}
@@ -103,13 +111,11 @@ export function MonthCalendar({
             {dayLabel}
           </div>
         ))}
-
         {Array.from({ length: calendarCells[0]?.date.getDay() ?? 0 }).map(
           (_, index) => (
             <div key={`calendar-placeholder-${index}`} aria-hidden="true" />
           ),
         )}
-
         {calendarCells.map((cell) => {
           const isSelected = selectedDatesSet.has(cell.id);
           const isModified = modifiedDatesSet.has(cell.id);
@@ -132,7 +138,8 @@ export function MonthCalendar({
                 month: "long",
               })}
               className={cn(
-                "relative mx-auto flex h-10 w-10 flex-col items-center justify-center rounded-md text-xs font-medium transition",
+                "relative mx-auto flex flex-col items-center justify-center rounded-md text-xs font-medium transition",
+                variant === "compact" ? "h-8 w-8" : "h-10 w-10",
                 cell.isWeekend &&
                   "cursor-not-allowed border border-slate-200 bg-slate-200 text-slate-400 opacity-70 shadow-inner",
                 !cell.isWeekend &&

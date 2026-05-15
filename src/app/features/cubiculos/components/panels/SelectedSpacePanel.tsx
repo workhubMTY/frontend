@@ -65,7 +65,7 @@ export function SelectedSpacePanel({ selectedSpace }: SelectedSpacePanelProps) {
           </h2>
 
           <p className="mt-4 text-lg font-semibold text-purple-700">
-            {selectedSpace.displayName}
+            {`${selectedSpace.code} ${selectedSpace.name}`}
           </p>
 
           <p className="mt-1 flex items-center gap-2 text-sm text-slate-600">
