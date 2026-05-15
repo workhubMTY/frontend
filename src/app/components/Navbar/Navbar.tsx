@@ -73,8 +73,7 @@ export default function Navbar() {
                     ? {
                         clipPath: "url(#tab-shape)",
                         height: "44px",
-
-                        width: "clamp(100px, fit-content, 200px)", // 👈 aquí el clamp                        alignSelf: "flex-end",
+                        width: "clamp(100px, fit-content, 200px)",
                         paddingTop: "4px",
                         paddingLeft: "20px",
                         paddingRight: "20px",
