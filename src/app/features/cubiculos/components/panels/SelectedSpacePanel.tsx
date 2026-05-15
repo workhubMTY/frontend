@@ -9,6 +9,7 @@ import { useRouter } from "next/navigation";
 
 type SelectedSpacePanelProps = {
   selectedSpace?: ReservableSpace;
+  onContinue: () => void;
 };
 
 const timelineHours = ["08:00", "10:00", "12:00", "14:00", "16:00", "18:00"];
@@ -35,8 +36,10 @@ function getTimelineBlockClass(status: TimelineBlock["status"]) {
   return "border border-slate-200 bg-white";
 }
 
-export function SelectedSpacePanel({ selectedSpace }: SelectedSpacePanelProps) {
-  const router = useRouter();
+export function SelectedSpacePanel({
+  selectedSpace,
+  onContinue,
+}: SelectedSpacePanelProps) {
   if (!selectedSpace) {
     return (
       <section className="border border-slate-200 bg-white p-5 shadow-sm">
@@ -55,6 +58,8 @@ export function SelectedSpacePanel({ selectedSpace }: SelectedSpacePanelProps) {
       </section>
     );
   }
+
+  const router = useRouter();
 
   return (
     <section className="border border-slate-200 bg-white p-5 shadow-sm">

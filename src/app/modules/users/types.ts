@@ -1,4 +1,4 @@
-import { getInitials, getUserColor } from "@/app/features/profile.utils";
+import { getInitials, getUserColor } from "@/app/features/home/utils/utils";
 
 export type UserStatus = "En línea" | "Ausente" | "Desconectado";
 
@@ -34,7 +34,7 @@ export type UserViewModel = User & {
 
 export function createUserViewModel(
   user: User,
-  status: UserStatus
+  status: UserStatus,
 ): UserViewModel {
   const userColor = getUserColor(user.eId);
   return {

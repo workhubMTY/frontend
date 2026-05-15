@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { X } from "lucide-react";
 
 import { MonthCalendar } from "@/app/features/reservaciones/components/Calendar/MonthCalendar";
@@ -46,10 +46,12 @@ export interface ReservationSchedulerPageProps {
   spaceName: string;
 }
 
-export default function ReservationSchedulerPage({
-  spaceName = "Sala A",
-}: ReservationSchedulerPageProps) {
+export default function ReservationSchedulerPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const spaceId = searchParams.get("spaceId");
+  const spaceName = searchParams.get("spaceName");
   const calendarCells = useMemo(() => createCalendarCells(), []);
 
   const [selectionMode, setSelectionMode] = useState<SelectionMode>("multiple");
@@ -294,8 +296,8 @@ export default function ReservationSchedulerPage({
   const visibleEvents = showAllEvents
     ? activeDayExternalEvents
     : activeDayExternalEvents
-        .filter((event) => event.status !== "normal")
-        .slice(0, 2);
+      .filter((event) => event.status !== "normal")
+      .slice(0, 2);
 
   const selectedSavedBlocksHaveSpaceConflict = selectedDateIds.some(
     (dateId) => {
@@ -346,6 +348,7 @@ export default function ReservationSchedulerPage({
     (hasValidPendingTarget || hasSavedBlockEdits || hasSavedBlocksToContinue);
   useEffect(() => {
     let cancelled = false;
+    if (!spaceName || !spaceId) return;
 
     apiGetSpaceReservationsByDay({
       apiJson,
@@ -425,10 +428,10 @@ export default function ReservationSchedulerPage({
         [dateId]: blocksForDate.map((block) =>
           block.id === blockId
             ? {
-                ...block,
-                [field]: value,
-                conflict: undefined,
-              }
+              ...block,
+              [field]: value,
+              conflict: undefined,
+            }
             : block,
         ),
       };

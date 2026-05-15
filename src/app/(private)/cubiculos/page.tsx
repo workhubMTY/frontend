@@ -7,6 +7,7 @@ import { SelectedSpacePanel } from "@/app/features/cubiculos/components/panels/S
 import { SpacesResultsList } from "@/app/features/cubiculos/components/panels/SpacesResultsList";
 import { useReservableSpacesSearch } from "@/app/features/cubiculos/hooks/useReservableSpacesSearch";
 import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 export default function ReservableSpacesSearchPage() {
   const {
@@ -24,14 +25,16 @@ export default function ReservableSpacesSearchPage() {
     handleSelectMapId,
     handleSubmitFilters,
   } = useReservableSpacesSearch();
-  useEffect(() => {
-    console.log("PAGE selectedSpaceCode:", selectedSpaceCode);
-    console.log("PAGE selectedMapId:", selectedMapId);
-    console.log("PAGE selectedSpace:", selectedSpace);
-  }, [selectedSpaceCode, selectedMapId, selectedSpace]);
+  const router = useRouter();
+
+  function handleOnContinue() {
+    router.push(
+      `/cubiculos/reservacion?spaceId=${selectedSpace?.id}&spaceName=${selectedSpace?.name}`,
+    );
+  }
 
   return (
-    <main className="min-h-screen bg-background-page px-4 py-6 text-neutral-700 sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-background-page px-4 py-6 text-neutral-700 sm:px-6 lg:px-12">
       <div className="mx-auto flex flex-col gap-5">
         <ReservationSearchHeader />
 
@@ -53,7 +56,10 @@ export default function ReservableSpacesSearchPage() {
           />
 
           <aside className="flex flex-col gap-4">
-            <SelectedSpacePanel selectedSpace={selectedSpace} />
+            <SelectedSpacePanel
+              selectedSpace={selectedSpace}
+              onContinue={handleOnContinue}
+            />
 
             <SpacesResultsList
               spaces={spaces}
