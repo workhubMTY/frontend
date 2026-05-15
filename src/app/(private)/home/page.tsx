@@ -9,10 +9,22 @@ import {
 import AgendaRapida, { ExternalEvent } from "@/app/components/AgendaRapida/AgendaRapida";
 import PageTransition from "@/app/components/PageTransition/PageTransition";
 
+import { useFriends } from "@/app/modules/friendships/hooks";
+import {
+  useEvents,
+  useFriendsReservations,
+  useMyReservations,
+} from "@/app/modules/office-slots/hooks";
+import { getInitials, getUserColor } from "@/app/features/profile.utils";
+import type {
+  ReservationEvent,
+  ReservationSummary,
+} from "@/app/modules/office-slots/types";
+
 interface Invitacion { nombre: string; sala: string; hora: string; tipo: string; day: number; start: number; end: number; }
 interface DiaInvitaciones { dia: string; dayIndex: number; items: Invitacion[]; }
-interface Reserva { titulo: string; hora: string; lugar: string; estado: "Confirmada" | "Pendiente"; day: number; start: number; end: number; }
-interface Persona { initials: string; name: string; role: string; reservas: Reserva[]; }
+interface Reserva { id: number; titulo: string; hora: string; lugar: string; estado: "Confirmada" | "Pendiente"; day: number; start: number; end: number; }
+interface Persona { id: string; initials: string; name: string; role: string; reservas: Reserva[]; }
 interface EventoGeneral { titulo: string; descripcion: string; tipo: "Festivo" | "Corporativo" | "Social"; icono: string; day: number; start: number; end: number; }
 type MobileTab = "agenda" | "red" | "invitaciones";
 
@@ -23,46 +35,55 @@ const EVENTOS_GENERALES: EventoGeneral[] = [
 ];
 
 const INVITACIONES: DiaInvitaciones[] = [
-  { dia: "Lunes", dayIndex: 0, items: [
-    { nombre: "Junta de seguimiento", sala: "ISJ03 · Sierra Madre", hora: "7:00–13:00", tipo: "Reunión", day: 0, start: 7, end: 13 },
-    { nombre: "Refinamiento de req.", sala: "ABC02 · Sala 2", hora: "8:00–17:00", tipo: "Planning", day: 0, start: 8, end: 17 },
-  ]},
-  { dia: "Martes", dayIndex: 1, items: [
-    { nombre: "Junta con Stakeholders", sala: "DS340 · Sala 4", hora: "7:00–13:00", tipo: "Reunión", day: 1, start: 7, end: 13 },
-  ]},
-  { dia: "Miércoles", dayIndex: 2, items: [
-    { nombre: "Junta de seguimiento", sala: "ISJ03 · Sierra Madre", hora: "7:00–13:00", tipo: "Reunión", day: 2, start: 7, end: 13 },
-  ]},
+  {
+    dia: "Lunes", dayIndex: 0, items: [
+      { nombre: "Junta de seguimiento", sala: "ISJ03 · Sierra Madre", hora: "7:00–13:00", tipo: "Reunión", day: 0, start: 7, end: 13 },
+      { nombre: "Refinamiento de req.", sala: "ABC02 · Sala 2", hora: "8:00–17:00", tipo: "Planning", day: 0, start: 8, end: 17 },
+    ]
+  },
+  {
+    dia: "Martes", dayIndex: 1, items: [
+      { nombre: "Junta con Stakeholders", sala: "DS340 · Sala 4", hora: "7:00–13:00", tipo: "Reunión", day: 1, start: 7, end: 13 },
+    ]
+  },
+  {
+    dia: "Miércoles", dayIndex: 2, items: [
+      { nombre: "Junta de seguimiento", sala: "ISJ03 · Sierra Madre", hora: "7:00–13:00", tipo: "Reunión", day: 2, start: 7, end: 13 },
+    ]
+  },
 ];
 
 const PERSONAS: Persona[] = [
   {
+    id: "1",
     initials: "CG",
     name: "Cristina González",
     role: "Senior Developer",
     reservas: [
-      { titulo: "Sprint Planning", hora: "9:00–11:00", lugar: "Sala Magna", estado: "Confirmada", day: 0, start: 9, end: 11 },
-      { titulo: "Design Review", hora: "11:00–12:30", lugar: "ISJ03", estado: "Confirmada", day: 0, start: 11, end: 12.5 },
-      { titulo: "Retrospectiva", hora: "11:00–13:00", lugar: "Sala 2", estado: "Pendiente", day: 2, start: 11, end: 13 },
+      { id: 1, titulo: "Sprint Planning", hora: "9:00–11:00", lugar: "Sala Magna", estado: "Confirmada", day: 0, start: 9, end: 11 },
+      { id: 2, titulo: "Design Review", hora: "11:00–12:30", lugar: "ISJ03", estado: "Confirmada", day: 0, start: 11, end: 12.5 },
+      { id: 3, titulo: "Retrospectiva", hora: "11:00–13:00", lugar: "Sala 2", estado: "Pendiente", day: 2, start: 11, end: 13 },
     ],
   },
   {
+    id: "2",
     initials: "MJ",
     name: "María Jesús",
     role: "Tester",
     reservas: [
-      { titulo: "Standup", hora: "8:00–9:00", lugar: "Sala Virtual", estado: "Confirmada", day: 1, start: 8, end: 9 },
-      { titulo: "Revisión QA", hora: "13:00–14:00", lugar: "ISJ04", estado: "Confirmada", day: 1, start: 13, end: 14 },
+      { id: 4, titulo: "Standup", hora: "8:00–9:00", lugar: "Sala Virtual", estado: "Confirmada", day: 1, start: 8, end: 9 },
+      { id: 5, titulo: "Revisión QA", hora: "13:00–14:00", lugar: "ISJ04", estado: "Confirmada", day: 1, start: 13, end: 14 },
     ],
   },
   {
+    id: "3",
     initials: "MC",
     name: "Mia Clements",
     role: "Junior Developer",
     reservas: [
-      { titulo: "Standup", hora: "8:00–9:00", lugar: "Sala Virtual", estado: "Confirmada", day: 0, start: 8, end: 9 },
-      { titulo: "Workshop UX", hora: "10:00–12:00", lugar: "Sala UX", estado: "Confirmada", day: 2, start: 10, end: 12 },
-      { titulo: "1:1 con manager", hora: "14:00–15:00", lugar: "Oficina Dir.", estado: "Pendiente", day: 3, start: 14, end: 15 },
+      { id: 6, titulo: "Standup", hora: "8:00–9:00", lugar: "Sala Virtual", estado: "Confirmada", day: 0, start: 8, end: 9 },
+      { id: 7, titulo: "Workshop UX", hora: "10:00–12:00", lugar: "Sala UX", estado: "Confirmada", day: 2, start: 10, end: 12 },
+      { id: 8, titulo: "1:1 con manager", hora: "14:00–15:00", lugar: "Oficina Dir.", estado: "Pendiente", day: 3, start: 14, end: 15 },
     ],
   },
 ];
@@ -138,8 +159,6 @@ function mapReservation(res: ReservationSummary): Reserva {
     day: toAgendaDay(start),
     start: toDecimalHour(start),
     end: toDecimalHour(end),
-    startAt: res.start_time,
-    endAt: res.end_time,
   };
 }
 
@@ -258,9 +277,9 @@ function PanelRed({
       )}
       <div className="flex flex-1 flex-col gap-1.5 overflow-y-auto min-h-0">
         {personas.map((p, i) => {
-          const color = getUserColor(p.userId);
+          const color = getUserColor(p.id);
           return (
-            <button type="button" key={p.userId}
+            <button type="button" key={p.id}
               onClick={() => onPersonClick(i)}
               className="flex w-full cursor-pointer items-center gap-3 rounded-xl border-none px-3 py-3 text-left font-[inherit] transition-colors"
               style={{ background: selectedPerson === i ? "#FFF0E6" : "#F9FAFB" }}
@@ -406,6 +425,7 @@ export default function Home() {
         .map(mapReservation);
 
       return {
+        id: friend.eId,
         initials: getInitials(friend.name),
         name: friend.name,
         role: friend.roleName,
@@ -432,8 +452,6 @@ export default function Home() {
           day: dayIndex,
           start: toDecimalHour(start),
           end: toDecimalHour(end),
-          startAt: res.start_time,
-          endAt: res.end_time,
         };
         const arr = grouped.get(dayIndex) ?? [];
         arr.push(item);
@@ -503,8 +521,6 @@ export default function Home() {
         label: r.titulo,
         sublabel: r.lugar,
         kind: "friend",
-        startAt: r.startAt,
-        endAt: r.endAt,
       });
     });
 
@@ -517,8 +533,6 @@ export default function Home() {
           label: r.titulo,
           sublabel: r.lugar,
           kind: "friend",
-          startAt: r.startAt,
-          endAt: r.endAt,
         });
       });
     }
@@ -534,8 +548,6 @@ export default function Home() {
               label: item.nombre,
               sublabel: item.sala,
               kind: "invitation",
-              startAt: item.startAt,
-              endAt: item.endAt,
             });
           }
         }),
@@ -564,8 +576,6 @@ export default function Home() {
           label: target.titulo,
           sublabel: target.descripcion,
           kind: "holiday",
-          startAt: target.startAt,
-          endAt: target.endAt,
         });
       }
     }
@@ -610,20 +620,20 @@ export default function Home() {
     icon: React.ReactNode;
     badge?: boolean;
   }[] = [
-    { key: "agenda", label: "Agenda", icon: <CalendarDays size={18} /> },
-    {
-      key: "red",
-      label: "Red",
-      icon: <Users size={18} />,
-      badge: selectedPerson !== null,
-    },
-    {
-      key: "invitaciones",
-      label: "Invitaciones",
-      icon: <MailOpen size={18} />,
-      badge: selInv !== null,
-    },
-  ];
+      { key: "agenda", label: "Agenda", icon: <CalendarDays size={18} /> },
+      {
+        key: "red",
+        label: "Red",
+        icon: <Users size={18} />,
+        badge: selectedPerson !== null,
+      },
+      {
+        key: "invitaciones",
+        label: "Invitaciones",
+        icon: <MailOpen size={18} />,
+        badge: selInv !== null,
+      },
+    ];
 
   const AgendaPanel = (
     <div className="flex flex-col min-h-0 gap-3 flex-1">
