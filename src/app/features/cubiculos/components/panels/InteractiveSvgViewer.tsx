@@ -59,13 +59,9 @@ const XLINK_NAMESPACE = "http://www.w3.org/1999/xlink";
 const OVERLAY_ATTR = "data-interactive-overlay-root";
 const FILTER_ATTR = "data-interactive-filter-root";
 
-type HighlightKind = "reserved" | "highlighted" | "selected";
+type HighlightKind = "reserved" | "highlighted";
 
-const HIGHLIGHT_PRIORITY: HighlightKind[] = [
-  "reserved",
-  "highlighted",
-  "selected",
-];
+const HIGHLIGHT_PRIORITY: HighlightKind[] = ["reserved", "highlighted"];
 
 function joinClassNames(...parts: Array<string | undefined>) {
   return parts.filter(Boolean).join(" ");
@@ -138,12 +134,6 @@ function ensureOverlayFilters(svgRoot: SVGSVGElement, filterPrefix: string) {
       opacity: "0.55",
       radius: "0.8",
       blur: "1.4",
-    },
-    selected: {
-      color: "#7e22ce",
-      opacity: "0.92",
-      radius: "1.8",
-      blur: "2.8",
     },
   };
 
@@ -227,15 +217,12 @@ function toSvgMatrix(matrix: DOMMatrix) {
     .map((value) => Number(value.toFixed(6)))
     .join(" ")})`;
 }
-
 function buildHighlightMap({
   reservedIds,
   highlightedIds,
-  selectedId,
 }: {
   reservedIds: string[];
   highlightedIds: string[];
-  selectedId: string | null;
 }) {
   const map = new Map<string, HighlightKind>();
 
@@ -247,13 +234,36 @@ function buildHighlightMap({
     map.set(id, "highlighted");
   });
 
-  if (selectedId) {
-    map.set(selectedId, "selected");
-  }
-
   return map;
 }
+function clearRuntimeSelected(svgRoot: SVGSVGElement) {
+  svgRoot.querySelectorAll('[data-runtime-selected="true"]').forEach((node) => {
+    node.removeAttribute("data-runtime-selected");
+  });
+}
 
+function applyRuntimeSelected(
+  svgRoot: SVGSVGElement,
+  dataAttribute: string,
+  id: string | null,
+) {
+  clearRuntimeSelected(svgRoot);
+
+  if (!id) {
+    return;
+  }
+
+  const escapedId =
+    typeof CSS !== "undefined" && typeof CSS.escape === "function"
+      ? CSS.escape(id)
+      : id.replace(/["\\]/g, "\\$&");
+
+  const node = svgRoot.querySelector(`[${dataAttribute}="${escapedId}"]`);
+
+  if (node) {
+    node.setAttribute("data-runtime-selected", "true");
+  }
+}
 function clearRuntimeHover(svgRoot: SVGSVGElement) {
   svgRoot.querySelectorAll('[data-runtime-hover="true"]').forEach((node) => {
     node.removeAttribute("data-runtime-hover");
@@ -370,7 +380,24 @@ const InteractiveSvgViewer = forwardRef<
   const handleMarkupHost = useCallback((node: HTMLDivElement | null) => {
     setMarkupHost(node);
   }, []);
+  useEffect(() => {
+    const svgRoot =
+      (markupHost ?? containerRef.current)?.querySelector("svg") ?? null;
 
+    if (!svgRoot) {
+      return;
+    }
+
+    applyRuntimeSelected(svgRoot, dataAttribute, selectedId);
+  }, [
+    dataAttribute,
+    selectedId,
+    markupHost,
+    renderedMarkupVersion,
+    srcValue,
+    svgElement,
+    svgMarkup,
+  ]);
   useEffect(() => {
     if (controlledHighlightedIds !== undefined) {
       return;
@@ -468,7 +495,6 @@ const InteractiveSvgViewer = forwardRef<
     const highlightMap = buildHighlightMap({
       reservedIds,
       highlightedIds,
-      selectedId,
     });
 
     HIGHLIGHT_PRIORITY.forEach((kind) => {

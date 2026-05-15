@@ -197,17 +197,20 @@
   pointer-events: fill;
   cursor: pointer;
 }
+
 .selection-box-generated[data-runtime-hover="true"] {
   fill: #8b5cf6;
   fill-opacity: 0.12;
   stroke-opacity: 1;
 }
-  .selection-box-generated[data-selected="true"] {
-    fill: #8b5cf6;
-    fill-opacity: 0.2;
-    stroke-opacity: 1;
-    stroke-width: 0.28;
-  }
+
+.selection-box-generated[data-runtime-selected="true"] {
+  fill: #8b5cf6;
+  fill-opacity: 0.2;
+  stroke-opacity: 1;
+  stroke-width: 0.28;
+}
+
 </style></defs><g
      id="layer1"
      transform="translate(-0.02480469,0.01240234)"><g

@@ -48,16 +48,30 @@ export function useReservableSpacesSearch() {
       .map((space) => space.code);
   }, [spaces]);
 
-  const disabledMapIds = useMemo(() => {
+  const soonMapIds = useMemo(() => {
     return spaces
-      .filter((space) => space.status === "occupied")
+      .filter((space) => space.status === "soon")
       .map((space) => space.code);
   }, [spaces]);
 
-  function handleSelectMapId(mapId: string) {
-    const spaceExists = spaces.some((space) => space.code === mapId);
+  /**
+   * OJO:
+   * occupied !== disabled
+   *
+   * disabled debe usarse para mantenimiento, fuera de servicio,
+   * bloqueado por administración, etc.
+   *
+   * Como tu schema actual no tiene "maintenance" ni "blocked",
+   * por ahora no bloqueamos ningún espacio.
+   */
+  const disabledMapIds = useMemo(() => {
+    return [];
+  }, []);
 
-    if (!spaceExists) {
+  function handleSelectMapId(mapId: string) {
+    const exists = spaces.some((space) => space.code === mapId);
+
+    if (!exists) {
       return;
     }
 
@@ -97,6 +111,7 @@ export function useReservableSpacesSearch() {
 
     availableMapIds,
     reservedMapIds,
+    soonMapIds,
     disabledMapIds,
 
     setSelectedSpaceCode,

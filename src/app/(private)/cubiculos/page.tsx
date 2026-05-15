@@ -6,6 +6,7 @@ import { ReservationSearchHeader } from "@/app/features/cubiculos/components/oth
 import { SelectedSpacePanel } from "@/app/features/cubiculos/components/panels/SelectedSpacePanel";
 import { SpacesResultsList } from "@/app/features/cubiculos/components/panels/SpacesResultsList";
 import { useReservableSpacesSearch } from "@/app/features/cubiculos/hooks/useReservableSpacesSearch";
+import { useEffect } from "react";
 
 export default function ReservableSpacesSearchPage() {
   const {
@@ -23,6 +24,11 @@ export default function ReservableSpacesSearchPage() {
     handleSelectMapId,
     handleSubmitFilters,
   } = useReservableSpacesSearch();
+  useEffect(() => {
+    console.log("PAGE selectedSpaceCode:", selectedSpaceCode);
+    console.log("PAGE selectedMapId:", selectedMapId);
+    console.log("PAGE selectedSpace:", selectedSpace);
+  }, [selectedSpaceCode, selectedMapId, selectedSpace]);
 
   return (
     <main className="min-h-screen bg-background-page px-4 py-6 text-neutral-700 sm:px-6 lg:px-8">
