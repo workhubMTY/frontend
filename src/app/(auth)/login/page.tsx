@@ -19,11 +19,14 @@ export default function Login() {
 
   const [verifyingSesion, setVerifyingSesion] = useState(true);
   useEffect(() => {
-    authService.me().then(() => {
-      router.replace("/home");
-    }).catch(() => {
-      setVerifyingSesion(false);
-    });
+    authService
+      .me()
+      .then(() => {
+        router.replace("/home");
+      })
+      .catch(() => {
+        setVerifyingSesion(false);
+      });
   }, []);
   if (verifyingSesion) return null;
 
@@ -31,7 +34,7 @@ export default function Login() {
     setUser({ ...user, [e.target.name]: e.target.value });
   }
 
-  async function onSubmitLogin(e: React.FormEvent<HTMLFormElement>) {
+  async function onSubmitLogin(e: React.SubmitEvent<HTMLFormElement>) {
     e.preventDefault();
     setError("");
     if (!user.eId.trim() || !user.password.trim()) {
@@ -48,31 +51,31 @@ export default function Login() {
 
   const t = dark
     ? {
-      bg: "#0a0a0a",
-      panel: "#161616",
-      border: "#2a2a2a",
-      inputBg: "#222222",
-      text: "#f0f0f0",
-      textSub: "#666",
-      textMuted: "#444",
-      toggleBg: "#2a2a2a",
-      toggleIcon: "#888",
-      orbOp: "1",
-      gridAlpha: "0.06",
-    }
+        bg: "#0a0a0a",
+        panel: "#161616",
+        border: "#2a2a2a",
+        inputBg: "#222222",
+        text: "#f0f0f0",
+        textSub: "#666",
+        textMuted: "#444",
+        toggleBg: "#2a2a2a",
+        toggleIcon: "#888",
+        orbOp: "1",
+        gridAlpha: "0.06",
+      }
     : {
-      bg: "#f0eff5",
-      panel: "#ffffff",
-      border: "#ddd",
-      inputBg: "#f4f4f4",
-      text: "#111",
-      textSub: "#777",
-      textMuted: "#bbb",
-      toggleBg: "#e8e4f0",
-      toggleIcon: "#a100ff",
-      orbOp: "0.45",
-      gridAlpha: "0.1",
-    };
+        bg: "#f0eff5",
+        panel: "#ffffff",
+        border: "#ddd",
+        inputBg: "#f4f4f4",
+        text: "#111",
+        textSub: "#777",
+        textMuted: "#bbb",
+        toggleBg: "#e8e4f0",
+        toggleIcon: "#a100ff",
+        orbOp: "0.45",
+        gridAlpha: "0.1",
+      };
 
   return (
     <>
@@ -312,7 +315,8 @@ export default function Login() {
                 fontSize: "clamp(1.9rem, 3.2vw, 3rem)",
               }}
             >
-              Workhub<br />
+              Workhub
+              <br />
               <span style={{ color: "#a100ff" }}>Monterrey</span>
             </h1>
             <div className="acc-divider mt-4 w-full" />
