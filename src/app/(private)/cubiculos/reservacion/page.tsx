@@ -16,9 +16,9 @@ import type { CalendarSelectionAction } from "@/app/features/reservaciones/types
 import {
   apiGetExternalEventsInInterval,
   apiGetSpaceReservationsByDay,
-  createMockApiJson,
+  createApiJson,
   toTimelineEvent,
-} from "@/app/features/reservaciones/data/mockReservations";
+} from "@/app/features/reservaciones/data/reservationsApi";
 
 import {
   createCalendarCells,
@@ -33,6 +33,7 @@ import {
 import { uniqueSortedIds } from "@/app/features/reservaciones/lib/formatting";
 
 import { cn } from "@/app/features/reservaciones/lib/cn";
+import { to24Hour } from "@/app/features/reservaciones/lib/time";
 
 import type {
   DayEvent,
@@ -75,7 +76,7 @@ export default function ReservationSchedulerPage({
   const [editedSavedDateIds, setEditedSavedDateIds] = useState<string[]>([]);
 
   const apiJson = useMemo(
-    () => createMockApiJson(calendarCells),
+    () => createApiJson(calendarCells),
     [calendarCells],
   );
 
@@ -520,13 +521,39 @@ export default function ReservationSchedulerPage({
     setEditedSavedDateIds([]);
     setHasAppliedCurrentSelection(true);
   }
-  function handleContinue() {
+  async function handleContinue() {
     if (!canContinue) return;
 
     if (pendingBlocks.length > 0) {
       applyPendingBlocks();
     }
+    const selectedSpaceRaw = window.sessionStorage.getItem(
+      "cubiculos:selectedSpace",
+    );
+    const selectedSpace = selectedSpaceRaw ? JSON.parse(selectedSpaceRaw) : null;
+    const reservableId = selectedSpace?.id;
+    const schedules: { start_time: string; end_time: string }[] = [];
+    Object.entries(dayBlocks).forEach(([dateId, blocks]) => {
+      blocks.forEach((block) => {
+        const start = to24Hour(block.start);
+        const end = to24Hour(block.end);
+        schedules.push({
+          start_time: new Date(`${dateId}T${start}:00`).toISOString(),
+          end_time: new Date(`${dateId}T${end}:00`).toISOString(),
+        });
+      });
+    });
 
+    if (reservableId && schedules.length > 0) {
+      window.sessionStorage.setItem(
+        "cubiculos:reservationDraft",
+        JSON.stringify({
+          reservableId,
+          schedules,
+          reservableName: selectedSpace?.name ?? spaceName,
+        }),
+      );
+    }
     router.push("/cubiculos/reservacion/confirmar");
   }
   return (

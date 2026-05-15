@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   fetchReservableSpaces,
   reservableSpaces,
@@ -29,6 +29,11 @@ export function useReservableSpacesSearch() {
 
   const [spaces, setSpaces] = useState(reservableSpaces);
   const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    void handleSubmitFilters(filters);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const selectedSpace = useMemo(() => {
     return spaces.find((space) => space.code === selectedSpaceCode);

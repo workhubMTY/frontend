@@ -141,6 +141,12 @@ export function SelectedSpacePanel({ selectedSpace }: SelectedSpacePanelProps) {
 
       <button
         onClick={() => {
+          if (selectedSpace) {
+            window.sessionStorage.setItem(
+              "cubiculos:selectedSpace",
+              JSON.stringify(selectedSpace),
+            );
+          }
           router.push("/cubiculos/reservacion");
         }}
         className="mt-6 h-11 w-full bg-primary-2 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-1"

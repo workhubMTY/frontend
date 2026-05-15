@@ -76,11 +76,20 @@ export type FriendOccupancy = {
 export type SlotAvailabilityResult = {
   id: number;
   name: string;
+  code?: string;
   capacity: number;
   floor_id: number;
   floor_name: string;
   is_blocked: boolean;
   is_available: boolean;
+  status?: "available" | "occupied" | "soon";
+  statusLabel?: string;
+  timeline?: {
+    id: string;
+    start: string;
+    end: string;
+    status: "free" | "occupied" | "search";
+  }[];
   occupied_by_friends: FriendOccupancy[];
 };
 
