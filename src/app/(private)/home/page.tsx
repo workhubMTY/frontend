@@ -2,11 +2,21 @@
 
 import { useMemo, useState } from "react";
 import {
-  Search, UserPlus, Clock, MapPin,
-  ChevronLeft, ChevronRight, Star, Calendar,
-  CalendarDays, Users, MailOpen,
+  Search,
+  UserPlus,
+  Clock,
+  MapPin,
+  ChevronLeft,
+  ChevronRight,
+  Star,
+  Calendar,
+  CalendarDays,
+  Users,
+  MailOpen,
 } from "lucide-react";
-import AgendaRapida, { ExternalEvent } from "@/app/components/AgendaRapida/AgendaRapida";
+import AgendaRapida, {
+  ExternalEvent,
+} from "@/app/components/AgendaRapida/AgendaRapida";
 import PageTransition from "@/app/components/PageTransition/PageTransition";
 
 import { useFriends } from "@/app/modules/friendships/hooks";
@@ -21,72 +31,47 @@ import type {
   ReservationSummary,
 } from "@/app/modules/office-slots/types";
 
-interface Invitacion { nombre: string; sala: string; hora: string; tipo: string; day: number; start: number; end: number; }
-interface DiaInvitaciones { dia: string; dayIndex: number; items: Invitacion[]; }
-interface Reserva { id: number; titulo: string; hora: string; lugar: string; estado: "Confirmada" | "Pendiente"; day: number; start: number; end: number; }
-interface Persona { id: string; initials: string; name: string; role: string; reservas: Reserva[]; }
-interface EventoGeneral { titulo: string; descripcion: string; tipo: "Festivo" | "Corporativo" | "Social"; icono: string; day: number; start: number; end: number; }
+interface Invitacion {
+  nombre: string;
+  sala: string;
+  hora: string;
+  tipo: string;
+  day: number;
+  start: number;
+  end: number;
+}
+interface DiaInvitaciones {
+  dia: string;
+  dayIndex: number;
+  items: Invitacion[];
+}
+interface Reserva {
+  id: number;
+  titulo: string;
+  hora: string;
+  lugar: string;
+  estado: "Confirmada" | "Pendiente";
+  day: number;
+  start: number;
+  end: number;
+}
+interface Persona {
+  id: string;
+  initials: string;
+  name: string;
+  role: string;
+  reservas: Reserva[];
+}
+interface EventoGeneral {
+  titulo: string;
+  descripcion: string;
+  tipo: "Festivo" | "Corporativo" | "Social";
+  icono: string;
+  day: number;
+  start: number;
+  end: number;
+}
 type MobileTab = "agenda" | "red" | "invitaciones";
-
-const EVENTOS_GENERALES: EventoGeneral[] = [
-  { titulo: "Día del Trabajo", descripcion: "Día festivo nacional — oficinas cerradas", tipo: "Festivo", icono: "🎉", day: 3, start: 0, end: 24 },
-  { titulo: "All-Hands Accenture MX", descripcion: "Sesión global transmitida en vivo", tipo: "Corporativo", icono: "📡", day: 0, start: 10, end: 11.5 },
-  { titulo: "Happy Hour Workhub", descripcion: "Terraza · Todos bienvenidos", tipo: "Social", icono: "🍹", day: 4, start: 17, end: 19 },
-];
-
-const INVITACIONES: DiaInvitaciones[] = [
-  {
-    dia: "Lunes", dayIndex: 0, items: [
-      { nombre: "Junta de seguimiento", sala: "ISJ03 · Sierra Madre", hora: "7:00–13:00", tipo: "Reunión", day: 0, start: 7, end: 13 },
-      { nombre: "Refinamiento de req.", sala: "ABC02 · Sala 2", hora: "8:00–17:00", tipo: "Planning", day: 0, start: 8, end: 17 },
-    ]
-  },
-  {
-    dia: "Martes", dayIndex: 1, items: [
-      { nombre: "Junta con Stakeholders", sala: "DS340 · Sala 4", hora: "7:00–13:00", tipo: "Reunión", day: 1, start: 7, end: 13 },
-    ]
-  },
-  {
-    dia: "Miércoles", dayIndex: 2, items: [
-      { nombre: "Junta de seguimiento", sala: "ISJ03 · Sierra Madre", hora: "7:00–13:00", tipo: "Reunión", day: 2, start: 7, end: 13 },
-    ]
-  },
-];
-
-const PERSONAS: Persona[] = [
-  {
-    id: "1",
-    initials: "CG",
-    name: "Cristina González",
-    role: "Senior Developer",
-    reservas: [
-      { id: 1, titulo: "Sprint Planning", hora: "9:00–11:00", lugar: "Sala Magna", estado: "Confirmada", day: 0, start: 9, end: 11 },
-      { id: 2, titulo: "Design Review", hora: "11:00–12:30", lugar: "ISJ03", estado: "Confirmada", day: 0, start: 11, end: 12.5 },
-      { id: 3, titulo: "Retrospectiva", hora: "11:00–13:00", lugar: "Sala 2", estado: "Pendiente", day: 2, start: 11, end: 13 },
-    ],
-  },
-  {
-    id: "2",
-    initials: "MJ",
-    name: "María Jesús",
-    role: "Tester",
-    reservas: [
-      { id: 4, titulo: "Standup", hora: "8:00–9:00", lugar: "Sala Virtual", estado: "Confirmada", day: 1, start: 8, end: 9 },
-      { id: 5, titulo: "Revisión QA", hora: "13:00–14:00", lugar: "ISJ04", estado: "Confirmada", day: 1, start: 13, end: 14 },
-    ],
-  },
-  {
-    id: "3",
-    initials: "MC",
-    name: "Mia Clements",
-    role: "Junior Developer",
-    reservas: [
-      { id: 6, titulo: "Standup", hora: "8:00–9:00", lugar: "Sala Virtual", estado: "Confirmada", day: 0, start: 8, end: 9 },
-      { id: 7, titulo: "Workshop UX", hora: "10:00–12:00", lugar: "Sala UX", estado: "Confirmada", day: 2, start: 10, end: 12 },
-      { id: 8, titulo: "1:1 con manager", hora: "14:00–15:00", lugar: "Oficina Dir.", estado: "Pendiente", day: 3, start: 14, end: 15 },
-    ],
-  },
-];
 
 const PERSON_COLORS = [
   { bg: "#EEEDFE", text: "#534AB7" },
@@ -94,7 +79,10 @@ const PERSON_COLORS = [
   { bg: "#D6F5E6", text: "#0F6E56" },
 ];
 
-const TIPO_EVENTO_COLORS: Record<EventoGeneral["tipo"], { bg: string; text: string; border: string }> = {
+const TIPO_EVENTO_COLORS: Record<
+  EventoGeneral["tipo"],
+  { bg: string; text: string; border: string }
+> = {
   Festivo: { bg: "#FEF9C3", text: "#713F12", border: "#EAB308" },
   Corporativo: { bg: "#EDE9FE", text: "#4C1D95", border: "#7C3AED" },
   Social: { bg: "#D6F5E6", text: "#065F46", border: "#10B981" },
@@ -162,87 +150,188 @@ function mapReservation(res: ReservationSummary): Reserva {
   };
 }
 
-function EventoGeneralDetail({
+interface EventoGeneral {
+  titulo: string;
+  descripcion: string;
+  tipo: "Festivo" | "Corporativo" | "Social";
+  icono: string;
+  day: number;
+  start: number;
+  end: number;
+}
+
+type EventoGeneralDetailProps = {
+  evento: EventoGeneral | null;
+  currentIndex?: number;
+  totalEvents?: number;
+  onPrevious?: () => void;
+  onNext?: () => void;
+  onOpenAgenda?: () => void;
+};
+
+const eventTypeStyles: Record<EventoGeneral["tipo"], string> = {
+  Festivo: "border-amber-200 bg-amber-50 text-amber-700",
+  Corporativo: "border-purple-200 bg-purple-50 text-purple-700",
+  Social: "border-blue-200 bg-blue-50 text-blue-700",
+};
+
+function formatEventTime(start: number, end: number) {
+  const formatHour = (hour: number) => {
+    const normalizedHour = Math.floor(hour);
+    const minutes = Math.round((hour - normalizedHour) * 60);
+
+    return `${String(normalizedHour).padStart(2, "0")}:${String(
+      minutes,
+    ).padStart(2, "0")}`;
+  };
+
+  return `${formatHour(start)} - ${formatHour(end)}`;
+}
+
+function getDayLabel(day: number) {
+  const days = ["Lu", "Ma", "Mi", "Ju", "Vi", "Sa", "Do"];
+
+  return days[day] ?? `Día ${day + 1}`;
+}
+
+export function EventoGeneralDetail({
   evento,
-  onPrev,
+  currentIndex = 0,
+  totalEvents = 0,
+  onPrevious,
   onNext,
-  onViewInAgenda,
-  dotCount,
-  dotActive,
-  onDot,
-}: {
-  evento: EventoGeneral;
-  onPrev: () => void;
-  onNext: () => void;
-  onViewInAgenda: () => void;
-  dotCount: number;
-  dotActive: number;
-  onDot: (i: number) => void;
-}) {
-  const c = TIPO_EVENTO_COLORS[evento.tipo];
+  onOpenAgenda,
+}: EventoGeneralDetailProps) {
+  const hasEvent = Boolean(evento);
+
   return (
-    <div className="shrink-0 rounded-xl bg-white shadow-sm border border-gray-100 overflow-hidden">
-      <div className="flex items-center justify-between border-b border-gray-100 px-4 py-2.5">
-        <h3 className="text-[0.85rem] font-semibold text-gray-900">
-          Eventos & Festivos
-        </h3>
-        <div className="flex gap-1.5">
-          <button type="button" onClick={onPrev}
-            className="flex h-7 w-7 items-center justify-center rounded-md border border-gray-200 text-gray-400 hover:border-violet-500 hover:text-violet-500 active:bg-gray-100 transition-colors cursor-pointer bg-white"
-          >
-            <ChevronLeft size={13} />
-          </button>
-          <button type="button" onClick={onNext}
-            className="flex h-7 w-7 items-center justify-center rounded-md border border-gray-200 text-gray-400 hover:border-violet-500 hover:text-violet-500 active:bg-gray-100 transition-colors cursor-pointer bg-white"
-          >
-            <ChevronRight size={13} />
-          </button>
-        </div>
-      </div>
-      <div className="flex gap-3 px-4 py-3">
-        <div
-          className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl text-2xl"
-          style={{ background: c.bg, borderLeft: `3px solid ${c.border}` }}
-        >
-          {evento.icono}
-        </div>
-        <div className="flex flex-1 flex-col gap-1 min-w-0">
-          <div className="flex items-center gap-2 flex-wrap">
-            <p className="text-[13px] font-semibold text-gray-900 leading-tight">
-              {evento.titulo}
-            </p>
-            <span
-              className="rounded-full px-2 py-0.5 text-[10px] font-medium shrink-0"
-              style={{ background: c.bg, color: c.text }}
-            >
-              {evento.tipo}
-            </span>
+    <section className="shrink-0 overflow-hidden border border-neutral-200 bg-white shadow-sm">
+      <header className="flex items-center justify-between border-b border-neutral-100 px-7 py-5">
+        <div className="flex items-center gap-3">
+          <CalendarDays size={22} className="text-neutral-700" />
+
+          <div>
+            <h2 className="text-xl font-semibold tracking-tight text-neutral-950">
+              Eventos & Festivos
+            </h2>
+
+            {totalEvents > 0 && (
+              <p className="mt-0.5 text-sm text-neutral-500">
+                {currentIndex + 1} de {totalEvents}
+              </p>
+            )}
           </div>
-          <p className="text-[11px] text-gray-400 leading-snug">
-            {evento.descripcion}
-          </p>
+        </div>
+
+        <div className="flex items-center gap-2">
           <button
             type="button"
-            onClick={onViewInAgenda}
-            className="mt-1 self-start rounded-lg border border-violet-600 px-3 py-1 text-[11px] font-medium text-violet-600 hover:bg-violet-600 hover:text-white active:bg-violet-700 transition-colors cursor-pointer bg-transparent"
+            onClick={onPrevious}
+            disabled={!onPrevious || totalEvents <= 1}
+            aria-label="Evento anterior"
+            className="inline-flex h-9 w-9 items-center justify-center border border-neutral-200 bg-white text-neutral-500 transition hover:bg-neutral-50 hover:text-neutral-900 disabled:cursor-not-allowed disabled:opacity-40"
           >
-            Ver en agenda
+            <ChevronLeft size={18} />
+          </button>
+
+          <button
+            type="button"
+            onClick={onNext}
+            disabled={!onNext || totalEvents <= 1}
+            aria-label="Siguiente evento"
+            className="inline-flex h-9 w-9 items-center justify-center border border-neutral-200 bg-white text-neutral-500 transition hover:bg-neutral-50 hover:text-neutral-900 disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            <ChevronRight size={18} />
           </button>
         </div>
-      </div>
-      <div className="flex justify-center gap-1.5 pb-3">
-        {Array.from({ length: dotCount }).map((_, i) => (
-          <button type="button" key={i}
-            onClick={() => onDot(i)}
-            className="h-1.5 rounded-full border-none cursor-pointer transition-all"
-            style={{
-              width: i === dotActive ? "16px" : "6px",
-              background: i === dotActive ? "#7C3AED" : "#D1D5DB",
-            }}
-          />
-        ))}
-      </div>
-    </div>
+      </header>
+
+      {!hasEvent || !evento ? (
+        <div className="px-7 py-6">
+          <article className="grid grid-cols-[auto_1fr] gap-4 border-l-4 border-purple-700 bg-purple-50/70 px-5 py-4">
+            <div className="flex h-14 w-14 items-center justify-center bg-purple-100 text-xl font-semibold text-purple-700">
+              —
+            </div>
+
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-2">
+                <h3 className="font-semibold text-neutral-950">Sin eventos</h3>
+
+                <span className="inline-flex items-center border border-purple-200 bg-purple-50 px-2.5 py-1 text-xs font-medium text-purple-700">
+                  Agenda general
+                </span>
+              </div>
+
+              <p className="mt-1 text-sm text-neutral-500">
+                No hay eventos cargados para este periodo.
+              </p>
+
+              <button
+                type="button"
+                disabled
+                className="mt-4 inline-flex h-9 cursor-not-allowed items-center justify-center border border-neutral-200 bg-neutral-50 px-4 text-sm font-medium text-neutral-400"
+              >
+                Ver en agenda
+              </button>
+            </div>
+          </article>
+        </div>
+      ) : (
+        <article className="grid grid-cols-[auto_1fr_auto] items-center gap-4 border-l-4 border-purple-700 bg-purple-50/70 px-7 py-5 pl-6">
+          <div className="flex h-16 w-16 shrink-0 items-center justify-center bg-purple-100 text-2xl font-semibold text-purple-700">
+            {evento.icono}
+          </div>
+
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-2">
+              <h3 className="truncate text-base font-semibold text-neutral-950">
+                {evento.titulo}
+              </h3>
+
+              <span
+                className={[
+                  "inline-flex items-center border px-2.5 py-1 text-xs font-medium",
+                  eventTypeStyles[evento.tipo],
+                ].join(" ")}
+              >
+                {evento.tipo}
+              </span>
+            </div>
+
+            <p className="mt-1 line-clamp-2 text-sm leading-6 text-neutral-600">
+              {evento.descripcion}
+            </p>
+
+            <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-neutral-500">
+              <span className="inline-flex items-center gap-1.5">
+                <CalendarDays size={15} className="text-neutral-400" />
+                {getDayLabel(evento.day)}
+              </span>
+
+              <span className="inline-flex items-center gap-1.5">
+                <Clock size={15} className="text-neutral-400" />
+                {formatEventTime(evento.start, evento.end)}
+              </span>
+
+              <span className="inline-flex items-center gap-1.5">
+                <MapPin size={15} className="text-neutral-400" />
+                Agenda general
+              </span>
+            </div>
+          </div>
+
+          <div className="flex shrink-0 items-center">
+            <button
+              type="button"
+              onClick={onOpenAgenda}
+              className="inline-flex h-10 items-center border border-neutral-300 bg-white px-4 text-sm font-medium text-neutral-700 transition hover:bg-neutral-50"
+            >
+              Ver en agenda
+            </button>
+          </div>
+        </article>
+      )}
+    </section>
   );
 }
 
@@ -256,79 +345,88 @@ function PanelRed({
   personas: Persona[];
 }) {
   return (
-    <div className="flex flex-col h-full gap-3">
-      <div className="flex shrink-0 items-center justify-between">
-        <span className="text-[0.9rem] font-semibold text-gray-900">
-          Red personal
-        </span>
-      </div>
-      {selectedPerson !== null && personas[selectedPerson] && (
-        <div className="flex items-center gap-1.5 rounded-xl bg-orange-50 border border-orange-100 px-3 py-2">
-          <span
-            className="inline-block h-2 w-2 rounded-sm shrink-0"
-            style={{ background: "#F97316" }}
-          />
-          <p className="text-[11px] text-orange-700 leading-tight">
-            Mostrando horarios de{" "}
-            <strong>{personas[selectedPerson].name.split(" ")[0]}</strong> en la
-            agenda
-          </p>
+    <section className="flex h-full min-h-0 flex-col">
+      <header className="flex shrink-0 items-center justify-between border-b border-neutral-100 px-6 py-5">
+        <div className="flex items-center gap-3">
+          <Users size={22} className="text-neutral-700" />
+          <h2 className="text-xl font-semibold tracking-tight text-neutral-950">
+            Red personal
+          </h2>
         </div>
-      )}
-      <div className="flex flex-1 flex-col gap-1.5 overflow-y-auto min-h-0">
-        {personas.map((p, i) => {
-          const color = getUserColor(p.id);
-          return (
-            <button type="button" key={p.id}
-              onClick={() => onPersonClick(i)}
-              className="flex w-full cursor-pointer items-center gap-3 rounded-xl border-none px-3 py-3 text-left font-[inherit] transition-colors"
-              style={{ background: selectedPerson === i ? "#FFF0E6" : "#F9FAFB" }}
-            >
-              <div
-                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[12px] font-semibold"
-                style={{
-                  background: color.bg,
-                  color: color.text,
-                }}
+      </header>
+
+      <div className="flex min-h-0 flex-1 flex-col gap-3 p-4">
+        {selectedPerson !== null && personas[selectedPerson] && (
+          <div className="border-l-4 border-purple-700 bg-purple-50/70 px-4 py-3">
+            <p className="text-sm text-purple-900">
+              Mostrando horarios de{" "}
+              <strong>{personas[selectedPerson].name.split(" ")[0]}</strong> en
+              la agenda
+            </p>
+          </div>
+        )}
+
+        <div className="flex min-h-0 flex-1 flex-col divide-y divide-neutral-100 overflow-y-auto">
+          {personas.map((p, i) => {
+            const color = getUserColor(p.id);
+            const isSelected = selectedPerson === i;
+
+            return (
+              <button
+                type="button"
+                key={p.id}
+                onClick={() => onPersonClick(i)}
+                className={[
+                  "grid w-full cursor-pointer grid-cols-[auto_1fr_auto] items-center gap-3 px-3 py-4 text-left transition",
+                  isSelected
+                    ? "border-l-4 border-purple-700 bg-purple-50/70 pl-2"
+                    : "border-l-4 border-transparent hover:bg-neutral-50",
+                ].join(" ")}
               >
-                {p.initials}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p
-                  className="text-[13px] font-medium leading-tight truncate"
-                  style={{ color: selectedPerson === i ? "#9A3412" : "#111827" }}
+                <div
+                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-sm font-semibold"
+                  style={{
+                    background: color.bg,
+                    color: color.text,
+                  }}
                 >
-                  {p.name}
-                </p>
-                <p
-                  className="text-[11px] leading-tight mt-0.5"
-                  style={{ color: selectedPerson === i ? "#C2663A" : "#9CA3AF" }}
+                  {p.initials}
+                </div>
+
+                <div className="min-w-0">
+                  <p className="truncate font-semibold text-neutral-950">
+                    {p.name}
+                  </p>
+                  <p className="truncate text-sm text-neutral-500">{p.role}</p>
+                </div>
+
+                <span
+                  className={[
+                    "text-sm font-medium transition",
+                    isSelected
+                      ? "text-purple-700"
+                      : "text-neutral-400 group-hover:text-neutral-700",
+                  ].join(" ")}
                 >
-                  {p.role}
-                </p>
-              </div>
-              {selectedPerson === i ? (
-                <Star
-                  size={12}
-                  className="shrink-0"
-                  style={{ color: "#F97316" }}
-                />
-              ) : (
-                <span className="text-[10px] text-gray-300 shrink-0">ver ?</span>
-              )}
-            </button>
-          );
-        })}
+                  {isSelected ? "Activo" : "Ver"}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+
+        <div className="shrink-0 border-t border-neutral-100 pt-4">
+          <div className="flex items-center gap-3 border border-neutral-200 bg-white px-4 py-3">
+            <Search size={18} className="shrink-0 text-neutral-400" />
+            <input
+              type="text"
+              placeholder="Buscar persona..."
+              className="w-full bg-transparent text-sm text-neutral-700 outline-none placeholder:text-neutral-400"
+            />
+          </div>
+        </div>
       </div>
-      <div className="shrink-0 flex items-center gap-2 rounded-xl bg-gray-100 px-4 py-2.5">
-        <Search size={13} className="shrink-0 text-gray-400" />
-        <input
-          type="text"
-          placeholder="Buscar persona..."
-          className="w-full bg-transparent text-[12px] text-gray-700 outline-none placeholder:text-gray-400"
-        />
-      </div>
-    </div>
+    </section>
   );
 }
 
@@ -342,66 +440,80 @@ function PanelInvitaciones({
   invitaciones: DiaInvitaciones[];
 }) {
   return (
-    <div className="flex flex-col h-full gap-3">
-      <div className="flex shrink-0 items-center justify-between">
-        <span className="text-[0.9rem] font-semibold text-gray-900">
-          Invitaciones
-        </span>
-        <Calendar size={15} className="text-gray-400" />
-      </div>
-      {selInv !== null && (
-        <div className="flex items-center gap-1.5 rounded-xl bg-blue-50 border border-blue-100 px-3 py-2">
-          <span
-            className="inline-block h-2 w-2 rounded-sm shrink-0"
-            style={{ background: "#3B82F6" }}
-          />
-          <p className="text-[11px] text-blue-700 leading-tight">
-            Invitación marcada en la agenda
-          </p>
+    <section className="flex h-full min-h-0 flex-col">
+      <header className="flex shrink-0 items-center justify-between border-b border-neutral-100 px-6 py-5">
+        <div className="flex items-center gap-3">
+          <Calendar size={22} className="text-neutral-700" />
+          <h2 className="text-xl font-semibold tracking-tight text-neutral-950">
+            Invitaciones
+          </h2>
         </div>
-      )}
-      <div className="flex-1 overflow-y-auto min-h-0">
-        {invitaciones.map((sec, si) => (
-          <div key={si}>
-            <p className="pt-1 pb-1.5 text-[9px] font-bold uppercase tracking-wider text-gray-400">
-              {sec.dia}
-            </p>
-            {sec.items.map((item, ii) => {
-              const id = `inv_${sec.dayIndex}_${ii}`;
-              const isSelected = selInv === id;
-              return (
-                <div
-                  key={ii}
-                  onClick={() => onInvClick(sec.dayIndex, ii)}
-                  className="mb-2 cursor-pointer rounded-xl px-3 py-3 transition-colors border"
-                  style={{
-                    background: isSelected ? "#E6F4FF" : "#F9FAFB",
-                    borderColor: isSelected ? "#93C5FD" : "transparent",
-                  }}
-                >
-                  <p
-                    className="text-[12px] font-semibold leading-tight mb-1.5"
-                    style={{ color: isSelected ? "#1E3A8A" : "#111827" }}
-                  >
-                    {item.nombre}
-                  </p>
-                  <div className="flex items-center gap-1.5 text-[11px] text-gray-400 mb-1">
-                    <MapPin size={9} className="shrink-0" /> {item.sala}
-                  </div>
-                  <div className="flex items-center gap-1.5 text-[11px] text-gray-400">
-                    <Clock size={9} className="shrink-0" /> {item.hora}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        ))}
-      </div>
+      </header>
 
-      <button type="button" className="shrink-0 w-full cursor-pointer rounded-xl border border-gray-200 py-2.5 text-[12px] font-medium text-gray-500 hover:border-violet-600 hover:text-violet-600 transition-colors bg-transparent">
-        Mostrar todas
-      </button>
-    </div>
+      <div className="flex min-h-0 flex-1 flex-col gap-3 p-4">
+        {selInv !== null && (
+          <div className="border-l-4 border-purple-700 bg-purple-50/70 px-4 py-3">
+            <p className="text-sm text-purple-900">
+              Invitación marcada en la agenda
+            </p>
+          </div>
+        )}
+
+        <div className="min-h-0 flex-1 overflow-y-auto">
+          {invitaciones.map((sec, si) => (
+            <div key={si} className="pb-2">
+              <p className="px-3 pb-2 pt-1 text-xs font-semibold uppercase tracking-wide text-neutral-400">
+                {sec.dia}
+              </p>
+
+              <div className="divide-y divide-neutral-100">
+                {sec.items.map((item, ii) => {
+                  const id = `inv_${sec.dayIndex}_${ii}`;
+                  const isSelected = selInv === id;
+
+                  return (
+                    <button
+                      type="button"
+                      key={ii}
+                      onClick={() => onInvClick(sec.dayIndex, ii)}
+                      className={[
+                        "w-full border-l-4 px-3 py-4 text-left transition",
+                        isSelected
+                          ? "border-purple-700 bg-purple-50/70"
+                          : "border-transparent hover:bg-neutral-50",
+                      ].join(" ")}
+                    >
+                      <p className="font-semibold text-neutral-950">
+                        {item.nombre}
+                      </p>
+
+                      <div className="mt-2 flex items-center gap-2 text-sm text-neutral-500">
+                        <MapPin size={14} className="shrink-0" />
+                        <span className="truncate">{item.sala}</span>
+                      </div>
+
+                      <div className="mt-1 flex items-center gap-2 text-sm text-neutral-500">
+                        <Clock size={14} className="shrink-0" />
+                        <span>{item.hora}</span>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <footer className="shrink-0 border-t border-neutral-100 pt-4">
+          <button
+            type="button"
+            className="inline-flex w-full items-center justify-center gap-2 border border-neutral-300 bg-white px-4 py-3 text-sm font-medium text-neutral-700 transition hover:bg-neutral-50"
+          >
+            Mostrar todas
+          </button>
+        </footer>
+      </div>
+    </section>
   );
 }
 
@@ -581,7 +693,15 @@ export default function Home() {
     }
 
     return evts;
-  }, [acceptedMine, selectedPerson, personas, selInv, invitaciones, eventosGenerales, eventOnAgenda]);
+  }, [
+    acceptedMine,
+    selectedPerson,
+    personas,
+    selInv,
+    invitaciones,
+    eventosGenerales,
+    eventOnAgenda,
+  ]);
 
   const handlePersonClick = (i: number) => {
     const next = selectedPerson === i ? null : i;
@@ -620,20 +740,20 @@ export default function Home() {
     icon: React.ReactNode;
     badge?: boolean;
   }[] = [
-      { key: "agenda", label: "Agenda", icon: <CalendarDays size={18} /> },
-      {
-        key: "red",
-        label: "Red",
-        icon: <Users size={18} />,
-        badge: selectedPerson !== null,
-      },
-      {
-        key: "invitaciones",
-        label: "Invitaciones",
-        icon: <MailOpen size={18} />,
-        badge: selInv !== null,
-      },
-    ];
+    { key: "agenda", label: "Agenda", icon: <CalendarDays size={18} /> },
+    {
+      key: "red",
+      label: "Red",
+      icon: <Users size={18} />,
+      badge: selectedPerson !== null,
+    },
+    {
+      key: "invitaciones",
+      label: "Invitaciones",
+      icon: <MailOpen size={18} />,
+      badge: selInv !== null,
+    },
+  ];
 
   const AgendaPanel = (
     <div className="flex flex-col min-h-0 gap-3 flex-1">
@@ -647,45 +767,79 @@ export default function Home() {
   return (
     <PageTransition>
       <style>{`
-        .home-safe-bottom { padding-bottom: env(safe-area-inset-bottom, 8px); }
-        .home-outer {
-          max-width: 1600px;
-          margin: 0 auto;
-          width: 100%;
-          height: 100%;
-          display: flex;
-          flex-direction: column;
-          box-sizing: border-box;
-        }
+  .home-safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom, 8px);
+  }
 
-        @media (min-width: 1024px) {
-          .desktop-grid {
-            display: grid !important;
-            grid-template-columns: minmax(180px, 17%) 1fr minmax(180px, 17%);
-            gap: 0.75rem;
-          }
-        }
+  .home-outer {
+    max-width: 2000px;
+    margin: 0 auto;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+  }
 
-        @media (min-width: 640px) and (max-width: 1023px) {
-          .desktop-grid {
-            display: grid !important;
-            grid-template-columns: 1fr minmax(200px, 26%);
-            grid-template-rows: 1fr auto;
-            grid-template-areas: "center right" "center left";
-            gap: 0.75rem;
-          }
-          .col-left   { grid-area: left;   max-height: 210px; }
-          .col-center { grid-area: center; }
-          .col-right  { grid-area: right;  }
-        }
-      `}</style>
-      <section className="flex h-[100svh] w-full flex-col bg-background-page overflow-hidden">
-        <div className="home-outer px-3 sm:px-[3%] pt-3 sm:pt-[2%] pb-0 sm:pb-[2%]">
-          <h1 className="shrink-0 mb-3 text-xl sm:text-2xl font-bold tracking-tight text-gray-900">
+  @media (min-width: 1024px) {
+    .desktop-grid {
+      display: grid !important;
+      grid-template-columns: 300px minmax(0, 1fr) 300px;
+      align-items: stretch;
+      gap: 1rem;
+    }
+
+    .col-center {
+      min-width: 0;
+    }
+  }
+
+  @media (min-width: 1280px) {
+    .desktop-grid {
+      grid-template-columns: 320px minmax(0, 1fr) 320px;
+    }
+  }
+
+  @media (min-width: 1536px) {
+    .desktop-grid {
+      grid-template-columns: 340px minmax(0, 1fr) 340px;
+    }
+  }
+
+  @media (min-width: 640px) and (max-width: 1023px) {
+    .desktop-grid {
+      display: grid !important;
+      grid-template-columns: 1fr minmax(240px, 32%);
+      grid-template-rows: 1fr auto;
+      grid-template-areas:
+        "center right"
+        "center left";
+      gap: 1rem;
+    }
+
+    .col-left {
+      grid-area: left;
+      max-height: 240px;
+    }
+
+    .col-center {
+      grid-area: center;
+      min-width: 0;
+    }
+
+    .col-right {
+      grid-area: right;
+      max-height: 320px;
+    }
+  }
+`}</style>
+      <section className="flex h-full w-full flex-col overflow-hidden bg-background-page">
+        <div className="home-outer px-4 pt-4 pb-0 sm:px-6 sm:pb-6 lg:px-8">
+          <h1 className="shrink-0 mb-4 text-2xl font-semibold tracking-tight text-slate-950 md:text-4xl">
             Bienvenido, Croissant
           </h1>
           <div className="desktop-grid hidden sm:flex flex-1 min-h-0 flex-col">
-            <div className="col-left flex flex-col rounded-xl bg-white shadow-sm border border-gray-100 overflow-hidden p-4 min-h-0">
+            <div className="col-left flex flex-col bg-container shadow-sm border border-neutral-1 overflow-hidden p-4 min-h-0">
               <PanelRed
                 selectedPerson={selectedPerson}
                 onPersonClick={handlePersonClick}
@@ -693,12 +847,12 @@ export default function Home() {
               />
             </div>
             <div className="col-center flex flex-col min-h-0 gap-3">
-              <div className="flex-1 min-h-0 overflow-hidden rounded-xl shadow-sm border border-gray-100 bg-white">
+              <div className="flex-1 min-h-0 overflow-hidden shadow-sm border border-neutral-1 bg-container">
                 <AgendaRapida externalEvents={externalEvents} />
               </div>
               <EventoGeneralDetail {...carouselProps} />
             </div>
-            <div className="col-right flex flex-col rounded-xl bg-white shadow-sm border border-gray-100 overflow-hidden p-4 min-h-0">
+            <div className="col-right flex flex-col bg-white shadow-sm border border-gray-100 overflow-hidden p-4 min-h-0">
               <PanelInvitaciones
                 selInv={selInv}
                 onInvClick={handleInvClick}
@@ -735,7 +889,9 @@ export default function Home() {
           {TABS.map((tab) => {
             const isActive = mobileTab === tab.key;
             return (
-              <button type="button" key={tab.key}
+              <button
+                type="button"
+                key={tab.key}
                 onClick={() => setMobileTab(tab.key)}
                 className="relative flex flex-1 flex-col items-center justify-center gap-0.5 py-2.5 border-none bg-transparent cursor-pointer"
                 style={{ color: isActive ? "#7C3AED" : "#9CA3AF" }}
@@ -761,6 +917,3 @@ export default function Home() {
     </PageTransition>
   );
 }
-
-
-

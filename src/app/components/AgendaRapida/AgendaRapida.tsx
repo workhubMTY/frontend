@@ -29,8 +29,18 @@ const EXTERNAL_COLORS: Record<
   { bg: string; border: string; text: string; sub: string }
 > = {
   friend: { bg: "#FFF0E6", border: "#F97316", text: "#9A3412", sub: "#C2663A" },
-  invitation: { bg: "#E6F4FF", border: "#3B82F6", text: "#1E3A8A", sub: "#3B6CB7" },
-  holiday: { bg: "#FEF9C3", border: "#EAB308", text: "#713F12", sub: "#A16207" },
+  invitation: {
+    bg: "#E6F4FF",
+    border: "#3B82F6",
+    text: "#1E3A8A",
+    sub: "#3B6CB7",
+  },
+  holiday: {
+    bg: "#FEF9C3",
+    border: "#EAB308",
+    text: "#713F12",
+    sub: "#A16207",
+  },
 };
 
 function getMonday(offset: number): Date {
@@ -54,11 +64,19 @@ function fmtRange(mon: Date, short = false): string {
 
 function isToday(d: Date): boolean {
   const t = new Date();
-  return d.getDate() === t.getDate() && d.getMonth() === t.getMonth() && d.getFullYear() === t.getFullYear();
+  return (
+    d.getDate() === t.getDate() &&
+    d.getMonth() === t.getMonth() &&
+    d.getFullYear() === t.getFullYear()
+  );
 }
 
 function isSameLocalDate(a: Date, b: Date): boolean {
-  return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+  return (
+    a.getFullYear() === b.getFullYear() &&
+    a.getMonth() === b.getMonth() &&
+    a.getDate() === b.getDate()
+  );
 }
 
 interface AgendaRapidaProps {
@@ -66,7 +84,9 @@ interface AgendaRapidaProps {
   externalEvents?: ExternalEvent[];
 }
 
-export default function AgendaRapida({ externalEvents = [] }: AgendaRapidaProps) {
+export default function AgendaRapida({
+  externalEvents = [],
+}: AgendaRapidaProps) {
   const [weekOffset, setWeekOffset] = useState(0);
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -87,31 +107,47 @@ export default function AgendaRapida({ externalEvents = [] }: AgendaRapidaProps)
     externalEvents.some((e) => e.kind === "holiday");
 
   return (
-    <div className="flex h-full flex-col rounded-xl bg-white shadow-sm border border-gray-100 overflow-hidden">
+    <div className="flex h-full flex-col shadow-sm border border-gray-100 overflow-hidden">
       <div className="flex shrink-0 items-center justify-between border-b border-gray-100 px-3 py-2.5 gap-2">
         <div className="flex items-center gap-2 shrink-0">
-          <div className="flex h-[22px] w-[22px] items-center justify-center rounded-md bg-violet-700">
+          {/* <div className="flex h-[22px] w-[22px] items-center justify-center rounded-md bg-violet-700">
             <CalendarDays size={12} className="text-white" />
-          </div>
-          <span className="text-[0.82rem] font-semibold text-gray-900 hidden sm:block">Agenda rápida</span>
-          <span className="text-[0.82rem] font-semibold text-gray-900 sm:hidden">Agenda</span>
+          </div> */}
+          <span className="text-xl font-semibold text-gray-900 hidden sm:block">
+            Agenda rápida
+          </span>
+          <span className="text-xl font-semibold text-gray-900 sm:hidden">
+            Agenda
+          </span>
         </div>
 
         {hasLegend && (
           <div className="hidden md:flex items-center gap-3">
             {externalEvents.some((e) => e.kind === "friend") && (
               <span className="flex items-center gap-1 text-[0.6rem] text-gray-500">
-                <span className="inline-block h-2 w-2 rounded-sm" style={{ background: EXTERNAL_COLORS.friend.border }} />Amigo
+                <span
+                  className="inline-block h-2 w-2 rounded-sm"
+                  style={{ background: EXTERNAL_COLORS.friend.border }}
+                />
+                Amigo
               </span>
             )}
             {externalEvents.some((e) => e.kind === "invitation") && (
               <span className="flex items-center gap-1 text-[0.6rem] text-gray-500">
-                <span className="inline-block h-2 w-2 rounded-sm" style={{ background: EXTERNAL_COLORS.invitation.border }} />Invitación
+                <span
+                  className="inline-block h-2 w-2 rounded-sm"
+                  style={{ background: EXTERNAL_COLORS.invitation.border }}
+                />
+                Invitación
               </span>
             )}
             {externalEvents.some((e) => e.kind === "holiday") && (
               <span className="flex items-center gap-1 text-[0.6rem] text-gray-500">
-                <span className="inline-block h-2 w-2 rounded-sm" style={{ background: EXTERNAL_COLORS.holiday.border }} />Festivo
+                <span
+                  className="inline-block h-2 w-2 rounded-sm"
+                  style={{ background: EXTERNAL_COLORS.holiday.border }}
+                />
+                Festivo
               </span>
             )}
           </div>
@@ -142,12 +178,27 @@ export default function AgendaRapida({ externalEvents = [] }: AgendaRapidaProps)
       </div>
 
       <div className="flex flex-1 min-h-0 overflow-hidden">
-        <div ref={scrollRef} className="flex-1 overflow-x-auto overflow-y-auto" style={{ WebkitOverflowScrolling: "touch" }}>
-          <div className="flex flex-col h-full px-2 py-2 gap-0" style={{ minWidth: `${GRID_MIN_W}px` }}>
-            <div className="grid shrink-0 mb-1" style={{ gridTemplateColumns: `${DAY_COL_PX}px repeat(${TOTAL_H}, minmax(${COL_MIN_PX}px, 1fr))` }}>
+        <div
+          ref={scrollRef}
+          className="flex-1 overflow-x-auto overflow-y-auto"
+          style={{ WebkitOverflowScrolling: "touch" }}
+        >
+          <div
+            className="flex flex-col h-full px-2 py-2 gap-0"
+            style={{ minWidth: `${GRID_MIN_W}px` }}
+          >
+            <div
+              className="grid shrink-0 mb-1"
+              style={{
+                gridTemplateColumns: `${DAY_COL_PX}px repeat(${TOTAL_H}, minmax(${COL_MIN_PX}px, 1fr))`,
+              }}
+            >
               <div />
               {HOURS.map((h) => (
-                <div key={h} className="text-center text-[0.6rem] font-semibold text-gray-400">
+                <div
+                  key={h}
+                  className="text-center text-[0.6rem] font-semibold text-gray-400"
+                >
                   {h}:00
                 </div>
               ))}
@@ -158,7 +209,8 @@ export default function AgendaRapida({ externalEvents = [] }: AgendaRapidaProps)
                 const date = weekDates[di];
                 const today = isToday(date);
                 const extEvts = externalEvents.filter((ev) => {
-                  if (ev.startAt) return isSameLocalDate(new Date(ev.startAt), date);
+                  if (ev.startAt)
+                    return isSameLocalDate(new Date(ev.startAt), date);
                   return ev.day === di;
                 });
 
@@ -173,18 +225,31 @@ export default function AgendaRapida({ externalEvents = [] }: AgendaRapidaProps)
                     }}
                   >
                     <div className="flex flex-col items-center justify-center gap-0.5 pr-1">
-                      <span className="text-[0.52rem] font-bold uppercase tracking-wide text-gray-400">{dayName}</span>
+                      <span className="text-[0.52rem] font-bold uppercase tracking-wide text-gray-400">
+                        {dayName}
+                      </span>
                       <span
                         className="flex h-[18px] w-[18px] items-center justify-center rounded-full text-[0.6rem] font-bold"
-                        style={today ? { background: "#6d28d9", color: "#fff" } : { color: "#374151" }}
+                        style={
+                          today
+                            ? { background: "#6d28d9", color: "#fff" }
+                            : { color: "#374151" }
+                        }
                       >
                         {date?.getDate()}
                       </span>
                     </div>
 
-                    <div className="relative rounded-md bg-gray-50" style={{ gridColumn: `2 / ${TOTAL_H + 2}` }}>
+                    <div
+                      className="relative rounded-md bg-gray-50"
+                      style={{ gridColumn: `2 / ${TOTAL_H + 2}` }}
+                    >
                       {HOURS.map((_, si) => (
-                        <div key={si} className="absolute top-0 bottom-0 border-r border-gray-200" style={{ left: `${(si / TOTAL_H) * 100}%` }} />
+                        <div
+                          key={si}
+                          className="absolute top-0 bottom-0 border-r border-gray-200"
+                          style={{ left: `${(si / TOTAL_H) * 100}%` }}
+                        />
                       ))}
 
                       {extEvts.map((ev, ei) => {
@@ -210,11 +275,17 @@ export default function AgendaRapida({ externalEvents = [] }: AgendaRapidaProps)
                             }}
                             title={`${ev.label}${ev.sublabel ? ` · ${ev.sublabel}` : ""}`}
                           >
-                            <p className="text-[0.5rem] font-semibold leading-tight truncate" style={{ color: c.text }}>
+                            <p
+                              className="text-[0.5rem] font-semibold leading-tight truncate"
+                              style={{ color: c.text }}
+                            >
                               {ev.label}
                             </p>
                             {ev.sublabel && !isHoliday && (
-                              <p className="text-[0.44rem] leading-tight truncate" style={{ color: c.sub }}>
+                              <p
+                                className="text-[0.44rem] leading-tight truncate"
+                                style={{ color: c.sub }}
+                              >
                                 {ev.sublabel}
                               </p>
                             )}
