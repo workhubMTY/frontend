@@ -6,7 +6,6 @@ export interface User {
 
 export interface AuthResponse {
   user: User;
-  token: string;
 }
 
 export interface LoginInput {
@@ -16,9 +15,8 @@ export interface LoginInput {
 
 export interface AuthContextType {
   user: User | null;
-  token: string | null;
   login: (data: LoginInput) => Promise<void>;
-  logout: () => void;
+  logout: () => Promise<void>;
   isAuthenticated: boolean;
   isLoading: boolean;
 }

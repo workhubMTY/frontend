@@ -7,65 +7,57 @@ import {
 } from "react";
 
 import type { AuthContextType, LoginInput, User } from "./auth.types";
-import { getMe } from "./api";
 import { authService } from "./auth.service";
+import { Finlandica } from "next/font/google";
 
 export const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [token, setToken] = useState<string | null>(
-    localStorage.getItem("token"),
-  );
-
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
     async function loadUser() {
-      if (!token) return;
       try {
         setIsLoading(true);
-        // const me = await getMe(token);
-        // setUser(me);
+        const me = await authService.me();
+        setUser(me);
       } catch (error) {
-        localStorage.removeItem("token");
         setUser(null);
-        setToken(null);
+      } finally {
         setIsLoading(false);
       }
     }
     loadUser();
-  }, [token]);
+  }, []);
 
   const login = async (data: LoginInput) => {
     setIsLoading(true);
-    const response = await authService.login(data);
-    setUser(response.user);
-    setToken(response.token);
-
-    localStorage.setItem("token", response.token);
-    setIsLoading(false);
+    try {
+      const response = await authService.login(data);
+      setUser(response.user);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const logout = () => {
-    setUser(null);
-    setToken(null);
-
-    localStorage.removeItem("token");
+  const logout = async () => {
+    try {
+      await authService.logout();
+    } finally {
+      setUser(null);
+    }
   };
 
   const value = useMemo(
     () => ({
       user,
-      token,
       login,
       logout,
-      // isAuthenticated: !!token && !!user,
-      isAuthenticated: !!token,
+      isAuthenticated: !!user,
       isLoading,
     }),
-    // [user, token, isLoading],
-    [token, isLoading],
+    [user, isLoading],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

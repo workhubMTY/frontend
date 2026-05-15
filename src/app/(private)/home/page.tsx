@@ -1,6 +1,6 @@
-"use client";
+﻿"use client";
 
-import { useState, useMemo } from "react";
+import { useMemo, useState } from "react";
 import {
   Search, UserPlus, Clock, MapPin,
   ChevronLeft, ChevronRight, Star, Calendar,
@@ -9,10 +9,22 @@ import {
 import AgendaRapida, { ExternalEvent } from "@/app/components/AgendaRapida/AgendaRapida";
 import PageTransition from "@/app/components/PageTransition/PageTransition";
 
+import { useFriends } from "@/app/modules/friendships/hooks";
+import {
+  useEvents,
+  useFriendsReservations,
+  useMyReservations,
+} from "@/app/modules/office-slots/hooks";
+import { getInitials, getUserColor } from "@/app/features/profile.utils";
+import type {
+  ReservationEvent,
+  ReservationSummary,
+} from "@/app/modules/office-slots/types";
+
 interface Invitacion { nombre: string; sala: string; hora: string; tipo: string; day: number; start: number; end: number; }
 interface DiaInvitaciones { dia: string; dayIndex: number; items: Invitacion[]; }
-interface Reserva { titulo: string; hora: string; lugar: string; estado: "Confirmada" | "Pendiente"; day: number; start: number; end: number; }
-interface Persona { initials: string; name: string; role: string; reservas: Reserva[]; }
+interface Reserva { id: number; titulo: string; hora: string; lugar: string; estado: "Confirmada" | "Pendiente"; day: number; start: number; end: number; }
+interface Persona { id: string; initials: string; name: string; role: string; reservas: Reserva[]; }
 interface EventoGeneral { titulo: string; descripcion: string; tipo: "Festivo" | "Corporativo" | "Social"; icono: string; day: number; start: number; end: number; }
 type MobileTab = "agenda" | "red" | "invitaciones";
 
@@ -23,46 +35,55 @@ const EVENTOS_GENERALES: EventoGeneral[] = [
 ];
 
 const INVITACIONES: DiaInvitaciones[] = [
-  { dia: "Lunes", dayIndex: 0, items: [
-    { nombre: "Junta de seguimiento", sala: "ISJ03 · Sierra Madre", hora: "7:00–13:00", tipo: "Reunión", day: 0, start: 7, end: 13 },
-    { nombre: "Refinamiento de req.", sala: "ABC02 · Sala 2", hora: "8:00–17:00", tipo: "Planning", day: 0, start: 8, end: 17 },
-  ]},
-  { dia: "Martes", dayIndex: 1, items: [
-    { nombre: "Junta con Stakeholders", sala: "DS340 · Sala 4", hora: "7:00–13:00", tipo: "Reunión", day: 1, start: 7, end: 13 },
-  ]},
-  { dia: "Miércoles", dayIndex: 2, items: [
-    { nombre: "Junta de seguimiento", sala: "ISJ03 · Sierra Madre", hora: "7:00–13:00", tipo: "Reunión", day: 2, start: 7, end: 13 },
-  ]},
+  {
+    dia: "Lunes", dayIndex: 0, items: [
+      { nombre: "Junta de seguimiento", sala: "ISJ03 · Sierra Madre", hora: "7:00–13:00", tipo: "Reunión", day: 0, start: 7, end: 13 },
+      { nombre: "Refinamiento de req.", sala: "ABC02 · Sala 2", hora: "8:00–17:00", tipo: "Planning", day: 0, start: 8, end: 17 },
+    ]
+  },
+  {
+    dia: "Martes", dayIndex: 1, items: [
+      { nombre: "Junta con Stakeholders", sala: "DS340 · Sala 4", hora: "7:00–13:00", tipo: "Reunión", day: 1, start: 7, end: 13 },
+    ]
+  },
+  {
+    dia: "Miércoles", dayIndex: 2, items: [
+      { nombre: "Junta de seguimiento", sala: "ISJ03 · Sierra Madre", hora: "7:00–13:00", tipo: "Reunión", day: 2, start: 7, end: 13 },
+    ]
+  },
 ];
 
 const PERSONAS: Persona[] = [
   {
+    id: "1",
     initials: "CG",
     name: "Cristina González",
     role: "Senior Developer",
     reservas: [
-      { titulo: "Sprint Planning", hora: "9:00–11:00", lugar: "Sala Magna", estado: "Confirmada", day: 0, start: 9, end: 11 },
-      { titulo: "Design Review", hora: "11:00–12:30", lugar: "ISJ03", estado: "Confirmada", day: 0, start: 11, end: 12.5 },
-      { titulo: "Retrospectiva", hora: "11:00–13:00", lugar: "Sala 2", estado: "Pendiente", day: 2, start: 11, end: 13 },
+      { id: 1, titulo: "Sprint Planning", hora: "9:00–11:00", lugar: "Sala Magna", estado: "Confirmada", day: 0, start: 9, end: 11 },
+      { id: 2, titulo: "Design Review", hora: "11:00–12:30", lugar: "ISJ03", estado: "Confirmada", day: 0, start: 11, end: 12.5 },
+      { id: 3, titulo: "Retrospectiva", hora: "11:00–13:00", lugar: "Sala 2", estado: "Pendiente", day: 2, start: 11, end: 13 },
     ],
   },
   {
+    id: "2",
     initials: "MJ",
     name: "María Jesús",
     role: "Tester",
     reservas: [
-      { titulo: "Standup", hora: "8:00–9:00", lugar: "Sala Virtual", estado: "Confirmada", day: 1, start: 8, end: 9 },
-      { titulo: "Revisión QA", hora: "13:00–14:00", lugar: "ISJ04", estado: "Confirmada", day: 1, start: 13, end: 14 },
+      { id: 4, titulo: "Standup", hora: "8:00–9:00", lugar: "Sala Virtual", estado: "Confirmada", day: 1, start: 8, end: 9 },
+      { id: 5, titulo: "Revisión QA", hora: "13:00–14:00", lugar: "ISJ04", estado: "Confirmada", day: 1, start: 13, end: 14 },
     ],
   },
   {
+    id: "3",
     initials: "MC",
     name: "Mia Clements",
     role: "Junior Developer",
     reservas: [
-      { titulo: "Standup", hora: "8:00–9:00", lugar: "Sala Virtual", estado: "Confirmada", day: 0, start: 8, end: 9 },
-      { titulo: "Workshop UX", hora: "10:00–12:00", lugar: "Sala UX", estado: "Confirmada", day: 2, start: 10, end: 12 },
-      { titulo: "1:1 con manager", hora: "14:00–15:00", lugar: "Oficina Dir.", estado: "Pendiente", day: 3, start: 14, end: 15 },
+      { id: 6, titulo: "Standup", hora: "8:00–9:00", lugar: "Sala Virtual", estado: "Confirmada", day: 0, start: 8, end: 9 },
+      { id: 7, titulo: "Workshop UX", hora: "10:00–12:00", lugar: "Sala UX", estado: "Confirmada", day: 2, start: 10, end: 12 },
+      { id: 8, titulo: "1:1 con manager", hora: "14:00–15:00", lugar: "Oficina Dir.", estado: "Pendiente", day: 3, start: 14, end: 15 },
     ],
   },
 ];
@@ -79,10 +100,73 @@ const TIPO_EVENTO_COLORS: Record<EventoGeneral["tipo"], { bg: string; text: stri
   Social: { bg: "#D6F5E6", text: "#065F46", border: "#10B981" },
 };
 
+const DIAS = [
+  "Lunes",
+  "Martes",
+  "Miércoles",
+  "Jueves",
+  "Viernes",
+  "Sábado",
+  "Domingo",
+];
+
+function toDate(value: string) {
+  return new Date(value);
+}
+
+function toAgendaDay(date: Date) {
+  return (date.getDay() + 6) % 7;
+}
+
+function toDecimalHour(date: Date) {
+  return date.getHours() + date.getMinutes() / 60;
+}
+
+function formatHourRange(startIso: string, endIso: string) {
+  const start = toDate(startIso);
+  const end = toDate(endIso);
+  const fmt = (date: Date) =>
+    `${date.getHours().toString().padStart(2, "0")}:${date
+      .getMinutes()
+      .toString()
+      .padStart(2, "0")}`;
+
+  return `${fmt(start)}-${fmt(end)}`;
+}
+
+function eventType(evt: ReservationEvent): EventoGeneral["tipo"] {
+  const text = `${evt.title} ${evt.description}`.toLowerCase();
+  if (text.includes("holiday") || text.includes("festivo")) return "Festivo";
+  if (text.includes("social") || text.includes("happy")) return "Social";
+  return "Corporativo";
+}
+
+function eventIcon(tipo: EventoGeneral["tipo"]) {
+  if (tipo === "Festivo") return "??";
+  if (tipo === "Social") return "??";
+  return "??";
+}
+
+function mapReservation(res: ReservationSummary): Reserva {
+  const start = toDate(res.start_time);
+  const end = toDate(res.end_time);
+  return {
+    id: res.id,
+    titulo: "Reservación",
+    hora: formatHourRange(res.start_time, res.end_time),
+    lugar: `${res.reservable_name} · ${res.floor_name}`,
+    estado: res.status === "ACCEPTED" ? "Confirmada" : "Pendiente",
+    day: toAgendaDay(start),
+    start: toDecimalHour(start),
+    end: toDecimalHour(end),
+  };
+}
+
 function EventoGeneralDetail({
   evento,
   onPrev,
   onNext,
+  onViewInAgenda,
   dotCount,
   dotActive,
   onDot,
@@ -90,6 +174,7 @@ function EventoGeneralDetail({
   evento: EventoGeneral;
   onPrev: () => void;
   onNext: () => void;
+  onViewInAgenda: () => void;
   dotCount: number;
   dotActive: number;
   onDot: (i: number) => void;
@@ -102,14 +187,12 @@ function EventoGeneralDetail({
           Eventos & Festivos
         </h3>
         <div className="flex gap-1.5">
-          <button
-            onClick={onPrev}
+          <button type="button" onClick={onPrev}
             className="flex h-7 w-7 items-center justify-center rounded-md border border-gray-200 text-gray-400 hover:border-violet-500 hover:text-violet-500 active:bg-gray-100 transition-colors cursor-pointer bg-white"
           >
             <ChevronLeft size={13} />
           </button>
-          <button
-            onClick={onNext}
+          <button type="button" onClick={onNext}
             className="flex h-7 w-7 items-center justify-center rounded-md border border-gray-200 text-gray-400 hover:border-violet-500 hover:text-violet-500 active:bg-gray-100 transition-colors cursor-pointer bg-white"
           >
             <ChevronRight size={13} />
@@ -138,15 +221,18 @@ function EventoGeneralDetail({
           <p className="text-[11px] text-gray-400 leading-snug">
             {evento.descripcion}
           </p>
-          <button className="mt-1 self-start rounded-lg border border-violet-600 px-3 py-1 text-[11px] font-medium text-violet-600 hover:bg-violet-600 hover:text-white active:bg-violet-700 transition-colors cursor-pointer bg-transparent">
+          <button
+            type="button"
+            onClick={onViewInAgenda}
+            className="mt-1 self-start rounded-lg border border-violet-600 px-3 py-1 text-[11px] font-medium text-violet-600 hover:bg-violet-600 hover:text-white active:bg-violet-700 transition-colors cursor-pointer bg-transparent"
+          >
             Ver en agenda
           </button>
         </div>
       </div>
       <div className="flex justify-center gap-1.5 pb-3">
         {Array.from({ length: dotCount }).map((_, i) => (
-          <button
-            key={i}
+          <button type="button" key={i}
             onClick={() => onDot(i)}
             className="h-1.5 rounded-full border-none cursor-pointer transition-all"
             style={{
@@ -163,9 +249,11 @@ function EventoGeneralDetail({
 function PanelRed({
   selectedPerson,
   onPersonClick,
+  personas,
 }: {
   selectedPerson: number | null;
   onPersonClick: (i: number) => void;
+  personas: Persona[];
 }) {
   return (
     <div className="flex flex-col h-full gap-3">
@@ -174,7 +262,7 @@ function PanelRed({
           Red personal
         </span>
       </div>
-      {selectedPerson !== null && (
+      {selectedPerson !== null && personas[selectedPerson] && (
         <div className="flex items-center gap-1.5 rounded-xl bg-orange-50 border border-orange-100 px-3 py-2">
           <span
             className="inline-block h-2 w-2 rounded-sm shrink-0"
@@ -182,53 +270,55 @@ function PanelRed({
           />
           <p className="text-[11px] text-orange-700 leading-tight">
             Mostrando horarios de{" "}
-            <strong>{PERSONAS[selectedPerson].name.split(" ")[0]}</strong> en la
+            <strong>{personas[selectedPerson].name.split(" ")[0]}</strong> en la
             agenda
           </p>
         </div>
       )}
       <div className="flex flex-1 flex-col gap-1.5 overflow-y-auto min-h-0">
-        {PERSONAS.map((p, i) => (
-          <button
-            key={i}
-            onClick={() => onPersonClick(i)}
-            className="flex w-full cursor-pointer items-center gap-3 rounded-xl border-none px-3 py-3 text-left font-[inherit] transition-colors"
-            style={{ background: selectedPerson === i ? "#FFF0E6" : "#F9FAFB" }}
-          >
-            <div
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[12px] font-semibold"
-              style={{
-                background: PERSON_COLORS[i].bg,
-                color: PERSON_COLORS[i].text,
-              }}
+        {personas.map((p, i) => {
+          const color = getUserColor(p.id);
+          return (
+            <button type="button" key={p.id}
+              onClick={() => onPersonClick(i)}
+              className="flex w-full cursor-pointer items-center gap-3 rounded-xl border-none px-3 py-3 text-left font-[inherit] transition-colors"
+              style={{ background: selectedPerson === i ? "#FFF0E6" : "#F9FAFB" }}
             >
-              {p.initials}
-            </div>
-            <div className="flex-1 min-w-0">
-              <p
-                className="text-[13px] font-medium leading-tight truncate"
-                style={{ color: selectedPerson === i ? "#9A3412" : "#111827" }}
+              <div
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[12px] font-semibold"
+                style={{
+                  background: color.bg,
+                  color: color.text,
+                }}
               >
-                {p.name}
-              </p>
-              <p
-                className="text-[11px] leading-tight mt-0.5"
-                style={{ color: selectedPerson === i ? "#C2663A" : "#9CA3AF" }}
-              >
-                {p.role}
-              </p>
-            </div>
-            {selectedPerson === i ? (
-              <Star
-                size={12}
-                className="shrink-0"
-                style={{ color: "#F97316" }}
-              />
-            ) : (
-              <span className="text-[10px] text-gray-300 shrink-0">ver →</span>
-            )}
-          </button>
-        ))}
+                {p.initials}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p
+                  className="text-[13px] font-medium leading-tight truncate"
+                  style={{ color: selectedPerson === i ? "#9A3412" : "#111827" }}
+                >
+                  {p.name}
+                </p>
+                <p
+                  className="text-[11px] leading-tight mt-0.5"
+                  style={{ color: selectedPerson === i ? "#C2663A" : "#9CA3AF" }}
+                >
+                  {p.role}
+                </p>
+              </div>
+              {selectedPerson === i ? (
+                <Star
+                  size={12}
+                  className="shrink-0"
+                  style={{ color: "#F97316" }}
+                />
+              ) : (
+                <span className="text-[10px] text-gray-300 shrink-0">ver ?</span>
+              )}
+            </button>
+          );
+        })}
       </div>
       <div className="shrink-0 flex items-center gap-2 rounded-xl bg-gray-100 px-4 py-2.5">
         <Search size={13} className="shrink-0 text-gray-400" />
@@ -245,9 +335,11 @@ function PanelRed({
 function PanelInvitaciones({
   selInv,
   onInvClick,
+  invitaciones,
 }: {
   selInv: string | null;
   onInvClick: (dayIndex: number, ii: number) => void;
+  invitaciones: DiaInvitaciones[];
 }) {
   return (
     <div className="flex flex-col h-full gap-3">
@@ -269,7 +361,7 @@ function PanelInvitaciones({
         </div>
       )}
       <div className="flex-1 overflow-y-auto min-h-0">
-        {INVITACIONES.map((sec, si) => (
+        {invitaciones.map((sec, si) => (
           <div key={si}>
             <p className="pt-1 pb-1.5 text-[9px] font-bold uppercase tracking-wider text-gray-400">
               {sec.dia}
@@ -306,7 +398,7 @@ function PanelInvitaciones({
         ))}
       </div>
 
-      <button className="shrink-0 w-full cursor-pointer rounded-xl border border-gray-200 py-2.5 text-[12px] font-medium text-gray-500 hover:border-violet-600 hover:text-violet-600 transition-colors bg-transparent">
+      <button type="button" className="shrink-0 w-full cursor-pointer rounded-xl border border-gray-200 py-2.5 text-[12px] font-medium text-gray-500 hover:border-violet-600 hover:text-violet-600 transition-colors bg-transparent">
         Mostrar todas
       </button>
     </div>
@@ -317,13 +409,123 @@ export default function Home() {
   const [selectedPerson, setSelectedPerson] = useState<number | null>(null);
   const [selInv, setSelInv] = useState<string | null>(null);
   const [curEv, setCurEv] = useState(0);
+  const [eventOnAgenda, setEventOnAgenda] = useState<string | null>(null);
   const [mobileTab, setMobileTab] = useState<MobileTab>("agenda");
+
+  const { data: friends = [] } = useFriends();
+  const { data: friendsReservations = [] } = useFriendsReservations();
+  const { data: myReservationsData } = useMyReservations();
+  const { data: eventsData = [] } = useEvents();
+
+  const personas = useMemo<Persona[]>(() => {
+    return friends.map((friend) => {
+      const fr = friendsReservations.find((x) => x.user_id === friend.eId);
+      const reservas = (fr?.reservations ?? [])
+        .filter((r) => r.status === "ACCEPTED")
+        .map(mapReservation);
+
+      return {
+        id: friend.eId,
+        initials: getInitials(friend.name),
+        name: friend.name,
+        role: friend.roleName,
+        userId: friend.eId,
+        reservas,
+      };
+    });
+  }, [friends, friendsReservations]);
+
+  const invitaciones = useMemo<DiaInvitaciones[]>(() => {
+    const grouped = new Map<number, Invitacion[]>();
+
+    (myReservationsData?.reservations ?? [])
+      .filter((r) => r.status === "PENDING")
+      .forEach((res) => {
+        const start = toDate(res.start_time);
+        const end = toDate(res.end_time);
+        const dayIndex = toAgendaDay(start);
+        const item: Invitacion = {
+          nombre: "Invitación de reservación",
+          sala: `${res.reservable_name} · ${res.floor_name}`,
+          hora: formatHourRange(res.start_time, res.end_time),
+          tipo: "PENDING",
+          day: dayIndex,
+          start: toDecimalHour(start),
+          end: toDecimalHour(end),
+        };
+        const arr = grouped.get(dayIndex) ?? [];
+        arr.push(item);
+        grouped.set(dayIndex, arr);
+      });
+
+    return Array.from(grouped.entries())
+      .sort((a, b) => a[0] - b[0])
+      .map(([dayIndex, items]) => ({
+        dia: DIAS[dayIndex],
+        dayIndex,
+        items,
+      }));
+  }, [myReservationsData]);
+
+  const eventosGenerales = useMemo<EventoGeneral[]>(() => {
+    if (!eventsData.length) {
+      return [
+        {
+          id: -1,
+          titulo: "Sin eventos",
+          descripcion: "No hay eventos cargados",
+          tipo: "Corporativo",
+          icono: "??",
+          day: 0,
+          start: 0,
+          end: 0,
+          startAt: undefined,
+          endAt: undefined,
+        },
+      ];
+    }
+
+    return eventsData.map((evt) => {
+      const start = toDate(evt.start_time);
+      const end = toDate(evt.end_time);
+      const tipo = eventType(evt);
+      return {
+        id: evt.id,
+        titulo: evt.title,
+        descripcion: evt.description || "Sin descripción",
+        tipo,
+        icono: eventIcon(tipo),
+        day: toAgendaDay(start),
+        start: toDecimalHour(start),
+        end: toDecimalHour(end),
+        startAt: evt.start_time,
+        endAt: evt.end_time,
+      };
+    });
+  }, [eventsData]);
+
+  const acceptedMine = useMemo(() => {
+    return (myReservationsData?.reservations ?? [])
+      .filter((r) => r.status === "ACCEPTED")
+      .map(mapReservation);
+  }, [myReservationsData]);
 
   const externalEvents = useMemo<ExternalEvent[]>(() => {
     const evts: ExternalEvent[] = [];
 
-    if (selectedPerson !== null) {
-      PERSONAS[selectedPerson].reservas.forEach((r) =>
+    acceptedMine.forEach((r) => {
+      evts.push({
+        day: r.day,
+        start: r.start,
+        end: r.end,
+        label: r.titulo,
+        sublabel: r.lugar,
+        kind: "friend",
+      });
+    });
+
+    if (selectedPerson !== null && personas[selectedPerson]) {
+      personas[selectedPerson].reservas.forEach((r) => {
         evts.push({
           day: r.day,
           start: r.start,
@@ -331,14 +533,14 @@ export default function Home() {
           label: r.titulo,
           sublabel: r.lugar,
           kind: "friend",
-        }),
-      );
+        });
+      });
     }
 
     if (selInv !== null) {
-      INVITACIONES.forEach((sec) =>
+      invitaciones.forEach((sec) =>
         sec.items.forEach((item, ii) => {
-          if (selInv === `inv_${sec.dayIndex}_${ii}`)
+          if (selInv === `inv_${sec.dayIndex}_${ii}`) {
             evts.push({
               day: item.day,
               start: item.start,
@@ -347,12 +549,13 @@ export default function Home() {
               sublabel: item.sala,
               kind: "invitation",
             });
+          }
         }),
       );
     }
 
-    EVENTOS_GENERALES.forEach((eg) => {
-      if (eg.tipo === "Festivo")
+    eventosGenerales.forEach((eg) => {
+      if (eg.tipo === "Festivo") {
         evts.push({
           day: eg.day,
           start: 6,
@@ -360,10 +563,25 @@ export default function Home() {
           label: eg.titulo,
           kind: "holiday",
         });
+      }
     });
 
+    if (eventOnAgenda) {
+      const target = eventosGenerales.find((ev) => ev.titulo === eventOnAgenda);
+      if (target) {
+        evts.push({
+          day: target.day,
+          start: target.start,
+          end: target.end,
+          label: target.titulo,
+          sublabel: target.descripcion,
+          kind: "holiday",
+        });
+      }
+    }
+
     return evts;
-  }, [selectedPerson, selInv]);
+  }, [acceptedMine, selectedPerson, personas, selInv, invitaciones, eventosGenerales, eventOnAgenda]);
 
   const handlePersonClick = (i: number) => {
     const next = selectedPerson === i ? null : i;
@@ -379,15 +597,21 @@ export default function Home() {
   };
 
   const carouselProps = {
-    evento: EVENTOS_GENERALES[curEv],
+    evento: eventosGenerales[curEv] ?? eventosGenerales[0],
     onPrev: () =>
       setCurEv(
-        (c) => (c - 1 + EVENTOS_GENERALES.length) % EVENTOS_GENERALES.length,
+        (c) => (c - 1 + eventosGenerales.length) % eventosGenerales.length,
       ),
-    onNext: () => setCurEv((c) => (c + 1) % EVENTOS_GENERALES.length),
-    dotCount: EVENTOS_GENERALES.length,
+    onNext: () => setCurEv((c) => (c + 1) % eventosGenerales.length),
+    dotCount: eventosGenerales.length,
     dotActive: curEv,
     onDot: (i: number) => setCurEv(i),
+    onViewInAgenda: () => {
+      const target = eventosGenerales[curEv] ?? eventosGenerales[0];
+      if (!target) return;
+      setEventOnAgenda(target.titulo);
+      setMobileTab("agenda");
+    },
   };
 
   const TABS: {
@@ -396,20 +620,20 @@ export default function Home() {
     icon: React.ReactNode;
     badge?: boolean;
   }[] = [
-    { key: "agenda", label: "Agenda", icon: <CalendarDays size={18} /> },
-    {
-      key: "red",
-      label: "Red",
-      icon: <Users size={18} />,
-      badge: selectedPerson !== null,
-    },
-    {
-      key: "invitaciones",
-      label: "Invitaciones",
-      icon: <MailOpen size={18} />,
-      badge: selInv !== null,
-    },
-  ];
+      { key: "agenda", label: "Agenda", icon: <CalendarDays size={18} /> },
+      {
+        key: "red",
+        label: "Red",
+        icon: <Users size={18} />,
+        badge: selectedPerson !== null,
+      },
+      {
+        key: "invitaciones",
+        label: "Invitaciones",
+        icon: <MailOpen size={18} />,
+        badge: selInv !== null,
+      },
+    ];
 
   const AgendaPanel = (
     <div className="flex flex-col min-h-0 gap-3 flex-1">
@@ -465,6 +689,7 @@ export default function Home() {
               <PanelRed
                 selectedPerson={selectedPerson}
                 onPersonClick={handlePersonClick}
+                personas={personas}
               />
             </div>
             <div className="col-center flex flex-col min-h-0 gap-3">
@@ -474,7 +699,11 @@ export default function Home() {
               <EventoGeneralDetail {...carouselProps} />
             </div>
             <div className="col-right flex flex-col rounded-xl bg-white shadow-sm border border-gray-100 overflow-hidden p-4 min-h-0">
-              <PanelInvitaciones selInv={selInv} onInvClick={handleInvClick} />
+              <PanelInvitaciones
+                selInv={selInv}
+                onInvClick={handleInvClick}
+                invitaciones={invitaciones}
+              />
             </div>
           </div>
           <div className="flex sm:hidden flex-1 min-h-0 flex-col">
@@ -484,6 +713,7 @@ export default function Home() {
                 <PanelRed
                   selectedPerson={selectedPerson}
                   onPersonClick={handlePersonClick}
+                  personas={personas}
                 />
               </div>
             )}
@@ -492,6 +722,7 @@ export default function Home() {
                 <PanelInvitaciones
                   selInv={selInv}
                   onInvClick={handleInvClick}
+                  invitaciones={invitaciones}
                 />
               </div>
             )}
@@ -504,8 +735,7 @@ export default function Home() {
           {TABS.map((tab) => {
             const isActive = mobileTab === tab.key;
             return (
-              <button
-                key={tab.key}
+              <button type="button" key={tab.key}
                 onClick={() => setMobileTab(tab.key)}
                 className="relative flex flex-1 flex-col items-center justify-center gap-0.5 py-2.5 border-none bg-transparent cursor-pointer"
                 style={{ color: isActive ? "#7C3AED" : "#9CA3AF" }}
@@ -531,3 +761,6 @@ export default function Home() {
     </PageTransition>
   );
 }
+
+
+
