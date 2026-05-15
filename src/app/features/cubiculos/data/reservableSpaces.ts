@@ -1,462 +1,85 @@
+import { officeSlotsApi } from "@/app/modules/office-slots/api";
+import type { SlotAvailabilityResult } from "@/app/modules/office-slots/types";
+import type { SpaceSearchFilters } from "../types/searchFilters";
 import type { ReservableSpace } from "../types/reservableSpaces";
-import { SpaceSearchFilters } from "../types/searchFilters";
-export const reservableSpaces: ReservableSpace[] = [
-  {
-    id: 1,
-    code: "MZSJ-115",
-    name: "Sala de juntas 115",
-    floor: "MZ",
-    capacity: 6,
-    status: "available",
-    statusLabel: "Disponible",
-    timeline: [
-      { id: "t1", start: "08:00", end: "09:00", status: "free" },
-      { id: "t2", start: "09:00", end: "10:00", status: "search" },
-      { id: "t3", start: "10:00", end: "11:30", status: "occupied" },
-      { id: "t4", start: "11:30", end: "15:00", status: "free" },
-      { id: "t5", start: "15:00", end: "16:00", status: "occupied" },
-      { id: "t6", start: "16:00", end: "18:00", status: "free" },
-    ],
-  },
-  {
-    id: 2,
-    code: "MZSJ-116",
-    name: "Sala de juntas 116",
-    floor: "MZ",
-    capacity: 6,
-    status: "occupied",
-    statusLabel: "Ocupado",
-    timeline: [],
-  },
-  {
-    id: 3,
-    code: "MZSJ-117",
-    name: "Sala de juntas 117",
-    floor: "MZ",
-    capacity: 8,
-    status: "soon",
-    statusLabel: "Por comenzar",
-    timeline: [],
-  },
 
-  {
-    id: 4,
-    code: "MZ001",
-    name: "Cubículo 001",
-    floor: "MZ",
-    capacity: 1,
-    status: "available",
-    statusLabel: "Disponible",
-    timeline: [],
-  },
-  {
-    id: 5,
-    code: "MZ002",
-    name: "Cubículo 002",
-    floor: "MZ",
-    capacity: 1,
-    status: "occupied",
-    statusLabel: "Ocupado",
-    timeline: [],
-  },
-  {
-    id: 6,
-    code: "MZ003",
-    name: "Cubículo 003",
-    floor: "MZ",
-    capacity: 1,
-    status: "soon",
-    statusLabel: "Por comenzar",
-    timeline: [],
-  },
-  {
-    id: 7,
-    code: "MZ004",
-    name: "Cubículo 004",
-    floor: "MZ",
-    capacity: 1,
-    status: "available",
-    statusLabel: "Disponible",
-    timeline: [],
-  },
-  {
-    id: 8,
-    code: "MZ005",
-    name: "Cubículo 005",
-    floor: "MZ",
-    capacity: 1,
-    status: "available",
-    statusLabel: "Disponible",
-    timeline: [],
-  },
-  {
-    id: 9,
-    code: "MZ006",
-    name: "Cubículo 006",
-    floor: "MZ",
-    capacity: 1,
-    status: "occupied",
-    statusLabel: "Ocupado",
-    timeline: [],
-  },
-  {
-    id: 10,
-    code: "MZ007",
-    name: "Cubículo 007",
-    floor: "MZ",
-    capacity: 1,
-    status: "available",
-    statusLabel: "Disponible",
-    timeline: [],
-  },
-  {
-    id: 11,
-    code: "MZ008",
-    name: "Cubículo 008",
-    floor: "MZ",
-    capacity: 1,
-    status: "available",
-    statusLabel: "Disponible",
-    timeline: [],
-  },
-  {
-    id: 12,
-    code: "MZ009",
-    name: "Cubículo 009",
-    floor: "MZ",
-    capacity: 1,
-    status: "occupied",
-    statusLabel: "Ocupado",
-    timeline: [],
-  },
-  {
-    id: 13,
-    code: "MZ010",
-    name: "Cubículo 010",
-    floor: "MZ",
-    capacity: 1,
-    status: "available",
-    statusLabel: "Disponible",
-    timeline: [],
-  },
-  {
-    id: 14,
-    code: "MZ011",
-    name: "Cubículo 011",
-    floor: "MZ",
-    capacity: 1,
-    status: "soon",
-    statusLabel: "Por comenzar",
-    timeline: [],
-  },
-  {
-    id: 15,
-    code: "MZ012",
-    name: "Cubículo 012",
-    floor: "MZ",
-    capacity: 1,
-    status: "available",
-    statusLabel: "Disponible",
-    timeline: [],
-  },
-  {
-    id: 16,
-    code: "MZ013",
-    name: "Cubículo 013",
-    floor: "MZ",
-    capacity: 1,
-    status: "available",
-    statusLabel: "Disponible",
-    timeline: [],
-  },
-  {
-    id: 17,
-    code: "MZ014",
-    name: "Cubículo 014",
-    floor: "MZ",
-    capacity: 1,
-    status: "occupied",
-    statusLabel: "Ocupado",
-    timeline: [],
-  },
-  {
-    id: 18,
-    code: "MZ015",
-    name: "Cubículo 015",
-    floor: "MZ",
-    capacity: 1,
-    status: "available",
-    statusLabel: "Disponible",
-    timeline: [],
-  },
-  {
-    id: 19,
-    code: "MZ016",
-    name: "Cubículo 016",
-    floor: "MZ",
-    capacity: 1,
-    status: "available",
-    statusLabel: "Disponible",
-    timeline: [],
-  },
-  {
-    id: 20,
-    code: "MZ017",
-    name: "Cubículo 017",
-    floor: "MZ",
-    capacity: 1,
-    status: "soon",
-    statusLabel: "Por comenzar",
-    timeline: [],
-  },
-  {
-    id: 21,
-    code: "MZ018",
-    name: "Cubículo 018",
-    floor: "MZ",
-    capacity: 1,
-    status: "available",
-    statusLabel: "Disponible",
-    timeline: [],
-  },
-  {
-    id: 22,
-    code: "MZ019",
-    name: "Cubículo 019",
-    floor: "MZ",
-    capacity: 1,
-    status: "available",
-    statusLabel: "Disponible",
-    timeline: [],
-  },
-  {
-    id: 23,
-    code: "MZ020",
-    name: "Cubículo 020",
-    floor: "MZ",
-    capacity: 1,
-    status: "occupied",
-    statusLabel: "Ocupado",
-    timeline: [],
-  },
-  {
-    id: 24,
-    code: "MZ021",
-    name: "Cubículo 021",
-    floor: "MZ",
-    capacity: 1,
-    status: "available",
-    statusLabel: "Disponible",
-    timeline: [],
-  },
-  {
-    id: 25,
-    code: "MZ022",
-    name: "Cubículo 022",
-    floor: "MZ",
-    capacity: 1,
-    status: "available",
-    statusLabel: "Disponible",
-    timeline: [],
-  },
-  {
-    id: 26,
-    code: "MZ023",
-    name: "Cubículo 023",
-    floor: "MZ",
-    capacity: 1,
-    status: "soon",
-    statusLabel: "Por comenzar",
-    timeline: [],
-  },
-  {
-    id: 27,
-    code: "MZ024",
-    name: "Cubículo 024",
-    floor: "MZ",
-    capacity: 1,
-    status: "available",
-    statusLabel: "Disponible",
-    timeline: [],
-  },
-  {
-    id: 28,
-    code: "MZ025",
-    name: "Cubículo 025",
-    floor: "MZ",
-    capacity: 1,
-    status: "available",
-    statusLabel: "Disponible",
-    timeline: [],
-  },
-  {
-    id: 29,
-    code: "MZ026",
-    name: "Cubículo 026",
-    floor: "MZ",
-    capacity: 1,
-    status: "occupied",
-    statusLabel: "Ocupado",
-    timeline: [],
-  },
-  {
-    id: 30,
-    code: "MZ027",
-    name: "Cubículo 027",
-    floor: "MZ",
-    capacity: 1,
-    status: "available",
-    statusLabel: "Disponible",
-    timeline: [],
-  },
-  {
-    id: 31,
-    code: "MZ028",
-    name: "Cubículo 028",
-    floor: "MZ",
-    capacity: 1,
-    status: "available",
-    statusLabel: "Disponible",
-    timeline: [],
-  },
-  {
-    id: 32,
-    code: "MZ029",
-    name: "Cubículo 029",
-    floor: "MZ",
-    capacity: 1,
-    status: "soon",
-    statusLabel: "Por comenzar",
-    timeline: [],
-  },
-  {
-    id: 33,
-    code: "MZ030",
-    name: "Cubículo 030",
-    floor: "MZ",
-    capacity: 1,
-    status: "available",
-    statusLabel: "Disponible",
-    timeline: [],
-  },
-  {
-    id: 34,
-    code: "MZ031",
-    name: "Cubículo 031",
-    floor: "MZ",
-    capacity: 1,
-    status: "available",
-    statusLabel: "Disponible",
-    timeline: [],
-  },
-  {
-    id: 35,
-    code: "MZ032",
-    name: "Cubículo 032",
-    floor: "MZ",
-    capacity: 1,
-    status: "occupied",
-    statusLabel: "Ocupado",
-    timeline: [],
-  },
-  {
-    id: 36,
-    code: "MZ033",
-    name: "Cubículo 033",
-    floor: "MZ",
-    capacity: 1,
-    status: "available",
-    statusLabel: "Disponible",
-    timeline: [],
-  },
-  {
-    id: 37,
-    code: "MZ034",
-    name: "Cubículo 034",
-    floor: "MZ",
-    capacity: 1,
-    status: "available",
-    statusLabel: "Disponible",
-    timeline: [],
-  },
-  {
-    id: 38,
-    code: "MZ035",
-    name: "Cubículo 035",
-    floor: "MZ",
-    capacity: 1,
-    status: "soon",
-    statusLabel: "Por comenzar",
-    timeline: [],
-  },
-  {
-    id: 39,
-    code: "MZ036",
-    name: "Cubículo 036",
-    floor: "MZ",
-    capacity: 1,
-    status: "available",
-    statusLabel: "Disponible",
-    timeline: [],
-  },
-  {
-    id: 40,
-    code: "MZ037",
-    name: "Cubículo 037",
-    floor: "MZ",
-    capacity: 1,
-    status: "available",
-    statusLabel: "Disponible",
-    timeline: [],
-  },
-  {
-    id: 41,
-    code: "MZ038",
-    name: "Cubículo 038",
-    floor: "MZ",
-    capacity: 1,
-    status: "occupied",
-    statusLabel: "Ocupado",
-    timeline: [],
-  },
-  {
-    id: 42,
-    code: "MZ039",
-    name: "Cubículo 039",
-    floor: "MZ",
-    capacity: 1,
-    status: "available",
-    statusLabel: "Disponible",
-    timeline: [],
-  },
-  {
-    id: 43,
-    code: "MZ040",
-    name: "Cubículo 040",
-    floor: "MZ",
-    capacity: 1,
-    status: "available",
-    statusLabel: "Disponible",
-    timeline: [],
-  },
-];
+export const reservableSpaces: ReservableSpace[] = [];
+
+const toHourMinute = (iso: string): string => {
+  const parsed = new Date(iso);
+  if (Number.isNaN(parsed.getTime())) return iso.slice(0, 5);
+  return parsed.toISOString().slice(11, 16);
+};
+
+const nowIso = () => new Date().toISOString();
+const plusHourIso = () => new Date(Date.now() + 60 * 60 * 1000).toISOString();
+
+const toReservableSpace = (
+  slot: SlotAvailabilityResult,
+): ReservableSpace => ({
+  id: slot.id,
+  code: slot.code ?? slot.name,
+  name: slot.name,
+  floor: slot.floor_name,
+  capacity: slot.capacity,
+  status: slot.status ?? (slot.is_available ? "available" : "occupied"),
+  statusLabel:
+    slot.statusLabel ??
+    (slot.is_available ? "Disponible" : "Ocupado"),
+  timeline:
+    slot.timeline?.map((block) => ({
+      id: block.id,
+      start: block.start,
+      end: block.end,
+      status: block.status,
+    })) ?? [],
+});
+
 export async function fetchReservableSpaces(filters: SpaceSearchFilters) {
-  await new Promise((resolve) => setTimeout(resolve, 600));
+  const start_time = filters.time.startTime
+    ? new Date(filters.time.startTime).toISOString()
+    : nowIso();
+  const end_time = filters.time.endTime
+    ? new Date(filters.time.endTime).toISOString()
+    : plusHourIso();
 
-  return reservableSpaces.filter((space) => {
-    const normalizedSearch = filters.search.trim().toLowerCase();
-
-    const matchesSearch =
-      !normalizedSearch ||
-      space.code.toLowerCase().includes(normalizedSearch) ||
-      space.name.toLowerCase().includes(normalizedSearch);
-
-    const matchesCapacity =
-      (!filters.capacity.minCapacity ||
-        space.capacity >= Number(filters.capacity.minCapacity)) &&
-      (!filters.capacity.maxCapacity ||
-        space.capacity <= Number(filters.capacity.maxCapacity));
-
-    return matchesSearch && matchesCapacity;
+  const results = await officeSlotsApi.getAvailableSlots({
+    start_time,
+    end_time,
   });
+
+  return results
+    .map(toReservableSpace)
+    .filter((space) => {
+      const normalizedSearch = filters.search.trim().toLowerCase();
+      const matchesSearch =
+        !normalizedSearch ||
+        space.code.toLowerCase().includes(normalizedSearch) ||
+        space.name.toLowerCase().includes(normalizedSearch);
+
+      const matchesCapacity =
+        (!filters.capacity.minCapacity ||
+          space.capacity >= Number(filters.capacity.minCapacity)) &&
+        (!filters.capacity.maxCapacity ||
+          space.capacity <= Number(filters.capacity.maxCapacity));
+
+      return matchesSearch && matchesCapacity;
+    })
+    .map((space) => ({
+      ...space,
+      timeline:
+        space.timeline.length > 0
+          ? space.timeline
+          : [
+              {
+                id: `search-${space.id}`,
+                start: toHourMinute(start_time),
+                end: toHourMinute(end_time),
+                status:
+                  space.status === "available"
+                    ? ("free" as const)
+                    : ("occupied" as const),
+              },
+            ],
+    }));
 }

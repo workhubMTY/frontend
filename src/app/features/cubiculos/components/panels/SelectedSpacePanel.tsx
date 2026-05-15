@@ -59,6 +59,8 @@ export function SelectedSpacePanel({
     );
   }
 
+  const router = useRouter();
+
   return (
     <section className="border border-slate-200 bg-white p-5 shadow-sm">
       <div className="flex items-start justify-between gap-4">
@@ -143,7 +145,15 @@ export function SelectedSpacePanel({
       </div>
 
       <button
-        onClick={onContinue}
+        onClick={() => {
+          if (selectedSpace) {
+            window.sessionStorage.setItem(
+              "cubiculos:selectedSpace",
+              JSON.stringify(selectedSpace),
+            );
+          }
+          router.push("/cubiculos/reservacion");
+        }}
         className="mt-6 h-11 w-full bg-primary-2 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-1"
       >
         Continuar con este espacio

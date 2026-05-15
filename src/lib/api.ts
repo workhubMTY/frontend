@@ -19,10 +19,25 @@ async function authFetch<T>(
     ...rest,
   });
 
-  const payload = await response.json();
+  // Evita romper si no viene JSON
+  let payload: any = null;
+
+  try {
+    payload = await response.json();
+  } catch {
+    payload = null;
+  }
 
   if (!response.ok) {
-    throw new Error(payload.message ?? `Error ${response.status}`);
+    // 401 = no autenticado
+    if (response.status === 401) {
+      // Evita loops infinitos si ya estás en login
+      if (window.location.pathname !== "/login") {
+        window.location.href = "/login";
+      }
+    }
+
+    throw new Error(payload?.message ?? `Error ${response.status}`);
   }
 
   return payload.data as T;
