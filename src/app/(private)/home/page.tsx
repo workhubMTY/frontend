@@ -1,15 +1,7 @@
 ﻿"use client";
 
 import { useMemo, useState } from "react";
-import {
-  Clock,
-  MapPin,
-  ChevronLeft,
-  ChevronRight,
-  CalendarDays,
-  Users,
-  MailOpen,
-} from "lucide-react";
+import { CalendarDays, Users, MailOpen } from "lucide-react";
 
 import PageTransition from "@/app/components/PageTransition/PageTransition";
 
@@ -19,7 +11,13 @@ import {
   useFriendsReservations,
   useMyReservations,
 } from "@/app/modules/office-slots/hooks";
-import { getInitials } from "@/app/features/home/utils/utils";
+import {
+  formatHourRange,
+  getInitials,
+  toAgendaDay,
+  toDate,
+  toDecimalHour,
+} from "@/app/features/home/utils/utils";
 import type {
   ReservationEvent,
   ReservationSummary,
@@ -36,6 +34,7 @@ import AgendaRapida, {
   ExternalEvent,
 } from "@/app/features/home/components/AgendaRapida";
 import { PanelInvitaciones } from "@/app/features/home/components/PanelInvitaciones";
+import { EventoGeneralDetail } from "@/app/features/home/components/EventoGeneralDetail";
 
 type MobileTab = "agenda" | "red" | "invitaciones";
 
@@ -64,30 +63,6 @@ const DIAS = [
   "Domingo",
 ];
 
-function toDate(value: string) {
-  return new Date(value);
-}
-
-function toAgendaDay(date: Date) {
-  return (date.getDay() + 6) % 7;
-}
-
-function toDecimalHour(date: Date) {
-  return date.getHours() + date.getMinutes() / 60;
-}
-
-function formatHourRange(startIso: string, endIso: string) {
-  const start = toDate(startIso);
-  const end = toDate(endIso);
-  const fmt = (date: Date) =>
-    `${date.getHours().toString().padStart(2, "0")}:${date
-      .getMinutes()
-      .toString()
-      .padStart(2, "0")}`;
-
-  return `${fmt(start)}-${fmt(end)}`;
-}
-
 function eventType(evt: ReservationEvent): EventoGeneral["tipo"] {
   const text = `${evt.title} ${evt.description}`.toLowerCase();
   if (text.includes("holiday") || text.includes("festivo")) return "Festivo";
@@ -114,181 +89,6 @@ function mapReservation(res: ReservationSummary): Reserva {
     start: toDecimalHour(start),
     end: toDecimalHour(end),
   };
-}
-
-type EventoGeneralDetailProps = {
-  evento: EventoGeneral | null;
-  currentIndex?: number;
-  totalEvents?: number;
-  onPrevious?: () => void;
-  onNext?: () => void;
-  onOpenAgenda?: () => void;
-};
-
-const eventTypeStyles: Record<EventoGeneral["tipo"], string> = {
-  Festivo: "border-amber-200 bg-amber-50 text-amber-700",
-  Corporativo: "border-purple-200 bg-purple-50 text-purple-700",
-  Social: "border-blue-200 bg-blue-50 text-blue-700",
-};
-
-function formatEventTime(start: number, end: number) {
-  const formatHour = (hour: number) => {
-    const normalizedHour = Math.floor(hour);
-    const minutes = Math.round((hour - normalizedHour) * 60);
-
-    return `${String(normalizedHour).padStart(2, "0")}:${String(
-      minutes,
-    ).padStart(2, "0")}`;
-  };
-
-  return `${formatHour(start)} - ${formatHour(end)}`;
-}
-
-function getDayLabel(day: number) {
-  const days = ["Lu", "Ma", "Mi", "Ju", "Vi", "Sa", "Do"];
-
-  return days[day] ?? `Día ${day + 1}`;
-}
-
-export function EventoGeneralDetail({
-  evento,
-  currentIndex = 0,
-  totalEvents = 0,
-  onPrevious,
-  onNext,
-  onOpenAgenda,
-}: EventoGeneralDetailProps) {
-  const hasEvent = Boolean(evento);
-
-  return (
-    <section className="shrink-0 overflow-hidden border border-neutral-200 bg-white shadow-sm">
-      <header className="flex items-center justify-between border-b border-neutral-100 px-7 py-5">
-        <div className="flex items-center gap-3">
-          <CalendarDays size={22} className="text-neutral-700" />
-
-          <div>
-            <h2 className="text-xl font-semibold tracking-tight text-neutral-950">
-              Eventos & Festivos
-            </h2>
-
-            {totalEvents > 0 && (
-              <p className="mt-0.5 text-sm text-neutral-500">
-                {currentIndex + 1} de {totalEvents}
-              </p>
-            )}
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={onPrevious}
-            disabled={!onPrevious || totalEvents <= 1}
-            aria-label="Evento anterior"
-            className="inline-flex h-9 w-9 items-center justify-center border border-neutral-200 bg-white text-neutral-500 transition hover:bg-neutral-50 hover:text-neutral-900 disabled:cursor-not-allowed disabled:opacity-40"
-          >
-            <ChevronLeft size={18} />
-          </button>
-
-          <button
-            type="button"
-            onClick={onNext}
-            disabled={!onNext || totalEvents <= 1}
-            aria-label="Siguiente evento"
-            className="inline-flex h-9 w-9 items-center justify-center border border-neutral-200 bg-white text-neutral-500 transition hover:bg-neutral-50 hover:text-neutral-900 disabled:cursor-not-allowed disabled:opacity-40"
-          >
-            <ChevronRight size={18} />
-          </button>
-        </div>
-      </header>
-
-      {!hasEvent || !evento ? (
-        <div className="px-7 py-6">
-          <article className="grid grid-cols-[auto_1fr] gap-4 border-l-4 border-purple-700 bg-purple-50/70 px-5 py-4">
-            <div className="flex h-14 w-14 items-center justify-center bg-purple-100 text-xl font-semibold text-purple-700">
-              —
-            </div>
-
-            <div className="min-w-0">
-              <div className="flex flex-wrap items-center gap-2">
-                <h3 className="font-semibold text-neutral-950">Sin eventos</h3>
-
-                <span className="inline-flex items-center border border-purple-200 bg-purple-50 px-2.5 py-1 text-xs font-medium text-purple-700">
-                  Agenda general
-                </span>
-              </div>
-
-              <p className="mt-1 text-sm text-neutral-500">
-                No hay eventos cargados para este periodo.
-              </p>
-
-              <button
-                type="button"
-                disabled
-                className="mt-4 inline-flex h-9 cursor-not-allowed items-center justify-center border border-neutral-200 bg-neutral-50 px-4 text-sm font-medium text-neutral-400"
-              >
-                Ver en agenda
-              </button>
-            </div>
-          </article>
-        </div>
-      ) : (
-        <article className="grid grid-cols-[auto_1fr_auto] items-center gap-4 border-l-4 border-purple-700 bg-purple-50/70 px-7 py-5 pl-6">
-          <div className="flex h-16 w-16 shrink-0 items-center justify-center bg-purple-100 text-2xl font-semibold text-purple-700">
-            {evento.icono}
-          </div>
-
-          <div className="min-w-0">
-            <div className="flex flex-wrap items-center gap-2">
-              <h3 className="truncate text-base font-semibold text-neutral-950">
-                {evento.titulo}
-              </h3>
-
-              <span
-                className={[
-                  "inline-flex items-center border px-2.5 py-1 text-xs font-medium",
-                  eventTypeStyles[evento.tipo],
-                ].join(" ")}
-              >
-                {evento.tipo}
-              </span>
-            </div>
-
-            <p className="mt-1 line-clamp-2 text-sm leading-6 text-neutral-600">
-              {evento.descripcion}
-            </p>
-
-            <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-neutral-500">
-              <span className="inline-flex items-center gap-1.5">
-                <CalendarDays size={15} className="text-neutral-400" />
-                {getDayLabel(evento.day)}
-              </span>
-
-              <span className="inline-flex items-center gap-1.5">
-                <Clock size={15} className="text-neutral-400" />
-                {formatEventTime(evento.start, evento.end)}
-              </span>
-
-              <span className="inline-flex items-center gap-1.5">
-                <MapPin size={15} className="text-neutral-400" />
-                Agenda general
-              </span>
-            </div>
-          </div>
-
-          <div className="flex shrink-0 items-center">
-            <button
-              type="button"
-              onClick={onOpenAgenda}
-              className="inline-flex h-10 items-center border border-neutral-300 bg-white px-4 text-sm font-medium text-neutral-700 transition hover:bg-neutral-50"
-            >
-              Ver en agenda
-            </button>
-          </div>
-        </article>
-      )}
-    </section>
-  );
 }
 
 export default function Home() {
@@ -608,16 +408,13 @@ export default function Home() {
   }
 `}</style>
       <section className="flex h-full w-full flex-col overflow-hidden bg-background-page">
-        <div className="home-outer px-4 pt-4 pb-0 sm:px-6 sm:pb-6 lg:px-8">
-          <header className="space-y-1 pb-4">
+        <div className="home-outer px-6 pt-4 pb-0 sm:px-6 sm:pb-6 lg:px-12">
+          <header className="space-y-1 py-4">
             <h1 className="text-2xl font-semibold tracking-tight text-slate-950 md:text-4xl">
               Bienvenido, Croissant
             </h1>
 
-            <p className="text-sm text-slate-500 md:text-base">
-              Busca un espacio, revisa su disponibilidad y continúa con la
-              reserva.
-            </p>
+            <p className="text-sm text-slate-500 md:text-base">A tu espacio</p>
           </header>
           <div className="desktop-grid hidden sm:flex flex-1 min-h-0 flex-col">
             <div className="col-left flex flex-col bg-container shadow-sm border border-neutral-1 overflow-hidden p-4 min-h-0">

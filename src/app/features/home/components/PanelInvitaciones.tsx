@@ -12,7 +12,7 @@ export function PanelInvitaciones({
 }) {
   return (
     <section className="flex h-full min-h-0 flex-col">
-      <header className="flex shrink-0 items-center justify-between border-b border-neutral-100 px-6 py-5">
+      <header className="flex shrink-0 items-center justify-between border-b border-neutral-100 px-6 pb-3">
         <div className="flex items-center gap-3">
           <Calendar size={22} className="text-neutral-700" />
           <h2 className="text-xl font-semibold tracking-tight text-neutral-950">
