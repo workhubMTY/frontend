@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { X } from "lucide-react";
 
 import { MonthCalendar } from "@/app/features/reservaciones/components/Calendar/MonthCalendar";
@@ -15,7 +15,6 @@ import type { CalendarSelectionAction } from "@/app/features/reservaciones/types
 
 import {
   apiGetExternalEventsInInterval,
-  apiGetSpaceReservationsByDay,
   createMockApiJson,
   toTimelineEvent,
 } from "@/app/features/reservaciones/data/mockReservations";
@@ -40,15 +39,18 @@ import type {
   TimeBlock,
   TimelineEvent,
 } from "@/app/features/reservaciones/types/reservaciones";
+import { apiGetSpaceReservationsByDay } from "@/app/features/reservaciones/data/mockApisss";
 
 export interface ReservationSchedulerPageProps {
   spaceName: string;
 }
 
-export default function ReservationSchedulerPage({
-  spaceName = "Sala A",
-}: ReservationSchedulerPageProps) {
+export default function ReservationSchedulerPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const spaceId = searchParams.get("spaceId");
+  const spaceName = searchParams.get("spaceName");
   const calendarCells = useMemo(() => createCalendarCells(), []);
 
   const [selectionMode, setSelectionMode] = useState<SelectionMode>("multiple");
@@ -345,6 +347,7 @@ export default function ReservationSchedulerPage({
     (hasValidPendingTarget || hasSavedBlockEdits || hasSavedBlocksToContinue);
   useEffect(() => {
     let cancelled = false;
+    if (!spaceName || !spaceId) return;
 
     apiGetSpaceReservationsByDay({
       apiJson,
