@@ -2,21 +2,15 @@
 
 import { useMemo, useState } from "react";
 import {
-  Search,
-  UserPlus,
   Clock,
   MapPin,
   ChevronLeft,
   ChevronRight,
-  Star,
-  Calendar,
   CalendarDays,
   Users,
   MailOpen,
 } from "lucide-react";
-import AgendaRapida, {
-  ExternalEvent,
-} from "@/app/components/AgendaRapida/AgendaRapida";
+
 import PageTransition from "@/app/components/PageTransition/PageTransition";
 
 import { useFriends } from "@/app/modules/friendships/hooks";
@@ -25,52 +19,24 @@ import {
   useFriendsReservations,
   useMyReservations,
 } from "@/app/modules/office-slots/hooks";
-import { getInitials, getUserColor } from "@/app/features/profile.utils";
+import { getInitials } from "@/app/features/home/utils/utils";
 import type {
   ReservationEvent,
   ReservationSummary,
 } from "@/app/modules/office-slots/types";
+import {
+  DiaInvitaciones,
+  EventoGeneral,
+  Invitacion,
+  Persona,
+  Reserva,
+} from "@/app/features/home/types/types";
+import { PanelRed } from "@/app/features/home/components/PanelRed";
+import AgendaRapida, {
+  ExternalEvent,
+} from "@/app/features/home/components/AgendaRapida";
+import { PanelInvitaciones } from "@/app/features/home/components/PanelInvitaciones";
 
-interface Invitacion {
-  nombre: string;
-  sala: string;
-  hora: string;
-  tipo: string;
-  day: number;
-  start: number;
-  end: number;
-}
-interface DiaInvitaciones {
-  dia: string;
-  dayIndex: number;
-  items: Invitacion[];
-}
-interface Reserva {
-  id: number;
-  titulo: string;
-  hora: string;
-  lugar: string;
-  estado: "Confirmada" | "Pendiente";
-  day: number;
-  start: number;
-  end: number;
-}
-interface Persona {
-  id: string;
-  initials: string;
-  name: string;
-  role: string;
-  reservas: Reserva[];
-}
-interface EventoGeneral {
-  titulo: string;
-  descripcion: string;
-  tipo: "Festivo" | "Corporativo" | "Social";
-  icono: string;
-  day: number;
-  start: number;
-  end: number;
-}
 type MobileTab = "agenda" | "red" | "invitaciones";
 
 const PERSON_COLORS = [
@@ -148,16 +114,6 @@ function mapReservation(res: ReservationSummary): Reserva {
     start: toDecimalHour(start),
     end: toDecimalHour(end),
   };
-}
-
-interface EventoGeneral {
-  titulo: string;
-  descripcion: string;
-  tipo: "Festivo" | "Corporativo" | "Social";
-  icono: string;
-  day: number;
-  start: number;
-  end: number;
 }
 
 type EventoGeneralDetailProps = {
@@ -331,188 +287,6 @@ export function EventoGeneralDetail({
           </div>
         </article>
       )}
-    </section>
-  );
-}
-
-function PanelRed({
-  selectedPerson,
-  onPersonClick,
-  personas,
-}: {
-  selectedPerson: number | null;
-  onPersonClick: (i: number) => void;
-  personas: Persona[];
-}) {
-  return (
-    <section className="flex h-full min-h-0 flex-col">
-      <header className="flex shrink-0 items-center justify-between border-b border-neutral-100 px-6 py-5">
-        <div className="flex items-center gap-3">
-          <Users size={22} className="text-neutral-700" />
-          <h2 className="text-xl font-semibold tracking-tight text-neutral-950">
-            Red personal
-          </h2>
-        </div>
-      </header>
-
-      <div className="flex min-h-0 flex-1 flex-col gap-3 p-4">
-        {selectedPerson !== null && personas[selectedPerson] && (
-          <div className="border-l-4 border-purple-700 bg-purple-50/70 px-4 py-3">
-            <p className="text-sm text-purple-900">
-              Mostrando horarios de{" "}
-              <strong>{personas[selectedPerson].name.split(" ")[0]}</strong> en
-              la agenda
-            </p>
-          </div>
-        )}
-
-        <div className="flex min-h-0 flex-1 flex-col divide-y divide-neutral-100 overflow-y-auto">
-          {personas.map((p, i) => {
-            const color = getUserColor(p.id);
-            const isSelected = selectedPerson === i;
-
-            return (
-              <button
-                type="button"
-                key={p.id}
-                onClick={() => onPersonClick(i)}
-                className={[
-                  "grid w-full cursor-pointer grid-cols-[auto_1fr_auto] items-center gap-3 px-3 py-4 text-left transition",
-                  isSelected
-                    ? "border-l-4 border-purple-700 bg-purple-50/70 pl-2"
-                    : "border-l-4 border-transparent hover:bg-neutral-50",
-                ].join(" ")}
-              >
-                <div
-                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-sm font-semibold"
-                  style={{
-                    background: color.bg,
-                    color: color.text,
-                  }}
-                >
-                  {p.initials}
-                </div>
-
-                <div className="min-w-0">
-                  <p className="truncate font-semibold text-neutral-950">
-                    {p.name}
-                  </p>
-                  <p className="truncate text-sm text-neutral-500">{p.role}</p>
-                </div>
-
-                <span
-                  className={[
-                    "text-sm font-medium transition",
-                    isSelected
-                      ? "text-purple-700"
-                      : "text-neutral-400 group-hover:text-neutral-700",
-                  ].join(" ")}
-                >
-                  {isSelected ? "Activo" : "Ver"}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-
-        <div className="shrink-0 border-t border-neutral-100 pt-4">
-          <div className="flex items-center gap-3 border border-neutral-200 bg-white px-4 py-3">
-            <Search size={18} className="shrink-0 text-neutral-400" />
-            <input
-              type="text"
-              placeholder="Buscar persona..."
-              className="w-full bg-transparent text-sm text-neutral-700 outline-none placeholder:text-neutral-400"
-            />
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function PanelInvitaciones({
-  selInv,
-  onInvClick,
-  invitaciones,
-}: {
-  selInv: string | null;
-  onInvClick: (dayIndex: number, ii: number) => void;
-  invitaciones: DiaInvitaciones[];
-}) {
-  return (
-    <section className="flex h-full min-h-0 flex-col">
-      <header className="flex shrink-0 items-center justify-between border-b border-neutral-100 px-6 py-5">
-        <div className="flex items-center gap-3">
-          <Calendar size={22} className="text-neutral-700" />
-          <h2 className="text-xl font-semibold tracking-tight text-neutral-950">
-            Invitaciones
-          </h2>
-        </div>
-      </header>
-
-      <div className="flex min-h-0 flex-1 flex-col gap-3 p-4">
-        {selInv !== null && (
-          <div className="border-l-4 border-purple-700 bg-purple-50/70 px-4 py-3">
-            <p className="text-sm text-purple-900">
-              Invitación marcada en la agenda
-            </p>
-          </div>
-        )}
-
-        <div className="min-h-0 flex-1 overflow-y-auto">
-          {invitaciones.map((sec, si) => (
-            <div key={si} className="pb-2">
-              <p className="px-3 pb-2 pt-1 text-xs font-semibold uppercase tracking-wide text-neutral-400">
-                {sec.dia}
-              </p>
-
-              <div className="divide-y divide-neutral-100">
-                {sec.items.map((item, ii) => {
-                  const id = `inv_${sec.dayIndex}_${ii}`;
-                  const isSelected = selInv === id;
-
-                  return (
-                    <button
-                      type="button"
-                      key={ii}
-                      onClick={() => onInvClick(sec.dayIndex, ii)}
-                      className={[
-                        "w-full border-l-4 px-3 py-4 text-left transition",
-                        isSelected
-                          ? "border-purple-700 bg-purple-50/70"
-                          : "border-transparent hover:bg-neutral-50",
-                      ].join(" ")}
-                    >
-                      <p className="font-semibold text-neutral-950">
-                        {item.nombre}
-                      </p>
-
-                      <div className="mt-2 flex items-center gap-2 text-sm text-neutral-500">
-                        <MapPin size={14} className="shrink-0" />
-                        <span className="truncate">{item.sala}</span>
-                      </div>
-
-                      <div className="mt-1 flex items-center gap-2 text-sm text-neutral-500">
-                        <Clock size={14} className="shrink-0" />
-                        <span>{item.hora}</span>
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          ))}
-        </div>
-
-        <footer className="shrink-0 border-t border-neutral-100 pt-4">
-          <button
-            type="button"
-            className="inline-flex w-full items-center justify-center gap-2 border border-neutral-300 bg-white px-4 py-3 text-sm font-medium text-neutral-700 transition hover:bg-neutral-50"
-          >
-            Mostrar todas
-          </button>
-        </footer>
-      </div>
     </section>
   );
 }
@@ -835,9 +609,16 @@ export default function Home() {
 `}</style>
       <section className="flex h-full w-full flex-col overflow-hidden bg-background-page">
         <div className="home-outer px-4 pt-4 pb-0 sm:px-6 sm:pb-6 lg:px-8">
-          <h1 className="shrink-0 mb-4 text-2xl font-semibold tracking-tight text-slate-950 md:text-4xl">
-            Bienvenido, Croissant
-          </h1>
+          <header className="space-y-1 pb-4">
+            <h1 className="text-2xl font-semibold tracking-tight text-slate-950 md:text-4xl">
+              Bienvenido, Croissant
+            </h1>
+
+            <p className="text-sm text-slate-500 md:text-base">
+              Busca un espacio, revisa su disponibilidad y continúa con la
+              reserva.
+            </p>
+          </header>
           <div className="desktop-grid hidden sm:flex flex-1 min-h-0 flex-col">
             <div className="col-left flex flex-col bg-container shadow-sm border border-neutral-1 overflow-hidden p-4 min-h-0">
               <PanelRed
