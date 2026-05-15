@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useAuth } from "@/app/modules/auth/useAuth";
-import { reservacionesApi } from "@/app/modules/reservaciones/api";
+import { officeSlotsApi } from "@/app/modules/office-slots/api";
 
 
 interface Reserva { titulo: string; hora: string; lugar: string; estado: "Confirmada" | "Pendiente"; }
@@ -148,8 +148,8 @@ export function useHome(): UseHomeReturn {
         setError(null);
 
         const [myResData, friendsResData] = await Promise.all([
-          reservacionesApi.getMyReservations(),
-          reservacionesApi.getMyFriendsReservations(),
+          officeSlotsApi.getMyReservations(),
+          officeSlotsApi.getFriendsReservations(),
         ]);
 
         const myReservations = (myResData as unknown as ReservationDetail[]) || [];

@@ -8,7 +8,6 @@ import type {
   CreateFriendRequestDto,
   AcceptFriendRequestDto,
 } from "./types";
-import type { User } from "../users/users.types";
 
 export function useFriends() {
   const queryClient = useQueryClient();

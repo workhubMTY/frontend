@@ -60,6 +60,7 @@ export type ReservationDetail = {
   reservableId: number;
   startTime: string;
   endTime: string;
+  description: string;
   canOverlap: boolean;
   workGroups: WorkGroup[];
   participants: ReservationParticipant[];
@@ -108,6 +109,7 @@ export type AvailableOfficeSlotsQuery = {
 
 export type CreateReservationBatchDto = {
   reservableId: number;
+  description: string;
   schedules: { start_time: string; end_time: string }[];
   workGroupIds?: number[];
   userIds?: string[];
@@ -118,4 +120,55 @@ export type CreateReservationBatchDto = {
 export type UpdateParticipantStatusDto = {
   status: ParticipantStatus;
   reinvite?: boolean;
+};
+
+export type ReservationSummary = {
+  id: number;
+  reservable_id: number;
+  reservable_name: string;
+  floor_id: number;
+  floor_name: string;
+  start_time: string;
+  end_time: string;
+  checked_in: boolean;
+  status: ParticipantStatus;
+};
+
+export type UserReservationSummary = {
+  user_id: string;
+  user_name: string;
+  reservations: ReservationSummary[];
+};
+
+export type FriendReservationsSummary = UserReservationSummary[];
+
+export type ReservationEvent = {
+  id: number;
+  title: string;
+  description: string;
+  start_time: string;
+  end_time: string;
+  reservable: {
+    id: number;
+    name: string;
+    capacity: number;
+    floor_id: number;
+    floor_name: string;
+    floor_number: number;
+  } | null;
+};
+
+export type GetEventsQuery = {
+  reservable_id?: number;
+  floor_id?: number;
+  start_time?: string;
+  end_time?: string;
+};
+
+export type CreateEventDto = {
+  title: string;
+  description: string;
+  reservable_id?: number;
+  start_time: string;
+  end_time: string;
 };
