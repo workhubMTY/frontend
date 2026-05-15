@@ -35,6 +35,7 @@ import AgendaRapida, {
 } from "@/app/features/home/components/AgendaRapida";
 import { PanelInvitaciones } from "@/app/features/home/components/PanelInvitaciones";
 import { EventoGeneralDetail } from "@/app/features/home/components/EventoGeneralDetail";
+import { useAuth } from "@/app/modules/auth/useAuth";
 
 type MobileTab = "agenda" | "red" | "invitaciones";
 
@@ -97,6 +98,8 @@ export default function Home() {
   const [curEv, setCurEv] = useState(0);
   const [eventOnAgenda, setEventOnAgenda] = useState<string | null>(null);
   const [mobileTab, setMobileTab] = useState<MobileTab>("agenda");
+  const { user } = useAuth();
+  const name = user?.name;
 
   const { data: friends = [] } = useFriends();
   const { data: friendsReservations = [] } = useFriendsReservations();
@@ -411,10 +414,12 @@ export default function Home() {
         <div className="home-outer px-6 pt-4 pb-0 sm:px-6 sm:pb-6 lg:px-12">
           <header className="space-y-1 py-4">
             <h1 className="text-2xl font-semibold tracking-tight text-slate-950 md:text-4xl">
-              Bienvenido, Croissant
+              Hola{`, ${name}`}
             </h1>
 
-            <p className="text-sm text-slate-500 md:text-base">A tu espacio</p>
+            <p className="text-sm text-slate-500 md:text-base">
+              Visualiza tus contactos, invitaciones y eventos
+            </p>
           </header>
           <div className="desktop-grid hidden sm:flex flex-1 min-h-0 flex-col">
             <div className="col-left flex flex-col bg-container shadow-sm border border-neutral-1 overflow-hidden p-4 min-h-0">

@@ -1,6 +1,6 @@
 import {
   CalendarDays,
-  ChevronLeftCircle,
+  ChevronLeft,
   ChevronRight,
   Clock,
   MapPin,
@@ -35,7 +35,7 @@ export function EventoGeneralDetail({
 
   return (
     <section className="shrink-0 overflow-hidden border border-neutral-200 bg-white shadow-sm">
-      <header className="flex items-center justify-between border-b border-neutral-100 px-7 py-5">
+      <header className="flex items-center justify-between border-b border-neutral-100 px-7 py-3">
         <div className="flex items-center gap-3">
           <CalendarDays size={22} className="text-neutral-700" />
 
@@ -60,7 +60,7 @@ export function EventoGeneralDetail({
             aria-label="Evento anterior"
             className="inline-flex h-9 w-9 items-center justify-center border border-neutral-200 bg-white text-neutral-500 transition hover:bg-neutral-50 hover:text-neutral-900 disabled:cursor-not-allowed disabled:opacity-40"
           >
-            <ChevronLeftCircle size={18} />
+            <ChevronLeft size={18} />
           </button>
 
           <button
