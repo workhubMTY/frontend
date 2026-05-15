@@ -4,23 +4,15 @@ export type SpaceStatus = "available" | "occupied" | "soon" | "partial";
 // status label igual.
 // timeline no necesita search
 export type ReservableSpace = {
-  id: string;
+  id: number;
   code: string;
   name: string;
-  displayName: string;
-  floor: number;
+  floor: string;
   capacity: number;
-  status: SpaceStatus;
+  status: "available" | "occupied" | "soon";
   statusLabel: string;
   timeline: TimelineBlock[];
-  // map: {
-  //   x: string;
-  //   y: string;
-  //   w: string;
-  //   h: string;
-  // };
 };
-
 export type TimelineBlock = {
   id: string;
   start: string;

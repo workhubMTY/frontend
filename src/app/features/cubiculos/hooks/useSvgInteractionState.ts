@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 type StateOptions = {
   defaultHighlightedIds?: string[];
@@ -35,6 +35,14 @@ function normalizeIds(ids: string[]) {
   return [...new Set(ids.filter(Boolean))];
 }
 
+function areSameIds(first: string[], second: string[]) {
+  if (first.length !== second.length) {
+    return false;
+  }
+
+  return first.every((entry, index) => entry === second[index]);
+}
+
 export function useSvgInteractionState({
   defaultHighlightedIds = [],
   defaultDisabledIds = [],
@@ -49,16 +57,102 @@ export function useSvgInteractionState({
   const [highlightedIds, setHighlightedIdsState] = useState<string[]>(() =>
     normalizeIds(defaultHighlightedIds),
   );
+
   const [disabledIds, setDisabledIdsState] = useState<string[]>(() =>
-    normalizeIds(defaultDisabledIds ?? []),
+    normalizeIds(defaultDisabledIds),
   );
+
   const [reservedIds, setReservedIdsState] = useState<string[]>(() =>
-    normalizeIds(defaultReservedIds ?? []),
+    normalizeIds(defaultReservedIds),
   );
-  const [hoveredId, setHoveredId] = useState<string | null>(null);
+
+  const [hoveredId, setHoveredIdState] = useState<string | null>(null);
+
   const [selectedId, setSelectedIdState] = useState<string | null>(
     defaultSelectedId,
   );
+
+  const setHighlightedIds = useCallback((ids: string[]) => {
+    const next = normalizeIds(ids);
+
+    setHighlightedIdsState((current) => {
+      if (areSameIds(current, next)) {
+        return current;
+      }
+
+      return next;
+    });
+  }, []);
+
+  const setDisabledIds = useCallback((ids: string[]) => {
+    const next = normalizeIds(ids);
+
+    setDisabledIdsState((current) => {
+      if (areSameIds(current, next)) {
+        return current;
+      }
+
+      return next;
+    });
+  }, []);
+
+  const setReservedIds = useCallback((ids: string[]) => {
+    const next = normalizeIds(ids);
+
+    setReservedIdsState((current) => {
+      if (areSameIds(current, next)) {
+        return current;
+      }
+
+      return next;
+    });
+  }, []);
+
+  const setHoveredId = useCallback((id: string | null) => {
+    setHoveredIdState((current) => {
+      if (current === id) {
+        return current;
+      }
+
+      return id;
+    });
+  }, []);
+
+  const setSelectedId = useCallback((id: string | null) => {
+    setSelectedIdState((current) => {
+      if (current === id) {
+        return current;
+      }
+
+      return id;
+    });
+  }, []);
+
+  const toggleHighlighted = useCallback((id: string) => {
+    setHighlightedIdsState((current) => {
+      if (current.includes(id)) {
+        return current.filter((entry) => entry !== id);
+      }
+
+      return [...current, id];
+    });
+  }, []);
+
+  const clearHighlights = useCallback(() => {
+    setHighlightedIdsState([]);
+  }, []);
+
+  const clearSelection = useCallback(() => {
+    setSelectedIdState(null);
+  }, []);
+
+  const clearAll = useCallback(() => {
+    setHoveredIdState(null);
+    setDisabledIdsState([]);
+    setReservedIdsState([]);
+    setSelectedIdState(null);
+    setHighlightedIdsState([]);
+  }, []);
 
   useEffect(() => {
     onHighlightedIdsChange?.(highlightedIds);
@@ -79,79 +173,6 @@ export function useSvgInteractionState({
   useEffect(() => {
     onSelectedIdChange?.(selectedId);
   }, [selectedId, onSelectedIdChange]);
-  const setHighlightedIds = (ids: string[]) => {
-    const next = normalizeIds(ids);
-
-    setHighlightedIdsState((current) => {
-      if (areSameIds(current, next)) {
-        return current;
-      }
-
-      return next;
-    });
-  };
-
-  const setDisabledIds = (ids: string[]) => {
-    const next = normalizeIds(ids);
-
-    setDisabledIdsState((current) => {
-      if (areSameIds(current, next)) {
-        return current;
-      }
-
-      return next;
-    });
-  };
-
-  const setReservedIds = (ids: string[]) => {
-    const next = normalizeIds(ids);
-
-    setReservedIdsState((current) => {
-      if (areSameIds(current, next)) {
-        return current;
-      }
-
-      return next;
-    });
-  };
-
-  const setSelectedId = (id: string | null) => {
-    setSelectedIdState(id);
-  };
-
-  const toggleHighlighted = (id: string) => {
-    setHighlightedIdsState((current) => {
-      if (current.includes(id)) {
-        return current.filter((entry) => entry !== id);
-      }
-
-      return [...current, id];
-    });
-  };
-
-  const clearHighlights = () => {
-    setHighlightedIdsState([]);
-  };
-
-  const clearSelection = () => {
-    setSelectedIdState(null);
-  };
-
-  const clearAll = () => {
-    setHoveredId(null);
-    setDisabledIdsState([]);
-    setReservedIdsState([]);
-    setSelectedIdState(null);
-    setHighlightedIdsState([]);
-  };
-
-  function areSameIds(first: string[], second: string[]) {
-    if (first.length !== second.length) {
-      return false;
-    }
-
-    return first.every((entry, index) => entry === second[index]);
-  }
 
   return {
     highlightedIds,

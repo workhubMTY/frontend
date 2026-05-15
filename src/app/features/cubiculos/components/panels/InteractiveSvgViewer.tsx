@@ -59,12 +59,11 @@ const XLINK_NAMESPACE = "http://www.w3.org/1999/xlink";
 const OVERLAY_ATTR = "data-interactive-overlay-root";
 const FILTER_ATTR = "data-interactive-filter-root";
 
-type HighlightKind = "reserved" | "highlighted" | "hovered" | "selected";
+type HighlightKind = "reserved" | "highlighted" | "selected";
 
 const HIGHLIGHT_PRIORITY: HighlightKind[] = [
   "reserved",
   "highlighted",
-  "hovered",
   "selected",
 ];
 
@@ -76,16 +75,26 @@ function uniqueIds(ids: string[]) {
   return [...new Set(ids.filter(Boolean))];
 }
 
+function escapeCssSelectorValue(value: string) {
+  if (typeof CSS !== "undefined" && typeof CSS.escape === "function") {
+    return CSS.escape(value);
+  }
+
+  return value.replace(/["\\]/g, "\\$&");
+}
+
 function stripOverlayMetadata(element: Element, dataAttribute: string) {
   element.removeAttribute("id");
   element.removeAttribute(dataAttribute);
   element.removeAttribute("transform");
+  element.removeAttribute("data-runtime-hover");
   element.setAttribute("data-overlay-clone", "true");
   element.setAttribute("aria-hidden", "true");
 
   Array.from(element.querySelectorAll("*")).forEach((node) => {
     node.removeAttribute("id");
     node.removeAttribute(dataAttribute);
+    node.removeAttribute("data-runtime-hover");
     node.setAttribute("aria-hidden", "true");
   });
 }
@@ -129,12 +138,6 @@ function ensureOverlayFilters(svgRoot: SVGSVGElement, filterPrefix: string) {
       opacity: "0.55",
       radius: "0.8",
       blur: "1.4",
-    },
-    hovered: {
-      color: "#f59e0b",
-      opacity: "0.78",
-      radius: "1.2",
-      blur: "2",
     },
     selected: {
       color: "#7e22ce",
@@ -182,6 +185,7 @@ function ensureOverlayFilters(svgRoot: SVGSVGElement, filterPrefix: string) {
     blur.setAttribute("result", "softGlow");
 
     const merge = document.createElementNS(SVG_NAMESPACE, "feMerge");
+
     const firstNode = document.createElementNS(SVG_NAMESPACE, "feMergeNode");
     firstNode.setAttribute("in", "softGlow");
 
@@ -227,12 +231,10 @@ function toSvgMatrix(matrix: DOMMatrix) {
 function buildHighlightMap({
   reservedIds,
   highlightedIds,
-  hoveredId,
   selectedId,
 }: {
   reservedIds: string[];
   highlightedIds: string[];
-  hoveredId: string | null;
   selectedId: string | null;
 }) {
   const map = new Map<string, HighlightKind>();
@@ -245,15 +247,36 @@ function buildHighlightMap({
     map.set(id, "highlighted");
   });
 
-  if (hoveredId) {
-    map.set(hoveredId, "hovered");
-  }
-
   if (selectedId) {
     map.set(selectedId, "selected");
   }
 
   return map;
+}
+
+function clearRuntimeHover(svgRoot: SVGSVGElement) {
+  svgRoot.querySelectorAll('[data-runtime-hover="true"]').forEach((node) => {
+    node.removeAttribute("data-runtime-hover");
+  });
+}
+
+function applyRuntimeHover(
+  svgRoot: SVGSVGElement,
+  dataAttribute: string,
+  id: string | null,
+) {
+  clearRuntimeHover(svgRoot);
+
+  if (!id) {
+    return;
+  }
+
+  const escapedId = escapeCssSelectorValue(id);
+  const node = svgRoot.querySelector(`[${dataAttribute}="${escapedId}"]`);
+
+  if (node) {
+    node.setAttribute("data-runtime-hover", "true");
+  }
 }
 
 const InteractiveSvgViewer = forwardRef<
@@ -299,9 +322,6 @@ const InteractiveSvgViewer = forwardRef<
   const internalState = useSvgInteractionState({
     defaultHighlightedIds,
     defaultSelectedId,
-    onHighlightedIdsChange,
-    onHoveredIdChange,
-    onSelectedIdChange,
   });
 
   const highlightedIds =
@@ -311,15 +331,29 @@ const InteractiveSvgViewer = forwardRef<
 
   const selectedId = controlledSelectedId ?? internalState.selectedId;
 
-  const setHoveredId = (id: string | null) => {
-    internalState.setHoveredId(id);
-    onHoveredIdChange?.(id);
-  };
+  const setHoveredId = useCallback(
+    (id: string | null) => {
+      if (controlledHoveredId === undefined) {
+        internalState.setHoveredId(id);
+        return;
+      }
 
-  const setSelectedId = (id: string | null) => {
-    internalState.setSelectedId(id);
-    onSelectedIdChange?.(id);
-  };
+      onHoveredIdChange?.(id);
+    },
+    [controlledHoveredId, internalState, onHoveredIdChange],
+  );
+
+  const setSelectedId = useCallback(
+    (id: string | null) => {
+      if (controlledSelectedId === undefined) {
+        internalState.setSelectedId(id);
+        return;
+      }
+
+      onSelectedIdChange?.(id);
+    },
+    [controlledSelectedId, internalState, onSelectedIdChange],
+  );
 
   useImperativeHandle(
     ref,
@@ -336,6 +370,30 @@ const InteractiveSvgViewer = forwardRef<
   const handleMarkupHost = useCallback((node: HTMLDivElement | null) => {
     setMarkupHost(node);
   }, []);
+
+  useEffect(() => {
+    if (controlledHighlightedIds !== undefined) {
+      return;
+    }
+
+    onHighlightedIdsChange?.(highlightedIds);
+  }, [controlledHighlightedIds, highlightedIds, onHighlightedIdsChange]);
+
+  useEffect(() => {
+    if (controlledHoveredId !== undefined) {
+      return;
+    }
+
+    onHoveredIdChange?.(hoveredId);
+  }, [controlledHoveredId, hoveredId, onHoveredIdChange]);
+
+  useEffect(() => {
+    if (controlledSelectedId !== undefined) {
+      return;
+    }
+
+    onSelectedIdChange?.(selectedId);
+  }, [controlledSelectedId, selectedId, onSelectedIdChange]);
 
   useEffect(() => {
     if (!markupHost || !srcValue) {
@@ -410,7 +468,6 @@ const InteractiveSvgViewer = forwardRef<
     const highlightMap = buildHighlightMap({
       reservedIds,
       highlightedIds,
-      hoveredId,
       selectedId,
     });
 
@@ -460,10 +517,28 @@ const InteractiveSvgViewer = forwardRef<
     dataAttribute,
     filterIdPrefix,
     highlightedIds,
-    hoveredId,
     selectedId,
     disabledIds,
     reservedIds,
+    markupHost,
+    renderedMarkupVersion,
+    srcValue,
+    svgElement,
+    svgMarkup,
+  ]);
+
+  useEffect(() => {
+    const svgRoot =
+      (markupHost ?? containerRef.current)?.querySelector("svg") ?? null;
+
+    if (!svgRoot) {
+      return;
+    }
+
+    applyRuntimeHover(svgRoot, dataAttribute, hoveredId);
+  }, [
+    dataAttribute,
+    hoveredId,
     markupHost,
     renderedMarkupVersion,
     srcValue,
@@ -525,7 +600,7 @@ const InteractiveSvgViewer = forwardRef<
 
     const selector = `[${dataAttribute}]`;
 
-    const handlePointerMove = (event: PointerEvent) => {
+    const handlePointerOver = (event: PointerEvent) => {
       const eventTarget = event.target;
 
       if (!(eventTarget instanceof Element)) {
@@ -535,18 +610,41 @@ const InteractiveSvgViewer = forwardRef<
       const match = eventTarget.closest(selector);
 
       if (!match || match.closest(`g[${OVERLAY_ATTR}]`)) {
-        setHoveredId(null);
         return;
       }
 
       const id = readDataId(match, dataAttribute);
 
       if (!id || disabledIds.includes(id)) {
-        setHoveredId(null);
         return;
       }
 
       setHoveredId(id);
+    };
+
+    const handlePointerOut = (event: PointerEvent) => {
+      const eventTarget = event.target;
+      const relatedTarget = event.relatedTarget;
+
+      if (!(eventTarget instanceof Element)) {
+        return;
+      }
+
+      const match = eventTarget.closest(selector);
+
+      if (!match) {
+        return;
+      }
+
+      if (relatedTarget instanceof Element) {
+        const nextMatch = relatedTarget.closest(selector);
+
+        if (nextMatch === match) {
+          return;
+        }
+      }
+
+      setHoveredId(null);
     };
 
     const handlePointerLeave = () => {
@@ -576,12 +674,14 @@ const InteractiveSvgViewer = forwardRef<
       setSelectedId(nextId === selectedId ? null : nextId);
     };
 
-    svgRoot.addEventListener("pointermove", handlePointerMove);
+    svgRoot.addEventListener("pointerover", handlePointerOver);
+    svgRoot.addEventListener("pointerout", handlePointerOut);
     svgRoot.addEventListener("pointerleave", handlePointerLeave);
     svgRoot.addEventListener("click", handleClick);
 
     return () => {
-      svgRoot.removeEventListener("pointermove", handlePointerMove);
+      svgRoot.removeEventListener("pointerover", handlePointerOver);
+      svgRoot.removeEventListener("pointerout", handlePointerOut);
       svgRoot.removeEventListener("pointerleave", handlePointerLeave);
       svgRoot.removeEventListener("click", handleClick);
     };
@@ -593,6 +693,8 @@ const InteractiveSvgViewer = forwardRef<
     srcValue,
     svgElement,
     svgMarkup,
+    setHoveredId,
+    setSelectedId,
     onSelectId,
   ]);
 
@@ -601,6 +703,7 @@ const InteractiveSvgViewer = forwardRef<
   if (svgElement) {
     svgContent = cloneElement(svgElement);
   }
+
   return (
     <div
       className={joinClassNames(

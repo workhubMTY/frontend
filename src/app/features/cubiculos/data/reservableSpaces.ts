@@ -1,13 +1,11 @@
 import type { ReservableSpace } from "../types/reservableSpaces";
 import { SpaceSearchFilters } from "../types/searchFilters";
-
 export const reservableSpaces: ReservableSpace[] = [
   {
-    id: "sm1",
+    id: 1,
     code: "#SM1",
     name: "Sierra Madre",
-    displayName: "#SM1 Sierra Madre",
-    floor: 1,
+    floor: "MZ",
     capacity: 6,
     status: "available",
     statusLabel: "Disponible",
@@ -21,51 +19,46 @@ export const reservableSpaces: ReservableSpace[] = [
     ],
   },
   {
-    id: "sj1",
+    id: 2,
     code: "#SJ1",
     name: "Sala de juntas 1",
-    displayName: "#SJ1 Sala de juntas 1",
-    floor: 1,
+    floor: "MZ",
     capacity: 6,
     status: "occupied",
     statusLabel: "Ocupado",
     timeline: [],
   },
   {
-    id: "sj3",
+    id: 3,
     code: "#SJ3",
     name: "Sala de juntas 3",
-    displayName: "#SJ3 Sala de juntas 3",
-    floor: 1,
+    floor: "MZ",
     capacity: 8,
     status: "soon",
     statusLabel: "Por comenzar",
     timeline: [],
   },
   {
-    id: "cw1",
+    id: 4,
     code: "#CW1",
     name: "Coworking",
-    displayName: "#CW1 Coworking",
-    floor: 1,
+    floor: "MZ",
     capacity: 20,
     status: "available",
     statusLabel: "Disponible",
     timeline: [],
   },
   {
-    id: "of1",
+    id: 5,
     code: "#OF1",
     name: "Oficina 1",
-    displayName: "#OF1 Oficina 1",
-    floor: 1,
+    floor: "MZ",
     capacity: 1,
     status: "available",
     statusLabel: "Disponible",
     timeline: [],
   },
 ];
-
 export async function fetchReservableSpaces(filters: SpaceSearchFilters) {
   await new Promise((resolve) => setTimeout(resolve, 600));
 

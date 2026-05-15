@@ -6,8 +6,8 @@ import type {
 
 type SpacesResultsListProps = {
   spaces: ReservableSpace[];
-  selectedSpaceId?: string;
-  onSelectSpace: (spaceId: string) => void;
+  selectedSpaceCode?: string;
+  onSelectSpace: (spaceCode: string) => void;
 };
 
 function getStatusColor(status: SpaceStatus) {
@@ -24,9 +24,17 @@ function getStatusDot(status: SpaceStatus) {
   return "bg-blue-500";
 }
 
+function getSpaceDisplayName(space: ReservableSpace) {
+  if (space.name) {
+    return `${space.code} ${space.name}`;
+  }
+
+  return space.code;
+}
+
 export function SpacesResultsList({
   spaces,
-  selectedSpaceId,
+  selectedSpaceCode,
   onSelectSpace,
 }: SpacesResultsListProps) {
   return (
@@ -37,13 +45,13 @@ export function SpacesResultsList({
 
       <div className="mt-4 space-y-2">
         {spaces.map((space) => {
-          const isSelected = selectedSpaceId === space.id;
+          const isSelected = selectedSpaceCode === space.code;
 
           return (
             <button
               key={space.id}
               type="button"
-              onClick={() => onSelectSpace(space.id)}
+              onClick={() => onSelectSpace(space.code)}
               className={[
                 "flex w-full items-center gap-3 rounded-lg border p-3 text-left transition",
                 isSelected
@@ -69,11 +77,11 @@ export function SpacesResultsList({
                     isSelected ? "text-purple-700" : "text-slate-950",
                   ].join(" ")}
                 >
-                  {space.displayName}
+                  {getSpaceDisplayName(space)}
                 </p>
 
                 <p className="text-xs text-slate-500">
-                  {space.capacity} personas
+                  Piso {space.floor} · {space.capacity} personas
                 </p>
               </div>
 
