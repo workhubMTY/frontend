@@ -15,28 +15,28 @@ async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
 
 export const api = {
   getNotifications: (unreadOnly = false) =>
-    apiFetch<Notification[]>(`notifications/me?unread_only=${unreadOnly}&limit=30`),
+    apiFetch<Notification[]>(`/notifications/me?unread_only=${unreadOnly}&limit=30`),
   getUnreadCount: () =>
-    apiFetch<{ count: number }>("notifications/me/unread-count"),
+    apiFetch<{ count: number }>("/notifications/me/unread-count"),
   markRead: (ids: number[]) =>
-    apiFetch("notifications/me/read", { method: "PATCH", body: JSON.stringify({ ids }) }),
+    apiFetch("/notifications/me/read", { method: "PATCH", body: JSON.stringify({ ids }) }),
   markAllRead: () =>
-    apiFetch("notifications/me/read-all", { method: "PATCH" }),
+    apiFetch("/notifications/me/read-all", { method: "PATCH" }),
   deleteNotifications: (ids: number[]) =>
-    apiFetch("notifications/me", { method: "DELETE", body: JSON.stringify({ ids }) }),
+    apiFetch("/notifications/me", { method: "DELETE", body: JSON.stringify({ ids }) }),
   deleteAll: () =>
-    apiFetch("notifications/me/all", { method: "DELETE" }),
+    apiFetch("/notifications/me/all", { method: "DELETE" }),
 
   // endpoints de solictudes de amistad
   getFriendRequests: () =>
-    apiFetch<FriendRequest[]>("friendships/requests/received"),
+    apiFetch<FriendRequest[]>("/friendships/requests/received"),
   acceptRequest: (fromUser: string) =>
     apiFetch("friendships/requests/received", {
       method: "POST",
       body: JSON.stringify({ fromUser }),
     }),
   rejectRequest: (userId: string) =>
-    apiFetch("friendships/requests/received", {
+    apiFetch("/friendships/requests/received", {
       method: "DELETE",
       body: JSON.stringify({ userId }),
     }),
