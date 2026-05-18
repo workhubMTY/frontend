@@ -24,4 +24,5 @@ jobs:
 
       - name: Check frontend logs
         run: |
+          docker ps
           docker logs --tail=80 whmty-frontend
