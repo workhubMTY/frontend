@@ -25,12 +25,30 @@ import { FriendsDrawer } from "@/app/features/perfil/components/drawers/FriendsD
 import { TeamsDrawer } from "@/app/features/perfil/components/drawers/TeamsDrawer";
 import { AchievementComparisonDrawer } from "@/app/features/perfil/components/drawers/AchievementComparisonDrawer";
 
+import {
+  useProfile,
+  useFriends,
+  useAchievements,
+} from "@/app/modules/perfil/hooks";
+
 export default function UserProfilePage() {
   const USER_ID = "MF"; // Esto deberiamos poder sacarlo de un context o algo
 
-  const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [friends, setFriends] = useState<Friend[] | null>(null);
-  const [achievements, setAchievements] = useState<Achievement[] | null>(null);
+  const {
+  data: profile,
+  isLoading: profileLoading,
+  } = useProfile();
+
+const {
+  data: friends = [],
+  isLoading: friendsLoading,
+  } = useFriends();
+
+const {
+  data: achievements = [],
+  isLoading: achievementsLoading,
+  } = useAchievements();
+
   const [teams, setTeams] = useState<Team[] | null>(null);
 
   const [selectedFriendId, setSelectedFriendId] = useState<string | null>(null);
@@ -41,7 +59,10 @@ export default function UserProfilePage() {
   const [isTeamDrawerOpen, setIsTeamDrawerOpen] = useState(false);
   const [isAchievementDrawerOpen, setIsAchievementDrawerOpen] = useState(false);
 
-  const [isLoading, setIsLoading] = useState(true);
+  const isLoading =
+  profileLoading ||
+  friendsLoading ||
+  achievementsLoading;
 
   const [initialOpenTeamId, setInitialOpenTeamId] = useState<string | null>(
     null,
@@ -120,37 +141,6 @@ export default function UserProfilePage() {
   function handleClearComparison() {
     setSelectedFriendId(null);
   }
-
-  useEffect(() => {
-    async function loadInitialData() {
-      try {
-        setIsLoading(true);
-
-        const [
-          profileResponse,
-          friendResponse,
-          achievementResponse,
-          teamsResponse,
-        ] = await Promise.all([
-          getUserProfileMock(),
-          getFriendsByUserId(USER_ID),
-          getAchievementsByUserId(USER_ID),
-          getTeamsByUserId(USER_ID),
-        ]);
-
-        setProfile(profileResponse);
-        setFriends(friendResponse);
-        setAchievements(achievementResponse);
-        setTeams(teamsResponse);
-      } catch (error) {
-        console.log(error);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-
-    loadInitialData();
-  }, []);
 
   useEffect(() => {
     async function loadFriendsAchievements() {

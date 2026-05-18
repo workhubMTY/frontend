@@ -1,5 +1,10 @@
 import { authFetch } from "@/lib/api";
-import type { Achievement, Friend, UserProfile } from "./perfil.types";
+
+import type {
+  Achievement,
+  Friend,
+  UserProfile,
+} from "@/app/features/perfil/types/profile";
 
 export const perfilApi = {
   getProfile: () =>
