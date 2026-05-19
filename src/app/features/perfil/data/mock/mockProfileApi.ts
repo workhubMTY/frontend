@@ -5,7 +5,7 @@ import type {
   Friend,
   User,
   FriendSuggestion,
-} from "../types/profile";
+} from "@/app/features/perfil/types/profile";
 import {
   ACHIEVEMENTS,
   FRIENDS,
