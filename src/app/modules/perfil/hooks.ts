@@ -12,14 +12,15 @@ export function useProfile() {
 
 export function useFriends() {
   return useQuery({
-    queryKey: ["friends"],
+    queryKey: ["friendships"],
     queryFn: () => perfilApi.getFriends(),
   });
 }
 
-export function useAchievements() {
+export function useAchievements(userId: string) {
   return useQuery({
-    queryKey: ["achievements"],
-    queryFn: () => perfilApi.getAchievements(),
+    queryKey: ["achievements", userId], 
+    queryFn: () => perfilApi.getAchievements(userId),
+    enabled: !!userId, 
   });
 }

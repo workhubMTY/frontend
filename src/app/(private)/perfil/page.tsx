@@ -44,10 +44,7 @@ const {
   isLoading: friendsLoading,
   } = useFriends();
 
-const {
-  data: achievements = [],
-  isLoading: achievementsLoading,
-  } = useAchievements();
+ const { data: achievements = [] } = useAchievements(USER_ID);
 
   const [teams, setTeams] = useState<Team[] | null>(null);
 
@@ -61,8 +58,7 @@ const {
 
   const isLoading =
   profileLoading ||
-  friendsLoading ||
-  achievementsLoading;
+  friendsLoading;
 
   const [initialOpenTeamId, setInitialOpenTeamId] = useState<string | null>(
     null,

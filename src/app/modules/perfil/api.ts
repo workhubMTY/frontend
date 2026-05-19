@@ -12,7 +12,17 @@ export const perfilApi = {
 
   getFriends: () =>
     authFetch<Friend[]>("/friendships/me"),
+  
+  getAchievements: (userId: string) =>
+   authFetch<Achievement[]>(`/achievements/${userId}/list`),
 
-  getAchievements: () =>
-    authFetch<Achievement[]>("/achievements/me"),
+  getAchievementsByUser: (userId: string) =>
+    authFetch<Achievement[]>(`/achievements/${userId}/list`),
+
+  getSummary: (userId: string) =>
+    authFetch(`/achievements/${userId}/summary`),
+
 };
+
+
+
