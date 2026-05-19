@@ -1,15 +1,37 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useAuth } from "@/app/modules/auth/useAuth";
-import { officeSlotsApi } from "@/app/modules/office-slots/api";
+import { useAuth } from "@/app/shared/auth/useAuth";
+import { officeSlotsApi } from "@/app/features/cubiculos/data/api";
 
-
-interface Reserva { titulo: string; hora: string; lugar: string; estado: "Confirmada" | "Pendiente"; }
-interface Persona { initials: string; name: string; role: string; reservas: Reserva[]; }
-interface Invitacion { nombre: string; sala: string; hora: string; tipo: string; }
-interface DiaInvitaciones { dia: string; items: Invitacion[]; }
-interface Evento { titulo: string; hora: string; lugar: string; tipo: string; }
+interface Reserva {
+  titulo: string;
+  hora: string;
+  lugar: string;
+  estado: "Confirmada" | "Pendiente";
+}
+interface Persona {
+  initials: string;
+  name: string;
+  role: string;
+  reservas: Reserva[];
+}
+interface Invitacion {
+  nombre: string;
+  sala: string;
+  hora: string;
+  tipo: string;
+}
+interface DiaInvitaciones {
+  dia: string;
+  items: Invitacion[];
+}
+interface Evento {
+  titulo: string;
+  hora: string;
+  lugar: string;
+  tipo: string;
+}
 
 interface ReservationDetail {
   id: number;
@@ -48,16 +70,30 @@ function getInitials(name: string): string {
 
 function formatTime(date: string): string {
   const d = new Date(date);
-  return d.toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit", hour12: false });
+  return d.toLocaleTimeString("es-MX", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  });
 }
 
 function getSpanishDayOfWeek(date: string): string {
   const d = new Date(date);
-  const days = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
+  const days = [
+    "Domingo",
+    "Lunes",
+    "Martes",
+    "Miércoles",
+    "Jueves",
+    "Viernes",
+    "Sábado",
+  ];
   return days[d.getUTCDay()];
 }
 
-function transformToPersonas(friendsReservations: ReservationDetail[]): Persona[] {
+function transformToPersonas(
+  friendsReservations: ReservationDetail[],
+): Persona[] {
   const personaMap = new Map<string, Persona>();
 
   for (const res of friendsReservations) {
@@ -87,11 +123,16 @@ function transformToPersonas(friendsReservations: ReservationDetail[]): Persona[
   return Array.from(personaMap.values());
 }
 
-function transformToInvitations(myReservations: ReservationDetail[], userId: string): DiaInvitaciones[] {
+function transformToInvitations(
+  myReservations: ReservationDetail[],
+  userId: string,
+): DiaInvitaciones[] {
   const invitationsByDay = new Map<string, Invitacion[]>();
 
   for (const res of myReservations) {
-    const myParticipant = res.participants.find((p) => p.userId === userId && p.status === "PENDING");
+    const myParticipant = res.participants.find(
+      (p) => p.userId === userId && p.status === "PENDING",
+    );
     if (!myParticipant) continue;
 
     const day = getSpanishDayOfWeek(res.startTime);
@@ -108,7 +149,15 @@ function transformToInvitations(myReservations: ReservationDetail[], userId: str
     invitationsByDay.get(day)!.push(invitacion);
   }
 
-  const daysOrder = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
+  const daysOrder = [
+    "Lunes",
+    "Martes",
+    "Miércoles",
+    "Jueves",
+    "Viernes",
+    "Sábado",
+    "Domingo",
+  ];
   return daysOrder
     .filter((day) => invitationsByDay.has(day))
     .map((day) => ({
@@ -152,14 +201,18 @@ export function useHome(): UseHomeReturn {
           officeSlotsApi.getFriendsReservations(),
         ]);
 
-        const myReservations = (myResData as unknown as ReservationDetail[]) || [];
-        const friendsReservations = (friendsResData as unknown as ReservationDetail[]) || [];
+        const myReservations =
+          (myResData as unknown as ReservationDetail[]) || [];
+        const friendsReservations =
+          (friendsResData as unknown as ReservationDetail[]) || [];
 
         setPersonas(transformToPersonas(friendsReservations));
         setInvitaciones(transformToInvitations(myReservations, user.eId));
         setEventos(transformToEventos(myReservations));
       } catch (err) {
-        setError(err instanceof Error ? err : new Error("Error fetching home data"));
+        setError(
+          err instanceof Error ? err : new Error("Error fetching home data"),
+        );
       } finally {
         setLoading(false);
       }

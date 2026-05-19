@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { authService } from "@/app/modules/auth/auth.service";
+import { authService } from "@/app/shared/auth/auth.service";
 import AccentureLogo from "../../../../public/accenture_logo_purple1.png";
 
 interface User {

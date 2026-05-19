@@ -1,4 +1,4 @@
-import { authFetch } from "@/app/shared/lib/api";
+import { authFetch } from "@/app/shared/data/api";
 import type { User, UserProfile, CreateUserDto } from "./types";
 
 export const usersApi = {

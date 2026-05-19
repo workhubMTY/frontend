@@ -1,7 +1,7 @@
-import { officeSlotsApi } from "@/app/modules/office-slots/api";
-import type { SlotAvailabilityResult } from "@/app/modules/office-slots/types";
-import type { SpaceSearchFilters } from "../types/searchFilters";
-import type { ReservableSpace } from "../types/reservableSpaces";
+import { officeSlotsApi } from "@/app/features/cubiculos/data/api";
+import type { SlotAvailabilityResult } from "@/app/features/cubiculos/data/types";
+import type { SpaceSearchFilters } from "../../types/searchFilters";
+import type { ReservableSpace } from "../../types/reservableSpaces";
 
 export const reservableSpaces: ReservableSpace[] = [];
 
@@ -14,9 +14,7 @@ const toHourMinute = (iso: string): string => {
 const nowIso = () => new Date().toISOString();
 const plusHourIso = () => new Date(Date.now() + 60 * 60 * 1000).toISOString();
 
-const toReservableSpace = (
-  slot: SlotAvailabilityResult,
-): ReservableSpace => ({
+const toReservableSpace = (slot: SlotAvailabilityResult): ReservableSpace => ({
   id: slot.id,
   code: slot.code ?? slot.name,
   name: slot.name,
@@ -24,8 +22,7 @@ const toReservableSpace = (
   capacity: slot.capacity,
   status: slot.status ?? (slot.is_available ? "available" : "occupied"),
   statusLabel:
-    slot.statusLabel ??
-    (slot.is_available ? "Disponible" : "Ocupado"),
+    slot.statusLabel ?? (slot.is_available ? "Disponible" : "Ocupado"),
   timeline:
     slot.timeline?.map((block) => ({
       id: block.id,

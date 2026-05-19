@@ -4,7 +4,7 @@ import {
   FriendSuggestion,
   Team,
   User,
-} from "../types/profile";
+} from "../../types/profile";
 
 export const USERS: User[] = [
   {
@@ -603,7 +603,7 @@ export const SUGGESTION_STATUS_BY_USER_ID: Record<
   ["3344556"]: "pending",
 };
 
-import type { UserProfile } from "../types/profile";
+import type { UserProfile } from "../../types/profile";
 
 type UserStats = UserProfile["stats"];
 

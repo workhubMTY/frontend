@@ -1,8 +1,8 @@
 "use client";
 
 import NavbarWrapper from "../shared/components/Navbar/NavbarWrapper";
-import { AuthProvider } from "../modules/auth/auth.context";
-import { AuthGuard } from "../shared/components/AuthGuard";
+import { AuthProvider } from "../shared/auth/auth.context";
+import { AuthGuard } from "../shared/auth/AuthGuard";
 
 export default function PrivateLayout({
   children,

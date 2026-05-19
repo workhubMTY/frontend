@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { Search, Calendar, Clock, Users, LogOut, X, Check } from "lucide-react";
 import PageTransition from "@/app/shared/components/PageTransition/PageTransition";
 import { useRouter } from "next/navigation";
-import { officeSlotsApi } from "@/app/modules/office-slots/api";
+import { officeSlotsApi } from "@/app/features/cubiculos/data/api";
 
 interface Invitado {
   id: string;

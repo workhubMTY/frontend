@@ -15,7 +15,7 @@ import {
   getTeams,
   getTeamMembers,
   getSuggestions,
-} from "@/app/features/perfil/data/mockProfileApi";
+} from "@/app/features/perfil/data/mock/mockProfileApi";
 import { ProfileHeaderCard } from "@/app/features/perfil/components/cards/ProfileHeaderCard";
 import { ProgressSummaryCard } from "@/app/features/perfil/components/cards/ProgressSumaryCard";
 import { FriendsCard } from "@/app/features/perfil/components/cards/FriendsCard";
@@ -24,7 +24,7 @@ import { AchievementComparisonCard } from "@/app/features/perfil/components/card
 import { FriendsDrawer } from "@/app/features/perfil/components/drawers/FriendsDrawer";
 import { TeamsDrawer } from "@/app/features/perfil/components/drawers/TeamsDrawer";
 import { AchievementComparisonDrawer } from "@/app/features/perfil/components/drawers/AchievementComparisonDrawer";
-import { useAuth } from "@/app/modules/auth/useAuth";
+import { useAuth } from "@/app/shared/auth/useAuth";
 
 export default function UserProfilePage() {
   const { user } = useAuth();

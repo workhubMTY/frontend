@@ -1,8 +1,8 @@
-﻿"use client";
+"use client";
 
 import { useState, useMemo, useRef } from "react";
 import { ChevronLeft, ChevronRight, CalendarDays } from "lucide-react";
-import { CalEvent } from "../../types/Agenda";
+import { CalEvent } from "../../types/types";
 
 const HOURS = [6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17];
 const DAYS_SHORT = ["Lu", "Ma", "Mi", "Ju", "Vi"];

@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import {
   fetchReservableSpaces,
   reservableSpaces,
-} from "@/app/features/cubiculos/data/reservableSpaces";
+} from "@/app/features/cubiculos/data/mock/reservableSpaces";
 import type { SpaceSearchFilters } from "@/app/features/cubiculos/types/searchFilters";
 
 export function useReservableSpacesSearch() {

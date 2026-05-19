@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
-import AccentureLogo from "../../../../public/accenture_logo_purple1.png";
+import AccentureLogo from "../../../../../public/accenture_logo_purple1.png";
 import Image from "next/image";
 import NotificationsPanel from "../NotificationsPanel/NotificationsPanel";
 

@@ -5,12 +5,12 @@ import { CalendarDays, Users, MailOpen } from "lucide-react";
 
 import PageTransition from "@/app/shared/components/PageTransition/PageTransition";
 
-import { useFriends } from "@/app/modules/friendships/hooks";
+import { useFriends } from "@/app/shared/data/friendships/hooks";
 import {
   useEvents,
   useFriendsReservations,
   useMyReservations,
-} from "@/app/modules/office-slots/hooks";
+} from "@/app/features/cubiculos/data/hooks";
 import {
   formatHourRange,
   getInitials,
@@ -21,7 +21,7 @@ import {
 import type {
   ReservationEvent,
   ReservationSummary,
-} from "@/app/modules/office-slots/types";
+} from "@/app/features/cubiculos/data/types";
 import {
   DiaInvitaciones,
   EventoGeneral,
@@ -32,10 +32,10 @@ import {
 import { PanelRed } from "@/app/features/home/components/PanelRed";
 import AgendaRapida, {
   ExternalEvent,
-} from "@/app/features/home/components/AgendaRapida";
+} from "@/app/features/home/components/AgendaRapida/AgendaRapida";
 import { PanelInvitaciones } from "@/app/features/home/components/PanelInvitaciones";
 import { EventoGeneralDetail } from "@/app/features/home/components/EventoGeneralDetail";
-import { useAuth } from "@/app/modules/auth/useAuth";
+import { useAuth } from "@/app/shared/auth/useAuth";
 
 type MobileTab = "agenda" | "red" | "invitaciones";
 

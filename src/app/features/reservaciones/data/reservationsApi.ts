@@ -1,4 +1,4 @@
-import { officeSlotsApi } from "@/app/modules/office-slots/api";
+import { officeSlotsApi } from "@/app/features/cubiculos/data/api";
 import type {
   ApiReservation,
   CalendarCell,
@@ -65,15 +65,23 @@ export async function apiGetSpaceReservationsByDay({
   dateId: string;
   spaceName: string;
 }) {
-  const sessionSpaceRaw = window.sessionStorage.getItem("cubiculos:selectedSpace");
+  const sessionSpaceRaw = window.sessionStorage.getItem(
+    "cubiculos:selectedSpace",
+  );
   const sessionSpace = sessionSpaceRaw ? JSON.parse(sessionSpaceRaw) : null;
   const reservableId = sessionSpace?.id as number | undefined;
 
   if (reservableId) {
     const start_time = new Date(`${dateId}T00:00:00`).toISOString();
     const end_time = new Date(`${dateId}T23:59:59`).toISOString();
-    const events = await officeSlotsApi.getEvents({ reservable_id: reservableId, start_time, end_time });
-    return events.map((event) => toTimelineEvent(toApiReservation(event), "reserved"));
+    const events = await officeSlotsApi.getEvents({
+      reservable_id: reservableId,
+      start_time,
+      end_time,
+    });
+    return events.map((event) =>
+      toTimelineEvent(toApiReservation(event), "reserved"),
+    );
   }
 
   return apiJson.spaceReservations

@@ -1,5 +1,5 @@
 import { authApi } from "./api";
-import type { AuthResponse, LoginInput, User } from "./auth.types";
+import type { AuthResponse, LoginInput, User } from "./types/auth.types";
 
 export const authService = {
   login(data: LoginInput) {
@@ -10,5 +10,5 @@ export const authService = {
   },
   logout(): Promise<void> {
     return authApi.postLogout();
-  }
+  },
 };

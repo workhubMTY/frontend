@@ -1,4 +1,4 @@
-import { authFetch } from "@/app/shared/lib/api";
+import { authFetch } from "@/app/shared/data/api";
 
 export const authApi = {
   postData: <T>(endpoint: string, body: unknown): Promise<T> =>
