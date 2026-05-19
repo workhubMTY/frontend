@@ -120,7 +120,6 @@ export default function ChatbotPage() {
   return (
     <DownTransition>
       <div className="w-screen h-screen flex flex-col bg-[#e8e8e8] overflow-hidden">
-        {/* Header */}
         <div className="flex items-center gap-3 px-8 py-5">
           <a href="/home">
             <Image
@@ -134,8 +133,6 @@ export default function ChatbotPage() {
             Chatbot
           </span>
         </div>
-
-        {/* Messages area */}
         <div className="flex-1 overflow-y-auto flex flex-col">
           {!hasMessages ? (
             <div className="flex-1 flex flex-col items-center justify-center px-12 gap-10">
@@ -225,7 +222,7 @@ export default function ChatbotPage() {
           </svg>
           <div className="flex items-end w-full px-6 pt-2">
             <button
-              onClick={() => router.push("/home")}
+              onClick={() => router.back()}
               style={{ clipPath: "url(#tab-shape)" }}
               className="flex-shrink-0 bg-[#d4d4d4] hover:bg-[#cacaca] active:bg-[#c0c0c0] transition-colors duration-150 text-sm font-medium text-gray-700 w-[110px] h-[52px] whitespace-nowrap"
             >
