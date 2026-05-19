@@ -9,11 +9,11 @@ import {
   AchievementUserData,
 } from "@/app/features/perfil/types/profile";
 import {
-  getUserProfileMock,
-  getFriendsByUserId,
-  getAchievementsByUserId,
-  getTeamsByUserId,
-  mockGetTeamMembers,
+  getUserProfile,
+  getFriends,
+  getAchievements,
+  getTeams,
+  getTeamMembers,
   getSuggestions,
 } from "@/app/features/perfil/data/mockProfileApi";
 import { ProfileHeaderCard } from "@/app/features/perfil/components/cards/ProfileHeaderCard";
@@ -24,9 +24,11 @@ import { AchievementComparisonCard } from "@/app/features/perfil/components/card
 import { FriendsDrawer } from "@/app/features/perfil/components/drawers/FriendsDrawer";
 import { TeamsDrawer } from "@/app/features/perfil/components/drawers/TeamsDrawer";
 import { AchievementComparisonDrawer } from "@/app/features/perfil/components/drawers/AchievementComparisonDrawer";
+import { useAuth } from "@/app/modules/auth/useAuth";
 
 export default function UserProfilePage() {
-  const USER_ID = "MF"; // Esto deberiamos poder sacarlo de un context o algo
+  const { user } = useAuth();
+  const userId = user?.eId ?? null;
 
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [friends, setFriends] = useState<Friend[] | null>(null);
@@ -83,8 +85,21 @@ export default function UserProfilePage() {
     setIsTeamDrawerOpen(false);
   }
 
-  const handleSearchSuggestions = useCallback(async (query: string) => {
-    return await getSuggestions(query);
+  const handleSearchSuggestions = useCallback(
+    async (query: string) => {
+      if (!userId) return [];
+
+      return await getSuggestions({
+        query,
+        excludeUserIds: [userId],
+        limit: 8,
+      });
+    },
+    [userId],
+  );
+
+  const handleGetTeamMembers = useCallback(async (teamId: string) => {
+    return await getTeamMembers({ teamId });
   }, []);
 
   function handleDisplayAllFriends() {
@@ -125,6 +140,13 @@ export default function UserProfilePage() {
     async function loadInitialData() {
       try {
         setIsLoading(true);
+        if (!userId) {
+          setProfile(null);
+          setFriends(null);
+          setAchievements(null);
+          setTeams(null);
+          return;
+        }
 
         const [
           profileResponse,
@@ -132,10 +154,10 @@ export default function UserProfilePage() {
           achievementResponse,
           teamsResponse,
         ] = await Promise.all([
-          getUserProfileMock(),
-          getFriendsByUserId(USER_ID),
-          getAchievementsByUserId(USER_ID),
-          getTeamsByUserId(USER_ID),
+          getUserProfile({ userId }),
+          getFriends({ userId }),
+          getAchievements({ userId }),
+          getTeams({ userId }),
         ]);
 
         setProfile(profileResponse);
@@ -143,14 +165,14 @@ export default function UserProfilePage() {
         setAchievements(achievementResponse);
         setTeams(teamsResponse);
       } catch (error) {
-        console.log(error);
+        console.error(error);
       } finally {
         setIsLoading(false);
       }
     }
 
     loadInitialData();
-  }, []);
+  }, [userId]);
 
   useEffect(() => {
     async function loadFriendsAchievements() {
@@ -166,15 +188,16 @@ export default function UserProfilePage() {
       if (!selectedFriend) return;
 
       try {
-        const achievementsResponse =
-          await getAchievementsByUserId(selectedFriendId);
+        const achievementsResponse = await getAchievements({
+          userId: selectedFriendId,
+        });
 
         setSelectedFriendsData({
           name: selectedFriend.name,
           achievements: achievementsResponse,
         });
       } catch (error) {
-        console.log(error);
+        console.error(error);
       }
     }
 
@@ -281,7 +304,7 @@ export default function UserProfilePage() {
         }}
         initialOpenTeamId={initialOpenTeamId}
         initialTeamDrawerMode={initialTeamDrawerMode}
-        onGetTeamMembers={mockGetTeamMembers}
+        onGetTeamMembers={handleGetTeamMembers}
         inviteCandidates={friends}
         onCreateTeam={async (payload) => {
           console.log("Crear equipo:", payload);

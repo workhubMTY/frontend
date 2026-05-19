@@ -6,753 +6,269 @@ import type {
   User,
   FriendSuggestion,
 } from "../types/profile";
+import {
+  ACHIEVEMENTS,
+  FRIENDS,
+  SUGGESTION_STATUS_BY_USER_ID,
+  TEAM_MEMBER_IDS_BY_TEAM_ID,
+  TEAM_MEMBER_ROLE_BY_USER_ID,
+  TEAMS,
+  USERS,
+  USERS_BY_ID,
+  STATS_BY_USER_ID,
+} from "./mockDB";
 
 const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-type FriendList = Record<string, Friend[]>;
-const FRIENDS: FriendList = {
-  MF: [
-    {
-      id: "CM",
-      name: "Carlos Méndez",
-      role: "Product Owner",
-      avatarUrl:
-        "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&h=200&fit=crop&crop=face",
-      email: "carlos.mendez@accenture.com",
-    },
-    {
-      id: "VR",
-      name: "Valeria Ruiz",
-      role: "Scrum Master",
-      avatarUrl:
-        "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&h=200&fit=crop&crop=face",
-      email: "valeria.ruiz@accenture.com",
-    },
-    {
-      id: "AG",
-      name: "Andrés Gómez",
-      role: "Developer",
-      avatarUrl:
-        "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=200&h=200&fit=crop&crop=face",
-      email: "andres.gomez@accenture.com",
-    },
-    {
-      id: "LP",
-      name: "Laura Pérez",
-      role: "Developer",
-      avatarUrl:
-        "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=200&h=200&fit=crop&crop=face",
-      email: "laura.perez@accenture.com",
-    },
-    {
-      id: "JM",
-      name: "Jorge Martínez",
-      role: "Developer",
-      avatarUrl:
-        "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=200&h=200&fit=crop&crop=face",
-      email: "jorge.martinez@accenture.com",
-    },
-    {
-      id: "SR",
-      name: "Sofía Ramírez",
-      role: "Developer",
-      avatarUrl:
-        "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=200&h=200&fit=crop&crop=face",
-      email: "sofia.ramirez@accenture.com",
-    },
-    {
-      id: "MT",
-      name: "Miguel Torres",
-      role: "Developer",
-      avatarUrl:
-        "https://images.unsplash.com/photo-1527980965255-d3b416303d12?w=200&h=200&fit=crop&crop=face",
-      email: "miguel.torres@accenture.com",
-    },
-    {
-      id: "AC",
-      name: "Ana Castillo",
-      role: "Developer",
-      avatarUrl:
-        "https://images.unsplash.com/photo-1544723795-3fb6469f5b39?w=200&h=200&fit=crop&crop=face",
-      email: "ana.castillo@accenture.com",
-    },
-  ],
+type GetUsersParams = {
+  query?: string;
+  ids?: string[];
+  excludeUserIds?: string[];
+  limit?: number;
 };
 
-type AchievementList = Record<string, Achievement[]>;
-
-const ACHIEVEMENTS: AchievementList = {
-  MF: [
-    {
-      id: "achievement-1",
-      title: "Primera amistad",
-      description: "Agrega 1 amigo a tu red",
-      icon: "users",
-      userProgress: { current: 1, target: 1, status: "completed" },
-    },
-    {
-      id: "achievement-2",
-      title: "Red activa",
-      description: "Ten 10 amigos en tu red",
-      icon: "network",
-      userProgress: { current: 7, target: 10, status: "in_progress" },
-    },
-    {
-      id: "achievement-3",
-      title: "Racha de 10 días",
-      description: "Inicia sesión 10 días seguidos",
-      icon: "flame",
-      userProgress: { current: 6, target: 10, status: "in_progress" },
-    },
-    {
-      id: "achievement-4",
-      title: "Conexión creciente",
-      description: "Agrega 5 amigos a tu red",
-      icon: "users",
-      userProgress: { current: 3, target: 5, status: "in_progress" },
-    },
-    {
-      id: "achievement-5",
-      title: "Red consolidada",
-      description: "Ten 20 amigos en tu red",
-      icon: "network",
-      userProgress: { current: 12, target: 20, status: "in_progress" },
-    },
-    {
-      id: "achievement-6",
-      title: "Racha de 30 días",
-      description: "Inicia sesión 30 días seguidos",
-      icon: "flame",
-      userProgress: { current: 15, target: 30, status: "in_progress" },
-    },
-  ],
-
-  CM: [
-    {
-      id: "achievement-1",
-      title: "Primera amistad",
-      description: "Agrega 1 amigo a tu red",
-      icon: "users",
-      userProgress: { current: 1, target: 1, status: "completed" },
-    },
-    {
-      id: "achievement-2",
-      title: "Red activa",
-      description: "Ten 10 amigos en tu red",
-      icon: "network",
-      userProgress: { current: 5, target: 10, status: "in_progress" },
-    },
-    {
-      id: "achievement-3",
-      title: "Racha de 10 días",
-      description: "Inicia sesión 10 días seguidos",
-      icon: "flame",
-      userProgress: { current: 3, target: 10, status: "in_progress" },
-    },
-    {
-      id: "achievement-4",
-      title: "Conexión creciente",
-      description: "Agrega 5 amigos a tu red",
-      icon: "users",
-      userProgress: { current: 5, target: 5, status: "completed" },
-    },
-    {
-      id: "achievement-5",
-      title: "Red consolidada",
-      description: "Ten 20 amigos en tu red",
-      icon: "network",
-      userProgress: { current: 7, target: 20, status: "in_progress" },
-    },
-    {
-      id: "achievement-6",
-      title: "Racha de 30 días",
-      description: "Inicia sesión 30 días seguidos",
-      icon: "flame",
-      userProgress: { current: 10, target: 30, status: "in_progress" },
-    },
-  ],
-
-  VR: [
-    {
-      id: "achievement-1",
-      title: "Primera amistad",
-      description: "Agrega 1 amigo a tu red",
-      icon: "users",
-      userProgress: { current: 1, target: 1, status: "completed" },
-    },
-    {
-      id: "achievement-2",
-      title: "Red activa",
-      description: "Ten 10 amigos en tu red",
-      icon: "network",
-      userProgress: { current: 9, target: 10, status: "in_progress" },
-    },
-    {
-      id: "achievement-3",
-      title: "Racha de 10 días",
-      description: "Inicia sesión 10 días seguidos",
-      icon: "flame",
-      userProgress: { current: 10, target: 10, status: "completed" },
-    },
-    {
-      id: "achievement-4",
-      title: "Conexión creciente",
-      description: "Agrega 5 amigos a tu red",
-      icon: "users",
-      userProgress: { current: 4, target: 5, status: "in_progress" },
-    },
-    {
-      id: "achievement-5",
-      title: "Red consolidada",
-      description: "Ten 20 amigos en tu red",
-      icon: "network",
-      userProgress: { current: 20, target: 20, status: "completed" },
-    },
-    {
-      id: "achievement-6",
-      title: "Racha de 30 días",
-      description: "Inicia sesión 30 días seguidos",
-      icon: "flame",
-      userProgress: { current: 30, target: 30, status: "completed" },
-    },
-  ],
-
-  AG: [
-    {
-      id: "achievement-1",
-      title: "Primera amistad",
-      description: "Agrega 1 amigo a tu red",
-      icon: "users",
-      userProgress: { current: 1, target: 1, status: "completed" },
-    },
-    {
-      id: "achievement-2",
-      title: "Red activa",
-      description: "Ten 10 amigos en tu red",
-      icon: "network",
-      userProgress: { current: 2, target: 10, status: "in_progress" },
-    },
-    {
-      id: "achievement-3",
-      title: "Racha de 10 días",
-      description: "Inicia sesión 10 días seguidos",
-      icon: "flame",
-      userProgress: { current: 1, target: 10, status: "in_progress" },
-    },
-    {
-      id: "achievement-4",
-      title: "Conexión creciente",
-      description: "Agrega 5 amigos a tu red",
-      icon: "users",
-      userProgress: { current: 2, target: 5, status: "in_progress" },
-    },
-    {
-      id: "achievement-5",
-      title: "Red consolidada",
-      description: "Ten 20 amigos en tu red",
-      icon: "network",
-      userProgress: { current: 5, target: 20, status: "in_progress" },
-    },
-    {
-      id: "achievement-6",
-      title: "Racha de 30 días",
-      description: "Inicia sesión 30 días seguidos",
-      icon: "flame",
-      userProgress: { current: 7, target: 30, status: "in_progress" },
-    },
-  ],
-
-  LP: [
-    {
-      id: "achievement-1",
-      title: "Primera amistad",
-      description: "Agrega 1 amigo a tu red",
-      icon: "users",
-      userProgress: { current: 0, target: 1, status: "locked" },
-    },
-    {
-      id: "achievement-2",
-      title: "Red activa",
-      description: "Ten 10 amigos en tu red",
-      icon: "network",
-      userProgress: { current: 4, target: 10, status: "in_progress" },
-    },
-    {
-      id: "achievement-3",
-      title: "Racha de 10 días",
-      description: "Inicia sesión 10 días seguidos",
-      icon: "flame",
-      userProgress: { current: 2, target: 10, status: "in_progress" },
-    },
-    {
-      id: "achievement-4",
-      title: "Conexión creciente",
-      description: "Agrega 5 amigos a tu red",
-      icon: "users",
-      userProgress: { current: 1, target: 5, status: "in_progress" },
-    },
-    {
-      id: "achievement-5",
-      title: "Red consolidada",
-      description: "Ten 20 amigos en tu red",
-      icon: "network",
-      userProgress: { current: 3, target: 20, status: "in_progress" },
-    },
-    {
-      id: "achievement-6",
-      title: "Racha de 30 días",
-      description: "Inicia sesión 30 días seguidos",
-      icon: "flame",
-      userProgress: { current: 0, target: 30, status: "locked" },
-    },
-  ],
-
-  JM: [
-    {
-      id: "achievement-1",
-      title: "Primera amistad",
-      description: "Agrega 1 amigo a tu red",
-      icon: "users",
-      userProgress: { current: 1, target: 1, status: "completed" },
-    },
-    {
-      id: "achievement-2",
-      title: "Red activa",
-      description: "Ten 10 amigos en tu red",
-      icon: "network",
-      userProgress: { current: 10, target: 10, status: "completed" },
-    },
-    {
-      id: "achievement-3",
-      title: "Racha de 10 días",
-      description: "Inicia sesión 10 días seguidos",
-      icon: "flame",
-      userProgress: { current: 8, target: 10, status: "in_progress" },
-    },
-    {
-      id: "achievement-4",
-      title: "Conexión creciente",
-      description: "Agrega 5 amigos a tu red",
-      icon: "users",
-      userProgress: { current: 5, target: 5, status: "completed" },
-    },
-    {
-      id: "achievement-5",
-      title: "Red consolidada",
-      description: "Ten 20 amigos en tu red",
-      icon: "network",
-      userProgress: { current: 18, target: 20, status: "in_progress" },
-    },
-    {
-      id: "achievement-6",
-      title: "Racha de 30 días",
-      description: "Inicia sesión 30 días seguidos",
-      icon: "flame",
-      userProgress: { current: 25, target: 30, status: "in_progress" },
-    },
-  ],
-
-  SR: [
-    {
-      id: "achievement-1",
-      title: "Primera amistad",
-      description: "Agrega 1 amigo a tu red",
-      icon: "users",
-      userProgress: { current: 1, target: 1, status: "completed" },
-    },
-    {
-      id: "achievement-2",
-      title: "Red activa",
-      description: "Ten 10 amigos en tu red",
-      icon: "network",
-      userProgress: { current: 6, target: 10, status: "in_progress" },
-    },
-    {
-      id: "achievement-3",
-      title: "Racha de 10 días",
-      description: "Inicia sesión 10 días seguidos",
-      icon: "flame",
-      userProgress: { current: 5, target: 10, status: "in_progress" },
-    },
-    {
-      id: "achievement-4",
-      title: "Conexión creciente",
-      description: "Agrega 5 amigos a tu red",
-      icon: "users",
-      userProgress: { current: 2, target: 5, status: "in_progress" },
-    },
-    {
-      id: "achievement-5",
-      title: "Red consolidada",
-      description: "Ten 20 amigos en tu red",
-      icon: "network",
-      userProgress: { current: 10, target: 20, status: "in_progress" },
-    },
-    {
-      id: "achievement-6",
-      title: "Racha de 30 días",
-      description: "Inicia sesión 30 días seguidos",
-      icon: "flame",
-      userProgress: { current: 12, target: 30, status: "in_progress" },
-    },
-  ],
-
-  MT: [
-    {
-      id: "achievement-1",
-      title: "Primera amistad",
-      description: "Agrega 1 amigo a tu red",
-      icon: "users",
-      userProgress: { current: 1, target: 1, status: "completed" },
-    },
-    {
-      id: "achievement-2",
-      title: "Red activa",
-      description: "Ten 10 amigos en tu red",
-      icon: "network",
-      userProgress: { current: 3, target: 10, status: "in_progress" },
-    },
-    {
-      id: "achievement-3",
-      title: "Racha de 10 días",
-      description: "Inicia sesión 10 días seguidos",
-      icon: "flame",
-      userProgress: { current: 0, target: 10, status: "locked" },
-    },
-    {
-      id: "achievement-4",
-      title: "Conexión creciente",
-      description: "Agrega 5 amigos a tu red",
-      icon: "users",
-      userProgress: { current: 0, target: 5, status: "locked" },
-    },
-    {
-      id: "achievement-5",
-      title: "Red consolidada",
-      description: "Ten 20 amigos en tu red",
-      icon: "network",
-      userProgress: { current: 2, target: 20, status: "in_progress" },
-    },
-    {
-      id: "achievement-6",
-      title: "Racha de 30 días",
-      description: "Inicia sesión 30 días seguidos",
-      icon: "flame",
-      userProgress: { current: 5, target: 30, status: "in_progress" },
-    },
-  ],
-
-  AC: [
-    {
-      id: "achievement-1",
-      title: "Primera amistad",
-      description: "Agrega 1 amigo a tu red",
-      icon: "users",
-      userProgress: { current: 1, target: 1, status: "completed" },
-    },
-    {
-      id: "achievement-2",
-      title: "Red activa",
-      description: "Ten 10 amigos en tu red",
-      icon: "network",
-      userProgress: { current: 8, target: 10, status: "in_progress" },
-    },
-    {
-      id: "achievement-3",
-      title: "Racha de 10 días",
-      description: "Inicia sesión 10 días seguidos",
-      icon: "flame",
-      userProgress: { current: 9, target: 10, status: "in_progress" },
-    },
-    {
-      id: "achievement-4",
-      title: "Conexión creciente",
-      description: "Agrega 5 amigos a tu red",
-      icon: "users",
-      userProgress: { current: 5, target: 5, status: "completed" },
-    },
-    {
-      id: "achievement-5",
-      title: "Red consolidada",
-      description: "Ten 20 amigos en tu red",
-      icon: "network",
-      userProgress: { current: 15, target: 20, status: "in_progress" },
-    },
-    {
-      id: "achievement-6",
-      title: "Racha de 30 días",
-      description: "Inicia sesión 30 días seguidos",
-      icon: "flame",
-      userProgress: { current: 20, target: 30, status: "in_progress" },
-    },
-  ],
+type GetSuggestionsParams = {
+  query?: string;
+  excludeUserIds?: string[];
+  limit?: number;
 };
 
-type TeamList = Record<string, Team[]>;
+function normalizeText(value: string) {
+  return value
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+}
 
-const TEAMS: TeamList = {
-  MF: [
-    {
-      id: "team-alpha",
-      name: "Equipo Alpha",
-      membersCount: 4,
-    },
-    {
-      id: "team-beta",
-      name: "Equipo Beta",
-      membersCount: 2,
-    },
-    {
-      id: "team-gamma",
-      name: "Equipo Gamma",
-      membersCount: 1,
-    },
-  ],
+function matchesUserSearch(user: User, query: string) {
+  const normalizedQuery = normalizeText(query);
 
-  CM: [
-    {
-      id: "team-delta",
-      name: "Equipo Delta",
-      membersCount: 3,
-    },
-    {
-      id: "team-epsilon",
-      name: "Equipo Épsilon",
-      membersCount: 5,
-    },
-  ],
+  if (!normalizedQuery) return true;
 
-  VR: [
-    {
-      id: "team-zeta",
-      name: "Equipo Zeta",
-      membersCount: 2,
-    },
-    {
-      id: "team-theta",
-      name: "Equipo Theta",
-      membersCount: 4,
-    },
-  ],
+  return [user.name, user.email, user.role]
+    .filter(Boolean)
+    .some((value) => normalizeText(value ?? "").includes(normalizedQuery));
+}
 
-  AG: [
-    {
-      id: "team-omega",
-      name: "Equipo Omega",
-      membersCount: 6,
-    },
-    {
-      id: "team-sigma",
-      name: "Equipo Sigma",
-      membersCount: 3,
-    },
-  ],
+type GetUserProfileParams = {
+  userId?: string;
 };
 
-export async function getUserProfileMock(): Promise<UserProfile> {
-  await wait(500);
+type GetCollectionByUserParams = {
+  userId?: string;
+};
 
-  return {
-    id: "user-1",
-    name: "María Fernanda López",
-    email: "maria@accenture.com",
-    role: "Desarrollador fullstack",
-    avatarUrl:
-      "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&h=200&fit=crop&crop=face",
-    stats: {
-      points: 2450,
-      streakDays: 12,
-      friendsCount: 48,
-      completedAchievements: 18,
-      inProgressAchievements: 5,
-      pendingAchievements: 12,
-    },
-  };
-}
-export async function getFriendsByUserId(userId: string) {
-  await wait(500);
-  return FRIENDS[userId];
-}
-export async function getAchievementsByUserId(userId: string) {
-  await wait(500);
-  return ACHIEVEMENTS[userId];
-}
-export async function getTeamsByUserId(userId: string) {
-  await wait(500);
-  return TEAMS[userId];
-}
+type GetTeamMembersParams = {
+  teamId: string;
+};
 
-export async function mockGetTeamMembers(teamId: string): Promise<User[]> {
-  await new Promise((resolve) => setTimeout(resolve, 600));
+type QueryValue = string | number | boolean | undefined | null | string[];
+type QueryParams = Record<string, QueryValue>;
 
-  const membersByTeamId: Record<string, User[]> = {
-    "team-alpha": [
-      {
-        id: "member-1",
-        name: "Valeria Ruiz",
-        role: "Líder",
-        avatarUrl: "/avatars/valeria.jpg",
-        email: "valeria.ruiz@accenture.com",
-      },
-      {
-        id: "member-2",
-        name: "Carlos Méndez",
-        role: "Miembro",
-        avatarUrl: "/avatars/carlos.jpg",
-        email: "carlos.mendez@accenture.com",
-      },
-      {
-        id: "member-3",
-        name: "Mariana López",
-        role: "Miembro",
-        email: "mariana.lopez@accenture.com",
-      },
-      {
-        id: "member-4",
-        name: "Diego Fernández",
-        role: "Miembro",
-        email: "diego.fernandez@accenture.com",
-      },
-    ],
-    "team-beta": [
-      {
-        id: "member-5",
-        name: "Ana Torres",
-        role: "Líder",
-        email: "ana.torres@accenture.com",
-      },
-      {
-        id: "member-6",
-        name: "Sofía Martínez",
-        role: "Miembro",
-        email: "sofia.martinez@accenture.com",
-      },
-    ],
-    "team-gamma": [
-      {
-        id: "member-7",
-        name: "Javier Torres",
-        role: "Miembro",
-        email: "javier.torres@accenture.com",
-      },
-    ],
-  };
+function buildQueryString(params: QueryParams = {}) {
+  const searchParams = new URLSearchParams();
 
-  return membersByTeamId[teamId] ?? [];
-}
+  Object.entries(params).forEach(([key, value]) => {
+    if (value === undefined || value === null) return;
 
-const mockSuggestions: FriendSuggestion[] = [
-  {
-    id: "u-1",
-    name: "Mariana López",
-    email: "mariana@empresa.com",
-    status: "available",
-    role: "backend developer",
-  },
-  {
-    id: "u-2",
-    name: "Diego Fernández",
-    email: "diego@empresa.com",
-    status: "available",
-    role: "frontend developer",
-  },
-  {
-    id: "u-3",
-    name: "Sofía Martínez",
-    email: "sofia@empresa.com",
-    status: "pending",
-    role: "QA Lead",
-  },
-];
+    if (Array.isArray(value)) {
+      value.forEach((item) => searchParams.append(key, item));
+      return;
+    }
 
-export const getSuggestions = async (
-  query: string,
-): Promise<FriendSuggestion[]> => {
-  await new Promise((resolve) => setTimeout(resolve, 400));
-
-  const normalizedQuery = query.trim().toLowerCase();
-
-  if (!normalizedQuery) return [];
-
-  return mockSuggestions.filter((person) => {
-    const name = person.name.toLowerCase();
-    const email = person.email?.toLowerCase() ?? "";
-    const role = person.role?.toLowerCase() ?? "";
-
-    return (
-      name.includes(normalizedQuery) ||
-      email.includes(normalizedQuery) ||
-      role.includes(normalizedQuery)
-    );
+    searchParams.set(key, String(value));
   });
-};
 
-export async function mockGetUsers() {
+  const queryString = searchParams.toString();
+
+  return queryString ? `?${queryString}` : "";
+}
+
+function buildGetUrl(endpoint: string, params: QueryParams = {}) {
+  return `${endpoint}${buildQueryString(params)}`;
+}
+
+function getSearchParams(url: string) {
+  const queryString = url.split("?")[1] ?? "";
+
+  return new URLSearchParams(queryString);
+}
+
+async function mockGet<T>(
+  url: string,
+  resolver: (params: URLSearchParams) => T,
+) {
   await wait(500);
-  return [
-    {
-      id: "CM",
-      name: "Carlos Méndez",
-      role: "Product Owner",
-      avatarUrl:
-        "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&h=200&fit=crop&crop=face",
-      email: "carlos.mendez@accenture.com",
-    },
-    {
-      id: "VR",
-      name: "Valeria Ruiz",
-      role: "Scrum Master",
-      avatarUrl:
-        "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&h=200&fit=crop&crop=face",
-      email: "valeria.ruiz@accenture.com",
-    },
-    {
-      id: "AG",
-      name: "Andrés Gómez",
-      role: "Developer",
-      avatarUrl:
-        "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=200&h=200&fit=crop&crop=face",
-      email: "andres.gomez@accenture.com",
-    },
-    {
-      id: "LP",
-      name: "Laura Pérez",
-      role: "Developer",
-      avatarUrl:
-        "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=200&h=200&fit=crop&crop=face",
-      email: "laura.perez@accenture.com",
-    },
-    {
-      id: "JM",
-      name: "Jorge Martínez",
-      role: "Developer",
-      avatarUrl:
-        "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=200&h=200&fit=crop&crop=face",
-      email: "jorge.martinez@accenture.com",
-    },
-    {
-      id: "SR",
-      name: "Sofía Ramírez",
-      role: "Developer",
-      avatarUrl:
-        "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=200&h=200&fit=crop&crop=face",
-      email: "sofia.ramirez@accenture.com",
-    },
-    {
-      id: "MT",
-      name: "Miguel Torres",
-      role: "Developer",
-      avatarUrl:
-        "https://images.unsplash.com/photo-1527980965255-d3b416303d12?w=200&h=200&fit=crop&crop=face",
-      email: "miguel.torres@accenture.com",
-    },
-    {
-      id: "AC",
-      name: "Ana Castillo",
-      role: "Developer",
-      avatarUrl:
-        "https://images.unsplash.com/photo-1544723795-3fb6469f5b39?w=200&h=200&fit=crop&crop=face",
-      email: "ana.castillo@accenture.com",
-    },
-  ];
+
+  return resolver(getSearchParams(url));
+}
+
+function getStringParam(params: URLSearchParams, key: string, fallback = "") {
+  return params.get(key)?.trim() || fallback;
+}
+
+function getNumberParam(params: URLSearchParams, key: string) {
+  const value = params.get(key);
+  if (!value) return undefined;
+
+  const parsedValue = Number(value);
+
+  return Number.isFinite(parsedValue) ? parsedValue : undefined;
+}
+
+function getArrayParam(params: URLSearchParams, key: string) {
+  return params.getAll(key).filter(Boolean);
+}
+
+export async function getUserProfile(
+  params: GetUserProfileParams = {},
+): Promise<UserProfile | null> {
+  const url = buildGetUrl("/profile", {
+    userId: params.userId,
+  });
+
+  return mockGet(url, (searchParams) => {
+    const userId = getStringParam(searchParams, "userId");
+    const user = USERS_BY_ID.get(userId);
+
+    if (!user) return null;
+
+    const achievements = ACHIEVEMENTS[user.id] ?? [];
+
+    return {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      avatarUrl: user.avatarUrl,
+      stats: STATS_BY_USER_ID[user.id] ?? {
+        points: 0,
+        streakDays: 0,
+        friendsCount: FRIENDS[user.id]?.length ?? 0,
+        completedAchievements: achievements.filter(
+          (achievement) => achievement.userProgress.status === "completed",
+        ).length,
+        inProgressAchievements: achievements.filter(
+          (achievement) => achievement.userProgress.status === "in_progress",
+        ).length,
+        pendingAchievements: achievements.filter(
+          (achievement) => achievement.userProgress.status === "locked",
+        ).length,
+      },
+    };
+  });
+}
+
+export async function getFriends(
+  params: GetCollectionByUserParams = {},
+): Promise<Friend[]> {
+  const url = buildGetUrl("/friends", {
+    userId: params.userId,
+  });
+
+  return mockGet(url, (searchParams) => {
+    const userId = getStringParam(searchParams, "userId");
+
+    return FRIENDS[userId] ?? [];
+  });
+}
+
+export async function getAchievements(
+  params: GetCollectionByUserParams = {},
+): Promise<Achievement[]> {
+  const url = buildGetUrl("/achievements", {
+    userId: params.userId,
+  });
+
+  return mockGet(url, (searchParams) => {
+    const userId = getStringParam(searchParams, "userId");
+
+    return ACHIEVEMENTS[userId] ?? [];
+  });
+}
+
+export async function getTeams(
+  params: GetCollectionByUserParams = {},
+): Promise<Team[]> {
+  const url = buildGetUrl("/teams", {
+    userId: params.userId,
+  });
+
+  return mockGet(url, (searchParams) => {
+    const userId = getStringParam(searchParams, "userId");
+
+    return TEAMS[userId] ?? [];
+  });
+}
+
+export async function getTeamMembers(
+  params: GetTeamMembersParams,
+): Promise<User[]> {
+  const url = buildGetUrl("/teams/members", {
+    teamId: params.teamId,
+  });
+
+  return mockGet(url, (searchParams) => {
+    const teamId = getStringParam(searchParams, "teamId");
+    const memberIds = TEAM_MEMBER_IDS_BY_TEAM_ID[teamId] ?? [];
+
+    return memberIds
+      .map((userId) => USERS_BY_ID.get(userId))
+      .filter((user): user is User => Boolean(user))
+      .map((user) => ({
+        ...user,
+        role: TEAM_MEMBER_ROLE_BY_USER_ID[user.id] ?? "Miembro",
+      }));
+  });
+}
+
+export async function getUsers(params: GetUsersParams = {}): Promise<User[]> {
+  const url = buildGetUrl("/users", {
+    query: params.query,
+    ids: params.ids,
+    excludeUserIds: params.excludeUserIds,
+    limit: params.limit,
+  });
+
+  return mockGet(url, (searchParams) => {
+    const query = getStringParam(searchParams, "query");
+    const ids = getArrayParam(searchParams, "ids");
+    const excludeUserIds = getArrayParam(searchParams, "excludeUserIds");
+    const limit = getNumberParam(searchParams, "limit");
+
+    const idsSet = ids.length > 0 ? new Set(ids) : null;
+    const excludedIdsSet = new Set(excludeUserIds);
+
+    const users = USERS.filter((user) => {
+      if (idsSet && !idsSet.has(user.id)) return false;
+      if (excludedIdsSet.has(user.id)) return false;
+
+      return matchesUserSearch(user, query);
+    });
+
+    return typeof limit === "number" ? users.slice(0, limit) : users;
+  });
+}
+
+export async function getSuggestions(
+  params: GetSuggestionsParams = {},
+): Promise<FriendSuggestion[]> {
+  const query = params.query?.trim() ?? "";
+
+  if (!query) return [];
+
+  const users = await getUsers({
+    query,
+    excludeUserIds: params.excludeUserIds,
+    limit: params.limit,
+  });
+
+  return users.map((user) => ({
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    role: user.role,
+    status: SUGGESTION_STATUS_BY_USER_ID[user.id] ?? "available",
+  }));
 }

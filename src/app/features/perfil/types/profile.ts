@@ -48,7 +48,7 @@ export type UserProfile = {
   name: string;
   email: string;
   role: string;
-  avatarUrl: string;
+  avatarUrl?: string;
   stats: {
     points: number;
     streakDays: number;
