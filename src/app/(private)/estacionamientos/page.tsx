@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
-import PageTransition from "@/app/components/PageTransition/PageTransition";
+import PageTransition from "@/app/shared/components/PageTransition/PageTransition";
 
 import { Card } from "@/app/features/reservaciones/components/Card";
 import { ProposedSchedulesCard } from "@/app/features/reservaciones/components/ProposedSchedulesCard";

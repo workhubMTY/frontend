@@ -1,4 +1,4 @@
-import { authFetch } from "@/lib/api";
+import { authFetch } from "@/app/shared/lib/api";
 import type { User, UserProfile, CreateUserDto } from "./types";
 
 export const usersApi = {
@@ -8,7 +8,8 @@ export const usersApi = {
 
   getMeFriendships: () => authFetch<User[]>("/users/me/friendships"),
 
-  getFriendships: (eId: string) => authFetch<User[]>(`/users/${eId}/friendships`),
+  getFriendships: (eId: string) =>
+    authFetch<User[]>(`/users/${eId}/friendships`),
 
   searchByName: (name: string) => authFetch<User[]>(`/users/name/${name}`),
 

@@ -1,4 +1,4 @@
-import { authFetch } from "@/lib/api";
+import { authFetch } from "@/app/shared/lib/api";
 import type {
   OfficeSlot,
   ReservationDetail,
@@ -38,7 +38,9 @@ export const officeSlotsApi = {
     params.append("end_time", query.end_time);
     if (query.user_id) params.append("user_id", query.user_id);
 
-    return authFetch<SlotAvailabilityResult[]>(`${RESERVABLES}/available?${params.toString()}`);
+    return authFetch<SlotAvailabilityResult[]>(
+      `${RESERVABLES}/available?${params.toString()}`,
+    );
   },
 
   createSlot: (payload: CreateOfficeSlotDto) =>
@@ -66,7 +68,8 @@ export const officeSlotsApi = {
 
   getWorkGroups: () => authFetch<WorkGroup[]>(`${WORK_GROUPS}`),
 
-  getReservationDetail: (id: number) => authFetch<ReservationDetail>(`${RESERVATIONS}/${id}`),
+  getReservationDetail: (id: number) =>
+    authFetch<ReservationDetail>(`${RESERVATIONS}/${id}`),
 
   createReservationBatch: (payload: CreateReservationBatchDto) =>
     authFetch<ReservationDetail[]>(`${RESERVATIONS}/`, {
@@ -75,25 +78,33 @@ export const officeSlotsApi = {
     }),
 
   updateParticipantStatus: (id: number, payload: UpdateParticipantStatusDto) =>
-    authFetch<ReservationParticipant>(`${RESERVATIONS}/participants/${id}/status`, {
-      method: "PATCH",
-      body: JSON.stringify(payload),
-    }),
+    authFetch<ReservationParticipant>(
+      `${RESERVATIONS}/participants/${id}/status`,
+      {
+        method: "PATCH",
+        body: JSON.stringify(payload),
+      },
+    ),
 
-  getMyReservations: () => authFetch<UserReservationSummary>(`${RESERVATIONS}/me`),
+  getMyReservations: () =>
+    authFetch<UserReservationSummary>(`${RESERVATIONS}/me`),
 
-  getFriendsReservations: () => authFetch<FriendReservationsSummary>(`${RESERVATIONS}/me/friends`),
+  getFriendsReservations: () =>
+    authFetch<FriendReservationsSummary>(`${RESERVATIONS}/me/friends`),
 
   getEvents: (query?: GetEventsQuery) => {
     const params = new URLSearchParams();
 
-    if (query?.reservable_id) params.append("reservable_id", query.reservable_id.toString());
+    if (query?.reservable_id)
+      params.append("reservable_id", query.reservable_id.toString());
     if (query?.floor_id) params.append("floor_id", query.floor_id.toString());
     if (query?.start_time) params.append("start_time", query.start_time);
     if (query?.end_time) params.append("end_time", query.end_time);
 
     const search = params.toString();
-    return authFetch<ReservationEvent[]>(`${EVENTS}${search ? `?${search}` : ""}`);
+    return authFetch<ReservationEvent[]>(
+      `${EVENTS}${search ? `?${search}` : ""}`,
+    );
   },
 
   createEvent: (payload: CreateEventDto) =>

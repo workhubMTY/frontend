@@ -1,4 +1,4 @@
-import { authFetch } from "@/lib/api";
+import { authFetch } from "@/app/shared/lib/api";
 import type {
   Friendship,
   FriendRequest,

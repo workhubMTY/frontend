@@ -1,4 +1,4 @@
-import PageTransition from "@/app/components/PageTransition/PageTransition"
+import PageTransition from "@/app/shared/components/PageTransition/PageTransition";
 
 export default function Tablero() {
   return (

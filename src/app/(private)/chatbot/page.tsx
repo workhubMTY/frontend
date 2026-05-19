@@ -2,10 +2,17 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Search, CalendarPlus, Users, CalendarRange, Bot, Send } from "lucide-react";
+import {
+  Search,
+  CalendarPlus,
+  Users,
+  CalendarRange,
+  Bot,
+  Send,
+} from "lucide-react";
 import AccentureLogo from "../../../../public/accenture_logo_purple1.png";
 import Image from "next/image";
-import DownTransition from "@/app/components/PageTransition/DownTransition";
+import DownTransition from "@/app/shared/components/PageTransition/DownTransition";
 
 interface Message {
   id: string;
@@ -28,19 +35,39 @@ const DEFAULT_RESPONSE =
   "Entendido. ¿Hay algo más en lo que pueda ayudarte? Puedo buscar salas, reservar espacios, informarte quién está en la oficina o gestionar una agenda múltiple.";
 
 const QUICK_ACTIONS = [
-  { id: "search",   icon: Search,       label: "Busca salas\ndisponibles",       prompt: "Quiero buscar salas disponibles"    },
-  { id: "reserve",  icon: CalendarPlus, label: "Reserva un\nespacio",            prompt: "Quiero reservar un espacio"         },
-  { id: "friends",  icon: Users,        label: "¿Qué amigos van\nhoy a la oficina?", prompt: "¿Qué amigos van hoy a la oficina?" },
-  { id: "multiple", icon: CalendarRange,label: "Realiza una\nagenda múltiple",   prompt: "Quiero realizar una agenda múltiple"},
+  {
+    id: "search",
+    icon: Search,
+    label: "Busca salas\ndisponibles",
+    prompt: "Quiero buscar salas disponibles",
+  },
+  {
+    id: "reserve",
+    icon: CalendarPlus,
+    label: "Reserva un\nespacio",
+    prompt: "Quiero reservar un espacio",
+  },
+  {
+    id: "friends",
+    icon: Users,
+    label: "¿Qué amigos van\nhoy a la oficina?",
+    prompt: "¿Qué amigos van hoy a la oficina?",
+  },
+  {
+    id: "multiple",
+    icon: CalendarRange,
+    label: "Realiza una\nagenda múltiple",
+    prompt: "Quiero realizar una agenda múltiple",
+  },
 ];
 
 export default function ChatbotPage() {
   const router = useRouter();
   const [messages, setMessages] = useState<Message[]>([]);
-  const [input, setInput]       = useState("");
+  const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const inputRef       = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const hasMessages = messages.length > 0;
 
@@ -51,15 +78,23 @@ export default function ChatbotPage() {
   const sendMessage = (text: string) => {
     if (!text.trim() || isTyping) return;
 
-    const userMsg: Message = { id: Date.now().toString(), role: "user", content: text.trim() };
+    const userMsg: Message = {
+      id: Date.now().toString(),
+      role: "user",
+      content: text.trim(),
+    };
 
     if (messages.length === 0) {
       setMessages([
-        { id: "greeting", role: "assistant", content: "Hola! ¿Cómo puedo asistirle hoy?" },
+        {
+          id: "greeting",
+          role: "assistant",
+          content: "Hola! ¿Cómo puedo asistirle hoy?",
+        },
         userMsg,
       ]);
     } else {
-      setMessages(prev => [...prev, userMsg]);
+      setMessages((prev) => [...prev, userMsg]);
     }
 
     setInput("");
@@ -68,7 +103,10 @@ export default function ChatbotPage() {
 
     setTimeout(() => {
       const reply = PREDEFINED_RESPONSES[text.trim()] ?? DEFAULT_RESPONSE;
-      setMessages(prev => [...prev, { id: (Date.now() + 1).toString(), role: "assistant", content: reply }]);
+      setMessages((prev) => [
+        ...prev,
+        { id: (Date.now() + 1).toString(), role: "assistant", content: reply },
+      ]);
       setIsTyping(false);
       inputRef.current?.focus();
     }, 800);
@@ -82,13 +120,19 @@ export default function ChatbotPage() {
   return (
     <DownTransition>
       <div className="w-screen h-screen flex flex-col bg-[#e8e8e8] overflow-hidden">
-
         {/* Header */}
         <div className="flex items-center gap-3 px-8 py-5">
           <a href="/home">
-            <Image src={AccentureLogo} alt="accenture logo" width={40} height={40} />
+            <Image
+              src={AccentureLogo}
+              alt="accenture logo"
+              width={40}
+              height={40}
+            />
           </a>
-          <span className="text-2xl font-semibold text-gray-800 tracking-wide">Chatbot</span>
+          <span className="text-2xl font-semibold text-gray-800 tracking-wide">
+            Chatbot
+          </span>
         </div>
 
         {/* Messages area */}
@@ -105,7 +149,11 @@ export default function ChatbotPage() {
                     onClick={() => sendMessage(prompt)}
                     className="flex flex-col items-center justify-center gap-3 bg-[#d0d0d0] hover:bg-[#c8c8c8] active:scale-95 rounded-2xl p-7 min-h-[140px] transition-all duration-150 text-center"
                   >
-                    <Icon size={34} className="text-gray-700" strokeWidth={1.3} />
+                    <Icon
+                      size={34}
+                      className="text-gray-700"
+                      strokeWidth={1.3}
+                    />
                     <span className="text-sm text-gray-700 leading-snug font-medium whitespace-pre-line">
                       {label}
                     </span>
@@ -115,7 +163,7 @@ export default function ChatbotPage() {
             </div>
           ) : (
             <div className="flex-1 flex flex-col px-12 py-6 gap-4 max-w-5xl mx-auto w-full">
-              {messages.map(msg => (
+              {messages.map((msg) => (
                 <div
                   key={msg.id}
                   className={`flex items-end gap-3 ${msg.role === "user" ? "justify-end" : "justify-start"}`}
@@ -127,7 +175,9 @@ export default function ChatbotPage() {
                   )}
                   <div className="flex flex-col gap-1 max-w-[55%]">
                     {msg.role === "assistant" && (
-                      <span className="text-xs text-gray-500 ml-1 font-medium">Asistente virtual</span>
+                      <span className="text-xs text-gray-500 ml-1 font-medium">
+                        Asistente virtual
+                      </span>
                     )}
                     <div
                       className={`rounded-2xl px-5 py-3 text-sm leading-relaxed ${
@@ -148,7 +198,9 @@ export default function ChatbotPage() {
                     <Bot size={20} className="text-white" />
                   </div>
                   <div className="flex flex-col gap-1">
-                    <span className="text-xs text-gray-500 ml-1 font-medium">Asistente virtual</span>
+                    <span className="text-xs text-gray-500 ml-1 font-medium">
+                      Asistente virtual
+                    </span>
                     <div className="bg-white rounded-2xl rounded-bl-sm px-5 py-3 shadow-sm flex gap-2 items-center">
                       <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:0ms]" />
                       <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:150ms]" />
@@ -181,14 +233,22 @@ export default function ChatbotPage() {
             </button>
             <form onSubmit={handleSubmit} className="flex-1 ml-3 mb-1">
               <div className="flex items-center bg-[#d4d4d4] rounded-full px-4 py-0.5">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6b7280" strokeWidth="1.8" className="flex-shrink-0">
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="#6b7280"
+                  strokeWidth="1.8"
+                  className="flex-shrink-0"
+                >
                   <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
                 </svg>
                 <input
                   ref={inputRef}
                   type="text"
                   value={input}
-                  onChange={e => setInput(e.target.value)}
+                  onChange={(e) => setInput(e.target.value)}
                   placeholder="Solicita al chatbot..."
                   className="flex-1 bg-transparent px-3 py-3 text-sm text-gray-600 placeholder-gray-500 outline-none"
                   disabled={isTyping}
@@ -208,7 +268,6 @@ export default function ChatbotPage() {
           </div>
           <div className="w-full h-6 bg-[#d4d4d4]" />
         </div>
-
       </div>
     </DownTransition>
   );

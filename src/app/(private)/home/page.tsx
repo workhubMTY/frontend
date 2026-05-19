@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { CalendarDays, Users, MailOpen } from "lucide-react";
 
-import PageTransition from "@/app/components/PageTransition/PageTransition";
+import PageTransition from "@/app/shared/components/PageTransition/PageTransition";
 
 import { useFriends } from "@/app/modules/friendships/hooks";
 import {

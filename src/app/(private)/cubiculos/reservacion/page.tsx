@@ -10,7 +10,7 @@ import { EventsAndConflictsCard } from "@/app/features/reservaciones/components/
 import { ProposedSchedulesCard } from "@/app/features/reservaciones/components/ProposedSchedulesCard";
 import { ReservationFooter } from "@/app/features/reservaciones/components/ReservationFooter";
 import { ReservationTimelineCard } from "@/app/features/reservaciones/components/ReservationTimelineCard";
-import PageTransition from "@/app/components/PageTransition/PageTransition";
+import PageTransition from "@/app/shared/components/PageTransition/PageTransition";
 import type { CalendarSelectionAction } from "@/app/features/reservaciones/types/reservaciones";
 
 import {
@@ -77,10 +77,7 @@ export default function ReservationSchedulerPage() {
   >([]);
   const [editedSavedDateIds, setEditedSavedDateIds] = useState<string[]>([]);
 
-  const apiJson = useMemo(
-    () => createApiJson(calendarCells),
-    [calendarCells],
-  );
+  const apiJson = useMemo(() => createApiJson(calendarCells), [calendarCells]);
 
   const modifiedDateIds = useMemo(
     () => uniqueSortedIds(Object.keys(dayBlocks)),
@@ -296,8 +293,8 @@ export default function ReservationSchedulerPage() {
   const visibleEvents = showAllEvents
     ? activeDayExternalEvents
     : activeDayExternalEvents
-      .filter((event) => event.status !== "normal")
-      .slice(0, 2);
+        .filter((event) => event.status !== "normal")
+        .slice(0, 2);
 
   const selectedSavedBlocksHaveSpaceConflict = selectedDateIds.some(
     (dateId) => {
@@ -428,10 +425,10 @@ export default function ReservationSchedulerPage() {
         [dateId]: blocksForDate.map((block) =>
           block.id === blockId
             ? {
-              ...block,
-              [field]: value,
-              conflict: undefined,
-            }
+                ...block,
+                [field]: value,
+                conflict: undefined,
+              }
             : block,
         ),
       };
@@ -533,7 +530,9 @@ export default function ReservationSchedulerPage() {
     const selectedSpaceRaw = window.sessionStorage.getItem(
       "cubiculos:selectedSpace",
     );
-    const selectedSpace = selectedSpaceRaw ? JSON.parse(selectedSpaceRaw) : null;
+    const selectedSpace = selectedSpaceRaw
+      ? JSON.parse(selectedSpaceRaw)
+      : null;
     const reservableId = selectedSpace?.id;
     const schedules: { start_time: string; end_time: string }[] = [];
     Object.entries(dayBlocks).forEach(([dateId, blocks]) => {

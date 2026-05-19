@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Search, Calendar, Clock, Users, LogOut, X, Check } from "lucide-react";
-import PageTransition from "@/app/components/PageTransition/PageTransition";
+import PageTransition from "@/app/shared/components/PageTransition/PageTransition";
 import { useRouter } from "next/navigation";
 import { officeSlotsApi } from "@/app/modules/office-slots/api";
 
@@ -33,7 +33,12 @@ interface Persona {
   tipo: "colaborador" | "invitado";
 }
 
-const teamColors = ["bg-violet-100", "bg-pink-100", "bg-sky-100", "bg-green-100"];
+const teamColors = [
+  "bg-violet-100",
+  "bg-pink-100",
+  "bg-sky-100",
+  "bg-green-100",
+];
 
 const Avatar = ({
   nombre,
@@ -104,20 +109,30 @@ export default function CubiculoConfirmarPage() {
 
   useEffect(() => {
     const load = async () => {
-      const draftRaw = window.sessionStorage.getItem("cubiculos:reservationDraft");
+      const draftRaw = window.sessionStorage.getItem(
+        "cubiculos:reservationDraft",
+      );
       if (draftRaw) {
         const draft = JSON.parse(draftRaw);
         setReservationDraft(draft);
         setSesiones(
-          (draft.schedules ?? []).map((schedule: { start_time: string; end_time: string }) => {
-            const start = new Date(schedule.start_time);
-            const end = new Date(schedule.end_time);
-            return {
-              fecha: `${String(start.getMonth() + 1).padStart(2, "0")}/${String(start.getDate()).padStart(2, "0")}`,
-              inicio: start.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" }),
-              fin: end.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" }),
-            };
-          }),
+          (draft.schedules ?? []).map(
+            (schedule: { start_time: string; end_time: string }) => {
+              const start = new Date(schedule.start_time);
+              const end = new Date(schedule.end_time);
+              return {
+                fecha: `${String(start.getMonth() + 1).padStart(2, "0")}/${String(start.getDate()).padStart(2, "0")}`,
+                inicio: start.toLocaleTimeString("en-US", {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                }),
+                fin: end.toLocaleTimeString("en-US", {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                }),
+              };
+            },
+          ),
         );
       }
 
@@ -167,7 +182,8 @@ export default function CubiculoConfirmarPage() {
     setInvitados((prev) => prev.filter((i) => i.id !== id));
 
   const agregarPersona = (persona: Persona) => {
-    if (invitados.find((i) => i.id === persona.id || i.email === persona.email)) return;
+    if (invitados.find((i) => i.id === persona.id || i.email === persona.email))
+      return;
     setInvitados((prev) => [
       ...prev,
       {
@@ -205,7 +221,10 @@ export default function CubiculoConfirmarPage() {
 
     if (reservationDraft?.reservableId && reservationDraft.schedules?.length) {
       const userIds = invitados
-        .filter((item) => !item.id.startsWith("guest-") && !item.id.startsWith("equipo-"))
+        .filter(
+          (item) =>
+            !item.id.startsWith("guest-") && !item.id.startsWith("equipo-"),
+        )
         .map((item) => item.id);
 
       const guestIds = invitados
@@ -245,7 +264,9 @@ export default function CubiculoConfirmarPage() {
             }}
           >
             <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-6 px-10 py-10 flex flex-col items-center gap-6 animate-in fade-in zoom-in-95 duration-200">
-              <h2 className="text-2xl font-bold text-gray-900 text-center">Reserva finalizada</h2>
+              <h2 className="text-2xl font-bold text-gray-900 text-center">
+                Reserva finalizada
+              </h2>
               <p className="text-gray-500 text-center text-base leading-relaxed">
                 Se ha enviado correo de invitacion a los contactos seleccionados
               </p>
@@ -260,7 +281,9 @@ export default function CubiculoConfirmarPage() {
         )}
         <div className="flex-1 px-20 py-8  flex flex-col">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-3xl font-bold text-gray-900 tracking-tight m-0">Reserva completa</h3>
+            <h3 className="text-3xl font-bold text-gray-900 tracking-tight m-0">
+              Reserva completa
+            </h3>
           </div>
 
           <div className="flex gap-6 flex-1 min-h-0">
@@ -282,22 +305,40 @@ export default function CubiculoConfirmarPage() {
               </div>
               <div className="flex flex-col gap-5">
                 <div className="grid grid-cols-3 gap-1.5 px-2 mb-1">
-                  <div className="flex justify-center"><Calendar size={15} className="text-gray-400" /></div>
-                  <div className="flex justify-center"><Clock size={15} className="text-gray-400" /></div>
-                  <div className="flex justify-center"><LogOut size={15} className="text-gray-400" /></div>
+                  <div className="flex justify-center">
+                    <Calendar size={15} className="text-gray-400" />
+                  </div>
+                  <div className="flex justify-center">
+                    <Clock size={15} className="text-gray-400" />
+                  </div>
+                  <div className="flex justify-center">
+                    <LogOut size={15} className="text-gray-400" />
+                  </div>
                 </div>
 
                 {sesiones.map((s, i) => (
-                  <div key={i} className="grid grid-cols-3 gap-1.5 bg-gray-50 rounded-xl px-2 py-2.5 border border-gray-100">
-                    <span className="text-xs font-semibold text-gray-700 text-center">{s.fecha}</span>
-                    <span className="text-xs font-semibold text-gray-700 text-center">{s.inicio}</span>
-                    <span className="text-xs font-semibold text-gray-700 text-center">{s.fin}</span>
+                  <div
+                    key={i}
+                    className="grid grid-cols-3 gap-1.5 bg-gray-50 rounded-xl px-2 py-2.5 border border-gray-100"
+                  >
+                    <span className="text-xs font-semibold text-gray-700 text-center">
+                      {s.fecha}
+                    </span>
+                    <span className="text-xs font-semibold text-gray-700 text-center">
+                      {s.inicio}
+                    </span>
+                    <span className="text-xs font-semibold text-gray-700 text-center">
+                      {s.fin}
+                    </span>
                   </div>
                 ))}
               </div>
             </div>
             <div className="flex flex-col flex-1 gap-4 min-h-0">
-              <div ref={searchRef} className="bg-white rounded-2xl border border-gray-200 px-6 py-5 shadow-sm shrink-0 relative">
+              <div
+                ref={searchRef}
+                className="bg-white rounded-2xl border border-gray-200 px-6 py-5 shadow-sm shrink-0 relative"
+              >
                 <div className="relative">
                   <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none flex">
                     <Search size={17} />
@@ -315,7 +356,9 @@ export default function CubiculoConfirmarPage() {
                   {dropdownAbierto && (
                     <div className="absolute top-full left-0 right-0 bg-white border border-violet-400 border-t-0 rounded-b-xl shadow-xl z-50">
                       <div className="px-4 pt-2.5 pb-1">
-                        <span className="text-[11px] font-bold text-gray-400 tracking-widest uppercase">Recientes</span>
+                        <span className="text-[11px] font-bold text-gray-400 tracking-widest uppercase">
+                          Recientes
+                        </span>
                       </div>
                       {personasFiltradas.map((p) => (
                         <button
@@ -323,15 +366,25 @@ export default function CubiculoConfirmarPage() {
                           onClick={() => agregarPersona(p)}
                           className="flex items-center gap-3 w-full px-4 py-2.5 bg-transparent border-none cursor-pointer text-left font-[inherit] hover:bg-gray-50 transition-colors"
                         >
-                          <Avatar nombre={p.nombre} variant={p.tipo} size="sm" />
+                          <Avatar
+                            nombre={p.nombre}
+                            variant={p.tipo}
+                            size="sm"
+                          />
                           <div>
-                            <div className="text-sm font-semibold text-gray-900">{p.nombre}</div>
-                            <div className="text-xs text-gray-400">{p.email}</div>
+                            <div className="text-sm font-semibold text-gray-900">
+                              {p.nombre}
+                            </div>
+                            <div className="text-xs text-gray-400">
+                              {p.email}
+                            </div>
                           </div>
                         </button>
                       ))}
                       <div className="px-4 pt-2.5 pb-1 border-t border-gray-100 mt-1">
-                        <span className="text-[11px] font-bold text-gray-400 tracking-widest uppercase">Equipos</span>
+                        <span className="text-[11px] font-bold text-gray-400 tracking-widest uppercase">
+                          Equipos
+                        </span>
                       </div>
                       <div className="flex flex-wrap gap-2 px-4 pb-3.5 pt-2">
                         {equiposFiltrados.map((eq) => (
@@ -342,7 +395,9 @@ export default function CubiculoConfirmarPage() {
                           >
                             <Users size={13} />
                             {eq.nombre}
-                            <span className="text-[11px] text-gray-500">({eq.miembros})</span>
+                            <span className="text-[11px] text-gray-500">
+                              ({eq.miembros})
+                            </span>
                           </button>
                         ))}
                       </div>
@@ -353,14 +408,23 @@ export default function CubiculoConfirmarPage() {
               <div className="bg-white rounded-2xl border border-gray-200 shadow-sm flex-1 min-h-0 flex flex-col">
                 <div className="flex-1 overflow-y-auto px-6 pt-5 pb-3 flex flex-col gap-2.5">
                   {invitados.map((inv) => (
-                    <div key={inv.id} className="flex items-center gap-3.5 bg-gray-50 rounded-xl px-3.5 py-3 border border-gray-100 shrink-0 overflow-auto">
+                    <div
+                      key={inv.id}
+                      className="flex items-center gap-3.5 bg-gray-50 rounded-xl px-3.5 py-3 border border-gray-100 shrink-0 overflow-auto"
+                    >
                       <Avatar nombre={inv.nombre} variant={inv.tipo} />
                       <div className="flex-1 min-w-0">
-                        <div className="font-semibold text-[15px] text-gray-900 mb-0.5">{inv.nombre}</div>
-                        <div className="text-sm text-gray-500 overflow-hidden text-ellipsis whitespace-nowrap">{inv.email}</div>
+                        <div className="font-semibold text-[15px] text-gray-900 mb-0.5">
+                          {inv.nombre}
+                        </div>
+                        <div className="text-sm text-gray-500 overflow-hidden text-ellipsis whitespace-nowrap">
+                          {inv.email}
+                        </div>
                       </div>
                       {inv.tipo === "invitado" && (
-                        <span className="text-[11px] font-semibold text-sky-700 bg-sky-100 rounded-md px-2 py-0.5 shrink-0">Invitado</span>
+                        <span className="text-[11px] font-semibold text-sky-700 bg-sky-100 rounded-md px-2 py-0.5 shrink-0">
+                          Invitado
+                        </span>
                       )}
                       <button
                         onClick={() => eliminarInvitado(inv.id)}
@@ -372,12 +436,16 @@ export default function CubiculoConfirmarPage() {
                     </div>
                   ))}
                   {invitados.length === 0 && (
-                    <p className="text-sm text-gray-400 text-center py-8">No hay invitados agregados aun.</p>
+                    <p className="text-sm text-gray-400 text-center py-8">
+                      No hay invitados agregados aun.
+                    </p>
                   )}
                 </div>
 
                 <div className="flex items-center gap-3 border-t border-gray-100 px-6 py-4 shrink-0">
-                  <span className="text-sm text-gray-500">Crear equipo a partir de la seleccion</span>
+                  <span className="text-sm text-gray-500">
+                    Crear equipo a partir de la seleccion
+                  </span>
                   <button
                     onClick={() => setCrearEquipo(!crearEquipo)}
                     className={`w-11 h-11 rounded-xl border-none cursor-pointer flex items-center justify-center transition-colors shrink-0 ${
@@ -403,7 +471,11 @@ export default function CubiculoConfirmarPage() {
                             : "border-gray-200 focus:border-violet-400"
                         }`}
                       />
-                      {mensajeError && <span className="text-xs text-red-500 pl-1">{mensajeError}</span>}
+                      {mensajeError && (
+                        <span className="text-xs text-red-500 pl-1">
+                          {mensajeError}
+                        </span>
+                      )}
                     </div>
                   )}
                 </div>

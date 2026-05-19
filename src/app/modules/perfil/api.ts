@@ -1,13 +1,10 @@
-import { authFetch } from "@/lib/api";
+import { authFetch } from "@/app/shared/lib/api";
 import type { Achievement, Friend, UserProfile } from "./perfil.types";
 
 export const perfilApi = {
-  getProfile: () =>
-    authFetch<UserProfile>("/users/profile"),
+  getProfile: () => authFetch<UserProfile>("/users/profile"),
 
-  getFriends: () =>
-    authFetch<Friend[]>("/friendships/me"),
+  getFriends: () => authFetch<Friend[]>("/friendships/me"),
 
-  getAchievements: () =>
-    authFetch<Achievement[]>("/achievements/me"),
+  getAchievements: () => authFetch<Achievement[]>("/achievements/me"),
 };
