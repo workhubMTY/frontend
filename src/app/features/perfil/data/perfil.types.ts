@@ -20,12 +20,15 @@ export type UserProfile = {
 
 export type AchievementTone = "purple" | "red" | "blue" | "green" | "yellow";
 
-export type Achievement = {
-  id: number;
-  title: string;
-  description: string;
+
+export type AchievementFromApi = {
+  name: string;
   progress: number;
-  total: number;
+  goal: number;
+  completed: 0 | 1;
+}
+
+export type Achievement = AchievementFromApi & {
   icon: React.ElementType;
   tone: AchievementTone;
-};
+}
