@@ -9,13 +9,13 @@ import {
   AchievementUserData,
 } from "@/app/features/perfil/types/profile";
 import {
-  getUserProfileMock,
-  getFriendsByUserId,
-  getAchievementsByUserId,
-  getTeamsByUserId,
-  mockGetTeamMembers,
-  mockGetSuggestions,
-} from "@/app/features/perfil/data/mockProfileApi";
+  getUserProfile,
+  getFriends,
+  getAchievements,
+  getTeams,
+  getTeamMembers,
+  getSuggestions,
+} from "@/app/features/perfil/data/mock/mockProfileApi";
 import { ProfileHeaderCard } from "@/app/features/perfil/components/cards/ProfileHeaderCard";
 import { ProgressSummaryCard } from "@/app/features/perfil/components/cards/ProgressSumaryCard";
 import { FriendsCard } from "@/app/features/perfil/components/cards/FriendsCard";
@@ -24,28 +24,15 @@ import { AchievementComparisonCard } from "@/app/features/perfil/components/card
 import { FriendsDrawer } from "@/app/features/perfil/components/drawers/FriendsDrawer";
 import { TeamsDrawer } from "@/app/features/perfil/components/drawers/TeamsDrawer";
 import { AchievementComparisonDrawer } from "@/app/features/perfil/components/drawers/AchievementComparisonDrawer";
-
-import {
-  useProfile,
-  useFriends,
-  useAchievements,
-} from "@/app/modules/perfil/hooks";
+import { useAuth } from "@/app/shared/auth/useAuth";
 
 export default function UserProfilePage() {
-  const USER_ID = "MF"; // Esto deberiamos poder sacarlo de un context o algo
+  const { user } = useAuth();
+  const userId = user?.eId ?? null;
 
-  const {
-  data: profile,
-  isLoading: profileLoading,
-  } = useProfile();
-
-const {
-  data: friends = [],
-  isLoading: friendsLoading,
-  } = useFriends();
-
- const { data: achievements = [] } = useAchievements(USER_ID);
-
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [friends, setFriends] = useState<Friend[] | null>(null);
+  const [achievements, setAchievements] = useState<Achievement[] | null>(null);
   const [teams, setTeams] = useState<Team[] | null>(null);
 
   const [selectedFriendId, setSelectedFriendId] = useState<string | null>(null);
@@ -56,9 +43,7 @@ const {
   const [isTeamDrawerOpen, setIsTeamDrawerOpen] = useState(false);
   const [isAchievementDrawerOpen, setIsAchievementDrawerOpen] = useState(false);
 
-  const isLoading =
-  profileLoading ||
-  friendsLoading;
+  const [isLoading, setIsLoading] = useState(true);
 
   const [initialOpenTeamId, setInitialOpenTeamId] = useState<string | null>(
     null,
@@ -100,8 +85,21 @@ const {
     setIsTeamDrawerOpen(false);
   }
 
-  const handleSearchSuggestions = useCallback(async () => {
-    return await mockGetSuggestions();
+  const handleSearchSuggestions = useCallback(
+    async (query: string) => {
+      if (!userId) return [];
+
+      return await getSuggestions({
+        query,
+        excludeUserIds: [userId],
+        limit: 8,
+      });
+    },
+    [userId],
+  );
+
+  const handleGetTeamMembers = useCallback(async (teamId: string) => {
+    return await getTeamMembers({ teamId });
   }, []);
 
   function handleDisplayAllFriends() {
@@ -139,6 +137,44 @@ const {
   }
 
   useEffect(() => {
+    async function loadInitialData() {
+      try {
+        setIsLoading(true);
+        if (!userId) {
+          setProfile(null);
+          setFriends(null);
+          setAchievements(null);
+          setTeams(null);
+          return;
+        }
+
+        const [
+          profileResponse,
+          friendResponse,
+          achievementResponse,
+          teamsResponse,
+        ] = await Promise.all([
+          getUserProfile({ userId }),
+          getFriends({ userId }),
+          getAchievements({ userId }),
+          getTeams({ userId }),
+        ]);
+
+        setProfile(profileResponse);
+        setFriends(friendResponse);
+        setAchievements(achievementResponse);
+        setTeams(teamsResponse);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    loadInitialData();
+  }, [userId]);
+
+  useEffect(() => {
     async function loadFriendsAchievements() {
       if (!selectedFriendId) {
         setSelectedFriendsData(null);
@@ -152,15 +188,16 @@ const {
       if (!selectedFriend) return;
 
       try {
-        const achievementsResponse =
-          await getAchievementsByUserId(selectedFriendId);
+        const achievementsResponse = await getAchievements({
+          userId: selectedFriendId,
+        });
 
         setSelectedFriendsData({
           name: selectedFriend.name,
           achievements: achievementsResponse,
         });
       } catch (error) {
-        console.log(error);
+        console.error(error);
       }
     }
 
@@ -267,7 +304,7 @@ const {
         }}
         initialOpenTeamId={initialOpenTeamId}
         initialTeamDrawerMode={initialTeamDrawerMode}
-        onGetTeamMembers={mockGetTeamMembers}
+        onGetTeamMembers={handleGetTeamMembers}
         inviteCandidates={friends}
         onCreateTeam={async (payload) => {
           console.log("Crear equipo:", payload);
