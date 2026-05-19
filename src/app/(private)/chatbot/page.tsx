@@ -28,19 +28,19 @@ const DEFAULT_RESPONSE =
   "Entendido. ¿Hay algo más en lo que pueda ayudarte? Puedo buscar salas, reservar espacios, informarte quién está en la oficina o gestionar una agenda múltiple.";
 
 const QUICK_ACTIONS = [
-  { id: "search",   icon: Search,       label: "Busca salas\ndisponibles",       prompt: "Quiero buscar salas disponibles"    },
-  { id: "reserve",  icon: CalendarPlus, label: "Reserva un\nespacio",            prompt: "Quiero reservar un espacio"         },
-  { id: "friends",  icon: Users,        label: "¿Qué amigos van\nhoy a la oficina?", prompt: "¿Qué amigos van hoy a la oficina?" },
-  { id: "multiple", icon: CalendarRange,label: "Realiza una\nagenda múltiple",   prompt: "Quiero realizar una agenda múltiple"},
+  { id: "search", icon: Search, label: "Busca salas\ndisponibles", prompt: "Quiero buscar salas disponibles"    },
+  { id: "reserve", icon: CalendarPlus, label: "Reserva un\nespacio", prompt: "Quiero reservar un espacio"         },
+  { id: "friends", icon: Users, label: "¿Qué amigos van\nhoy a la oficina?", prompt: "¿Qué amigos van hoy a la oficina?" },
+  { id: "multiple", icon: CalendarRange, label: "Realiza una\nagenda múltiple", prompt: "Quiero realizar una agenda múltiple"},
 ];
 
 export default function ChatbotPage() {
   const router = useRouter();
   const [messages, setMessages] = useState<Message[]>([]);
-  const [input, setInput]       = useState("");
+  const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const inputRef       = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const hasMessages = messages.length > 0;
 
@@ -82,16 +82,12 @@ export default function ChatbotPage() {
   return (
     <DownTransition>
       <div className="w-screen h-screen flex flex-col bg-[#e8e8e8] overflow-hidden">
-
-        {/* Header */}
         <div className="flex items-center gap-3 px-8 py-5">
           <a href="/home">
             <Image src={AccentureLogo} alt="accenture logo" width={40} height={40} />
           </a>
           <span className="text-2xl font-semibold text-gray-800 tracking-wide">Chatbot</span>
         </div>
-
-        {/* Messages area */}
         <div className="flex-1 overflow-y-auto flex flex-col">
           {!hasMessages ? (
             <div className="flex-1 flex flex-col items-center justify-center px-12 gap-10">
@@ -173,7 +169,7 @@ export default function ChatbotPage() {
           </svg>
           <div className="flex items-end w-full px-6 pt-2">
             <button
-              onClick={() => router.push("/home")}
+              onClick={() => router.back()}
               style={{ clipPath: "url(#tab-shape)" }}
               className="flex-shrink-0 bg-[#d4d4d4] hover:bg-[#cacaca] active:bg-[#c0c0c0] transition-colors duration-150 text-sm font-medium text-gray-700 w-[110px] h-[52px] whitespace-nowrap"
             >
