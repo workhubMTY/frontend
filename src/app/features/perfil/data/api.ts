@@ -1,4 +1,4 @@
-import { authFetch } from "@app/lib/fetch/authFetch";
+import { authFetch } from "@/app/shared/data/api";
 
 import type {
   Achievement,

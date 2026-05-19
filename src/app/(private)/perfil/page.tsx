@@ -9,12 +9,10 @@ import {
   AchievementUserData,
 } from "@/app/features/perfil/types/profile";
 import {
-  getUserProfileMock,
-  getFriendsByUserId,
-  getAchievementsByUserId,
-  getTeamsByUserId,
-  mockGetTeamMembers,
-  mockGetSuggestions,
+  getAchievements,
+  getTeams,
+  getTeamMembers,
+  getSuggestions,
 } from "@/app/features/perfil/data/mock/mockProfileApi";
 import { ProfileHeaderCard } from "@/app/features/perfil/components/cards/ProfileHeaderCard";
 import { ProgressSummaryCard } from "@/app/features/perfil/components/cards/ProgressSumaryCard";
@@ -101,7 +99,7 @@ const {
   }
 
   const handleSearchSuggestions = useCallback(async () => {
-    return await mockGetSuggestions();
+    return await getSuggestions();
   }, []);
 
   function handleDisplayAllFriends() {
@@ -146,14 +144,14 @@ const {
       }
 
       const selectedFriend = friends?.find(
-        (current) => current.id === selectedFriendId,
+        (current: Friend) => current.id === selectedFriendId,
       );
 
       if (!selectedFriend) return;
 
       try {
         const achievementsResponse =
-          await getAchievementsByUserId(selectedFriendId);
+          await getAchievements({ userId: selectedFriendId });
 
         setSelectedFriendsData({
           name: selectedFriend.name,
@@ -267,7 +265,7 @@ const {
         }}
         initialOpenTeamId={initialOpenTeamId}
         initialTeamDrawerMode={initialTeamDrawerMode}
-        onGetTeamMembers={mockGetTeamMembers}
+        onGetTeamMembers={(teamId) => getTeamMembers({ teamId })}
         inviteCandidates={friends}
         onCreateTeam={async (payload) => {
           console.log("Crear equipo:", payload);
