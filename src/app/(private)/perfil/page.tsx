@@ -14,7 +14,7 @@ import {
   getAchievementsByUserId,
   getTeamsByUserId,
   mockGetTeamMembers,
-  mockGetSuggestions,
+  getSuggestions,
 } from "@/app/features/perfil/data/mockProfileApi";
 import { ProfileHeaderCard } from "@/app/features/perfil/components/cards/ProfileHeaderCard";
 import { ProgressSummaryCard } from "@/app/features/perfil/components/cards/ProgressSumaryCard";
@@ -83,8 +83,8 @@ export default function UserProfilePage() {
     setIsTeamDrawerOpen(false);
   }
 
-  const handleSearchSuggestions = useCallback(async () => {
-    return await mockGetSuggestions();
+  const handleSearchSuggestions = useCallback(async (query: string) => {
+    return await getSuggestions(query);
   }, []);
 
   function handleDisplayAllFriends() {

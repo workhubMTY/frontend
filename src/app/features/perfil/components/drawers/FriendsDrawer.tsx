@@ -29,7 +29,7 @@ type FriendsDrawerProps = {
   friends: Friend[];
   selectedFriendId?: string | null;
   initialMode?: DrawerMode;
-  onSearchSuggestions: () => Promise<FriendSuggestion[]>;
+  onSearchSuggestions: (query: string) => Promise<FriendSuggestion[]>;
   onClose: () => void;
   onCompareFriend: (id: string) => void;
   onClearComparison: () => void;
@@ -271,13 +271,29 @@ function FriendsListMode({
   );
 }
 
+function InitialSearchState() {
+  return (
+    <div className="flex flex-col items-center justify-center px-5 py-10 text-center">
+      <div className="mb-3 grid size-12 place-items-center bg-neutral-100 text-neutral-500">
+        <Search size={22} />
+      </div>
+
+      <h3 className="text-sm font-semibold text-neutral-950">
+        Busca una persona
+      </h3>
+
+      <p className="mt-1 max-w-sm text-sm text-neutral-500">
+        Escribe un nombre, correo o rol para encontrar personas.
+      </p>
+    </div>
+  );
+}
 type InviteFriendsModeProps = {
-  onSearchSuggestions: () => Promise<FriendSuggestion[]>;
+  onSearchSuggestions: (query: string) => Promise<FriendSuggestion[]>;
   onBack: () => void;
   onClose: () => void;
   onSendFriendRequests: (payload: SendFriendRequestsPayload) => Promise<void>;
 };
-
 function InviteFriendsMode({
   onSearchSuggestions,
   onBack,
@@ -285,55 +301,55 @@ function InviteFriendsMode({
   onSendFriendRequests,
 }: InviteFriendsModeProps) {
   const [searchTerm, setSearchTerm] = useState("");
-  const [suggestions, setSuggestions] = useState<FriendSuggestion[] | null>(
-    null,
-  );
+  const [suggestions, setSuggestions] = useState<FriendSuggestion[]>([]);
   const [selectedUsers, setSelectedUsers] = useState<FriendSuggestion[]>([]);
   const [message, setMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
+  const [hasSearched, setHasSearched] = useState(false);
 
   useEffect(() => {
-    let isMounted = true;
+    const normalizedSearch = searchTerm.trim();
 
-    async function loadSuggestions() {
+    if (!normalizedSearch) {
+      setSuggestions([]);
+      setIsSearching(false);
+      setHasSearched(false);
+      return;
+    }
+
+    let isActive = true;
+
+    const timeoutId = window.setTimeout(async () => {
       try {
-        const incomingSuggestions = await onSearchSuggestions();
+        setIsSearching(true);
+        setHasSearched(true);
 
-        if (isMounted) {
+        const incomingSuggestions = await onSearchSuggestions(normalizedSearch);
+
+        if (isActive) {
           setSuggestions(incomingSuggestions);
         }
       } catch (error) {
         console.error("Error loading friend suggestions:", error);
 
-        if (isMounted) {
+        if (isActive) {
           setSuggestions([]);
         }
+      } finally {
+        if (isActive) {
+          setIsSearching(false);
+        }
       }
-    }
-
-    loadSuggestions();
+    }, 350);
 
     return () => {
-      isMounted = false;
+      isActive = false;
+      window.clearTimeout(timeoutId);
     };
-  }, [onSearchSuggestions]);
+  }, [searchTerm, onSearchSuggestions]);
 
-  const filteredSuggestions = useMemo(() => {
-    const normalizedSearch = searchTerm.trim().toLowerCase();
-
-    if (!suggestions) return [];
-
-    if (!normalizedSearch) return suggestions;
-
-    return suggestions.filter((person) => {
-      const name = person.name.toLowerCase();
-      const email = person.email?.toLowerCase() ?? "";
-
-      return (
-        name.includes(normalizedSearch) || email.includes(normalizedSearch)
-      );
-    });
-  }, [suggestions, searchTerm]);
+  const filteredSuggestions = suggestions;
 
   const canSend = selectedUsers.length > 0 && !isSubmitting;
 
@@ -436,7 +452,7 @@ function InviteFriendsMode({
                   id="friend-search"
                   value={searchTerm}
                   onChange={(event) => setSearchTerm(event.target.value)}
-                  placeholder="Buscar por nombre o correo"
+                  placeholder="Buscar por nombre, correo o rol"
                   className="h-11 w-full border border-neutral-200 bg-white pl-11 pr-4 text-sm outline-none transition placeholder:text-neutral-400 focus:border-purple-700 focus:ring-2 focus:ring-purple-100"
                 />
               </div>
@@ -482,11 +498,13 @@ function InviteFriendsMode({
               </div>
 
               <div className="border border-neutral-200">
-                {suggestions === null ? (
+                {!searchTerm.trim() ? (
+                  <InitialSearchState />
+                ) : isSearching ? (
                   <div className="px-5 py-10 text-center text-sm text-neutral-500">
-                    Cargando sugerencias...
+                    Buscando personas...
                   </div>
-                ) : filteredSuggestions.length > 0 ? (
+                ) : hasSearched && filteredSuggestions.length > 0 ? (
                   <div className="max-h-[360px] overflow-y-auto divide-y divide-neutral-100">
                     {filteredSuggestions.map((person) => {
                       const isSelected = selectedUsers.some(

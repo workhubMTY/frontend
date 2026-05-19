@@ -8,6 +8,10 @@ export type User = {
 
 export type Friend = User;
 
+export type FriendSuggestion = Friend & {
+  status?: "available" | "pending" | "already-friend";
+};
+
 export type Team = {
   id: string;
   name: string;
@@ -16,6 +20,7 @@ export type Team = {
 export type DetailedTeam = Team & {
   members: User[];
 };
+
 export type AchievementStatus = "completed" | "in_progress" | "locked";
 
 export type AchievementProgress = {
@@ -57,12 +62,3 @@ export type UserProfile = {
 // export type ProfileApiResponse = {
 //   profile: UserProfile;
 // };
-
-export type FriendSuggestion = {
-  id: string;
-  name: string;
-  email?: string;
-  avatarUrl?: string;
-  role: string;
-  status?: "available" | "pending" | "already-friend";
-};

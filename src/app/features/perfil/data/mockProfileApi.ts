@@ -641,31 +641,51 @@ export async function mockGetTeamMembers(teamId: string): Promise<User[]> {
   return membersByTeamId[teamId] ?? [];
 }
 
-export async function mockGetSuggestions(): Promise<FriendSuggestion[]> {
-  return [
-    {
-      id: "u-1",
-      name: "Mariana López",
-      email: "mariana@empresa.com",
-      status: "available",
-      role: "backend developer",
-    },
-    {
-      id: "u-2",
-      name: "Diego Fernández",
-      email: "diego@empresa.com",
-      status: "available",
-      role: "frontend developer",
-    },
-    {
-      id: "u-3",
-      name: "Sofía Martínez",
-      email: "sofia@empresa.com",
-      status: "pending",
-      role: "QA Lead",
-    },
-  ];
-}
+const mockSuggestions: FriendSuggestion[] = [
+  {
+    id: "u-1",
+    name: "Mariana López",
+    email: "mariana@empresa.com",
+    status: "available",
+    role: "backend developer",
+  },
+  {
+    id: "u-2",
+    name: "Diego Fernández",
+    email: "diego@empresa.com",
+    status: "available",
+    role: "frontend developer",
+  },
+  {
+    id: "u-3",
+    name: "Sofía Martínez",
+    email: "sofia@empresa.com",
+    status: "pending",
+    role: "QA Lead",
+  },
+];
+
+export const getSuggestions = async (
+  query: string,
+): Promise<FriendSuggestion[]> => {
+  await new Promise((resolve) => setTimeout(resolve, 400));
+
+  const normalizedQuery = query.trim().toLowerCase();
+
+  if (!normalizedQuery) return [];
+
+  return mockSuggestions.filter((person) => {
+    const name = person.name.toLowerCase();
+    const email = person.email?.toLowerCase() ?? "";
+    const role = person.role?.toLowerCase() ?? "";
+
+    return (
+      name.includes(normalizedQuery) ||
+      email.includes(normalizedQuery) ||
+      role.includes(normalizedQuery)
+    );
+  });
+};
 
 export async function mockGetUsers() {
   await wait(500);
