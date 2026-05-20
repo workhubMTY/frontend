@@ -2,37 +2,14 @@
 
 import { useMemo, useState } from "react";
 import { CalendarDays, Users, MailOpen } from "lucide-react";
-
 import PageTransition from "@/app/shared/components/PageTransition/PageTransition";
-
 import { useFriends } from "@/app/shared/data/friendships/hooks";
-import {
-  useEvents,
-  useFriendsReservations,
-  useMyReservations,
-} from "@/app/features/cubiculos/data/hooks";
-import {
-  formatHourRange,
-  getInitials,
-  toAgendaDay,
-  toDate,
-  toDecimalHour,
-} from "@/app/features/home/utils/utils";
-import type {
-  ReservationEvent,
-  ReservationSummary,
-} from "@/app/features/cubiculos/data/types";
-import {
-  DiaInvitaciones,
-  EventoGeneral,
-  Invitacion,
-  Persona,
-  Reserva,
-} from "@/app/features/home/types/types";
+import { useEvents, useFriendsReservations, useMyReservations } from "@/app/features/cubiculos/data/hooks";
+import { formatHourRange, getInitials, toAgendaDay, toDate, toDecimalHour } from "@/app/features/home/utils/utils";
+import type { ReservationEvent, ReservationSummary } from "@/app/features/cubiculos/data/types";
+import { DiaInvitaciones, EventoGeneral, Invitacion, Persona, Reserva } from "@/app/features/home/types/types";
 import { PanelRed } from "@/app/features/home/components/PanelRed";
-import AgendaRapida, {
-  ExternalEvent,
-} from "@/app/features/home/components/AgendaRapida/AgendaRapida";
+import AgendaRapida, { ExternalEvent } from "@/app/features/home/components/AgendaRapida/AgendaRapida";
 import { PanelInvitaciones } from "@/app/features/home/components/PanelInvitaciones";
 import { EventoGeneralDetail } from "@/app/features/home/components/EventoGeneralDetail";
 import { useAuth } from "@/app/shared/auth/useAuth";
@@ -107,10 +84,10 @@ export default function Home() {
   const { data: eventsData = [] } = useEvents();
 
   const personas = useMemo<Persona[]>(() => {
-    return friends.map((friend) => {
-      const fr = friendsReservations.find((x) => x.user_id === friend.eId);
+    return friends.map((friend: any) => {
+      const fr = friendsReservations.find((x: any) => x.user_id === friend.eId);
       const reservas = (fr?.reservations ?? [])
-        .filter((r) => r.status === "ACCEPTED")
+        .filter((r: any) => r.status === "ACCEPTED")
         .map(mapReservation);
 
       return {
@@ -128,8 +105,8 @@ export default function Home() {
     const grouped = new Map<number, Invitacion[]>();
 
     (myReservationsData?.reservations ?? [])
-      .filter((r) => r.status === "PENDING")
-      .forEach((res) => {
+      .filter((r: any) => r.status === "PENDING")
+      .forEach((res: any) => {
         const start = toDate(res.start_time);
         const end = toDate(res.end_time);
         const dayIndex = toAgendaDay(start);
@@ -174,7 +151,7 @@ export default function Home() {
       ];
     }
 
-    return eventsData.map((evt) => {
+    return eventsData.map((evt: any) => {
       const start = toDate(evt.start_time);
       const end = toDate(evt.end_time);
       const tipo = eventType(evt);
@@ -195,14 +172,14 @@ export default function Home() {
 
   const acceptedMine = useMemo(() => {
     return (myReservationsData?.reservations ?? [])
-      .filter((r) => r.status === "ACCEPTED")
+      .filter((r: any) => r.status === "ACCEPTED")
       .map(mapReservation);
   }, [myReservationsData]);
 
   const externalEvents = useMemo<ExternalEvent[]>(() => {
     const evts: ExternalEvent[] = [];
 
-    acceptedMine.forEach((r) => {
+    acceptedMine.forEach((r: any) => {
       evts.push({
         day: r.day,
         start: r.start,
