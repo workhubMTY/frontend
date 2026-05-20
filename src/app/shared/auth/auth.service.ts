@@ -1,5 +1,5 @@
 import { authApi } from "./api";
-import type { AuthResponse, LoginInput, User } from "./types/auth.types";
+import type { AuthResponse, LoginInput, User } from "./auth.types";
 
 export const authService = {
   login(data: LoginInput) {
