@@ -1,5 +1,5 @@
 import type { UserViewModel } from "../users/types";
-import type { Reservation } from "../office-slots/types";
+import type { Reservation } from "../../../features/cubiculos/data/types";
 
 export type RequestStatus = "PENDING" | "ACCEPTED" | "REJECTED" | "CANCELLED";
 

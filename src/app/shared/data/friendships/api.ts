@@ -1,11 +1,5 @@
 import { authFetch } from "@/app/shared/data/api";
-import type {
-  Friendship,
-  FriendRequest,
-  CreateFriendRequestDto,
-  AcceptFriendRequestDto,
-  RemoveRelationDto,
-} from "./types";
+import type { Friendship, FriendRequest, CreateFriendRequestDto, AcceptFriendRequestDto, RemoveRelationDto } from "./types";
 
 export const friendshipsApi = {
   getAll: () => authFetch<Friendship[]>("/friendships"),
