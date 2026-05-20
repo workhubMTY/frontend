@@ -1,10 +1,7 @@
 "use client";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { api, TYPE_ICON, TYPE_COLOR } from "./Data";
-import {
-  Notification,
-  FriendRequest,
-} from "../../types/notificationInterfaces";
+import { Notification, FriendRequest } from "./notificationInterfaces";
 
 function timeAgo(dateStr: string): string {
   const diff = Date.now() - new Date(dateStr).getTime();
