@@ -7,9 +7,9 @@ interface PeriodSelectorProps {
 }
 
 const OPTIONS: { label: string; value: Period }[] = [
-  { label: "Día", value: "dia" },
-  { label: "Semana", value: "semana" },
-  { label: "Mes", value: "mes" },
+  { label: "Día", value: "day" },
+  { label: "Semana", value: "week" },
+  { label: "Mes", value: "month" },
 ];
 
 export function PeriodSelector({ value, onChange }: PeriodSelectorProps) {
