@@ -6,13 +6,13 @@ import {
   CircleX,
   TrendingUp,
 } from "lucide-react";
-import { EstadisticaCard } from "../../features/estadisticas/components/estadisticaCard";
-import { PeriodSelector } from "../../features/estadisticas/components/selector";
-import { AttendanceChart } from "../../features/estadisticas/components/graficoAsistencias";
-import { ReservationsChart } from "../../features/estadisticas/components/graficoReservacion";
-import { AttendanceRateChart } from "../../features/estadisticas/components/graficoRangoAsistencias";
-import { Chart } from "../../features/estadisticas/components/chart";
-import type { Period } from "../../features/estadisticas/data/estadisticas";
+import { StatCard } from "./components/StatCard";
+import { PeriodSelector } from "./components/PeriodSelector";
+import { AttendanceChart } from "./components/AttendanceChart";
+import { ReservationsChart } from "./components/ReservationsChart";
+import { AttendanceRateChart } from "./components/AttendanceRateChart";
+import { ChartLegend } from "./components/ChartLegend";
+import type { Period } from "./types/stats";
 
 const MOCK = {
   day: {
@@ -39,7 +39,7 @@ const MOCK = {
 };
 
 export default function StatsPage() {
-  const [period, setPeriod] = useState<Period>("dia");
+  const [period, setPeriod] = useState<Period>("day");
 
   const data = MOCK[period];
   const total = data.attended.reduce((s, v) => s + v, 0) + data.missed.reduce((s, v) => s + v, 0);
@@ -66,82 +66,78 @@ export default function StatsPage() {
   }));
 
   return (
-    <main className="min-h-screen bg-neutral-50 px-4 py-8 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-6xl">
-        <div className="space-y-6">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <h1 className="text-xl font-semibold tracking-tight text-neutral-950">Estadísticas</h1>
-              <p className="mt-0.5 text-sm text-neutral-500">Asistencias y reservaciones</p>
-            </div>
-            <PeriodSelector value={period} onChange={setPeriod} />
-          </div>
-
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-            <EstadisticaCard
-              icon={CalendarCheck}
-              label="Total reservaciones"
-              value={total.toLocaleString("es-MX")}
-            />
-            <EstadisticaCard
-              icon={CircleCheck}
-              label="Asistencias"
-              value={attended.toLocaleString("es-MX")}
-              valueClassName="text-purple-700"
-            />
-            <EstadisticaCard
-              icon={CircleX}
-              label="Faltas"
-              value={missed.toLocaleString("es-MX")}
-              valueClassName="text-red-600"
-              iconClassName="bg-red-50 text-red-600"
-            />
-            <EstadisticaCard
-              icon={TrendingUp}
-              label="Tasa de asistencia"
-              value={`${rate}%`}
-              valueClassName="text-green-700"
-              iconClassName="bg-green-50 text-green-700"
-            />
-          </div>
-
-          <section className="border border-neutral-200 bg-white p-5">
-            <p className="mb-1 text-xs font-medium uppercase tracking-widest text-neutral-400">
-              Asistencias vs faltas
-            </p>
-            <Chart
-              items={[
-                { color: "#7c3aed", label: "Asistencias" },
-                { color: "#fca5a5", label: "Faltas" },
-              ]}
-            />
-            <AttendanceChart buckets={attendanceBuckets} />
-          </section>
-
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-            <section className="border border-neutral-200 bg-white p-5">
-              <p className="mb-1 text-xs font-medium uppercase tracking-widest text-neutral-400">
-                Volumen de reservaciones
-              </p>
-              <Chart
-                items={[
-                  { color: "#7c3aed", label: "Con check-in" },
-                  { color: "#ddd6fe", label: "Sin check-in" },
-                ]}
-              />
-              <ReservationsChart buckets={reservationBuckets} />
-            </section>
-
-            <section className="border border-neutral-200 bg-white p-5">
-              <p className="mb-1 text-xs font-medium uppercase tracking-widest text-neutral-400">
-                Tasa de asistencia %
-              </p>
-              <Chart items={[{ color: "#16a34a", label: "% asistencia" }]} />
-              <AttendanceRateChart buckets={attendanceBuckets} />
-            </section>
-          </div>
+    <div className="space-y-6">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-xl font-semibold tracking-tight text-neutral-950">Estadísticas</h1>
+          <p className="mt-0.5 text-sm text-neutral-500">Asistencias y reservaciones</p>
         </div>
+        <PeriodSelector value={period} onChange={setPeriod} />
       </div>
-    </main>
+
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <StatCard
+          icon={CalendarCheck}
+          label="Total reservaciones"
+          value={total.toLocaleString("es-MX")}
+        />
+        <StatCard
+          icon={CircleCheck}
+          label="Asistencias"
+          value={attended.toLocaleString("es-MX")}
+          valueClassName="text-purple-700"
+        />
+        <StatCard
+          icon={CircleX}
+          label="Faltas"
+          value={missed.toLocaleString("es-MX")}
+          valueClassName="text-red-600"
+          iconClassName="bg-red-50 text-red-600"
+        />
+        <StatCard
+          icon={TrendingUp}
+          label="Tasa de asistencia"
+          value={`${rate}%`}
+          valueClassName="text-green-700"
+          iconClassName="bg-green-50 text-green-700"
+        />
+      </div>
+
+      <section className="border border-neutral-200 bg-white p-5">
+        <p className="mb-1 text-xs font-medium uppercase tracking-widest text-neutral-400">
+          Asistencias vs faltas
+        </p>
+        <ChartLegend
+          items={[
+            { color: "#7c3aed", label: "Asistencias" },
+            { color: "#fca5a5", label: "Faltas" },
+          ]}
+        />
+        <AttendanceChart buckets={attendanceBuckets} />
+      </section>
+
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <section className="border border-neutral-200 bg-white p-5">
+          <p className="mb-1 text-xs font-medium uppercase tracking-widest text-neutral-400">
+            Volumen de reservaciones
+          </p>
+          <ChartLegend
+            items={[
+              { color: "#7c3aed", label: "Con check-in" },
+              { color: "#ddd6fe", label: "Sin check-in" },
+            ]}
+          />
+          <ReservationsChart buckets={reservationBuckets} />
+        </section>
+
+        <section className="border border-neutral-200 bg-white p-5">
+          <p className="mb-1 text-xs font-medium uppercase tracking-widest text-neutral-400">
+            Tasa de asistencia %
+          </p>
+          <ChartLegend items={[{ color: "#16a34a", label: "% asistencia" }]} />
+          <AttendanceRateChart buckets={attendanceBuckets} />
+        </section>
+      </div>
+    </div>
   );
 }

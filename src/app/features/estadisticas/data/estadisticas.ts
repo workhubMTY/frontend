@@ -1,4 +1,4 @@
-export type Period = "dia" | "semana" | "mes";
+export type Period = "day" | "week" | "month";
 
 export interface EstadisticasBucket {
   period_label: string;
