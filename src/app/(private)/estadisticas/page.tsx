@@ -39,7 +39,7 @@ const MOCK = {
 };
 
 export default function StatsPage() {
-  const [period, setPeriod] = useState<Period>("dia");
+  const [period, setPeriod] = useState<Period>("day");
 
   const data = MOCK[period];
   const total = data.attended.reduce((s, v) => s + v, 0) + data.missed.reduce((s, v) => s + v, 0);
