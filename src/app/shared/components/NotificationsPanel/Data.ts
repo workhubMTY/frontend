@@ -1,4 +1,4 @@
-import { NotificationType, Notification, FriendRequest} from '../../types/notificationInterfaces'
+import { NotificationType, Notification, FriendRequest} from './notificationInterfaces'
 
 const BASE = process.env.NEXT_PUBLIC_API_URL;
 
