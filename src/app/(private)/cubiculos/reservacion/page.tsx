@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { X } from "lucide-react";
 
 import { MonthCalendar } from "@/app/features/reservaciones/components/Calendar/MonthCalendar";
@@ -11,301 +11,66 @@ import { ProposedSchedulesCard } from "@/app/features/reservaciones/components/P
 import { ReservationFooter } from "@/app/features/reservaciones/components/ReservationFooter";
 import { ReservationTimelineCard } from "@/app/features/reservaciones/components/ReservationTimelineCard";
 import PageTransition from "@/app/shared/components/PageTransition/PageTransition";
-import type { CalendarSelectionAction } from "@/app/features/reservaciones/types/reservaciones";
 
 import {
-  apiGetExternalEventsInInterval,
-  apiGetSpaceReservationsByDay,
   createApiJson,
   toTimelineEvent,
 } from "@/app/features/reservaciones/data/reservationsApi";
 
-import {
-  createCalendarCells,
-  getFirstAvailableDateId,
-} from "@/app/features/reservaciones/lib/dates";
-
-import {
-  blockOverlapsApiReservation,
-  hasOverlappingBlocks,
-} from "@/app/features/reservaciones/lib/conflicts";
-
-import { uniqueSortedIds } from "@/app/features/reservaciones/lib/formatting";
-
+import { createCalendarCells } from "@/app/features/reservaciones/lib/dates";
 import { cn } from "@/app/features/reservaciones/lib/cn";
-import { to24Hour } from "@/app/features/reservaciones/lib/time";
 
-import type {
-  DayEvent,
-  SelectionMode,
-  TimeBlock,
-  TimelineEvent,
-} from "@/app/features/reservaciones/types/reservaciones";
-
-export interface ReservationSchedulerPageProps {
-  spaceName: string;
-}
-type SelectedSpace = {
-  id: string;
-  name: string;
-};
+import { useSelectedSpace } from "@/app/features/reservaciones/hooks/useSelectedSpace";
+import { useReservationQueries } from "@/app/features/reservaciones/hooks/useReservationQueries";
+import { useReservationScheduler } from "@/app/features/reservaciones/hooks/useReservationScheduler";
+import { TimelineEvent } from "@/app/features/reservaciones/types/reservaciones";
 
 export default function ReservationSchedulerPage() {
   const router = useRouter();
 
-  const [selectedSpace, setSelectedSpace] = useState<SelectedSpace | null>(
-    null,
-  );
-
-  const spaceId = selectedSpace?.id;
-  const spaceName = selectedSpace?.name ?? "Cubículo";
+  const { selectedSpace, spaceId, spaceName } = useSelectedSpace();
 
   const calendarCells = useMemo(() => createCalendarCells(), []);
-
-  const [selectionMode, setSelectionMode] = useState<SelectionMode>("multiple");
-
-  const [selectedDateIds, setSelectedDateIds] = useState<string[]>([]);
-
-  const [activeDayId, setActiveDayId] = useState(
-    getFirstAvailableDateId(calendarCells),
-  );
-
-  const [dayBlocks, setDayBlocks] = useState<Record<string, TimeBlock[]>>({});
-
-  const [pendingBlocks, setPendingBlocks] = useState<TimeBlock[]>([]);
-  const [showAllEvents, setShowAllEvents] = useState(false);
-  const [hasAppliedCurrentSelection, setHasAppliedCurrentSelection] =
-    useState(false);
-
-  const [spaceReservationsForActiveDay, setSpaceReservationsForActiveDay] =
-    useState<TimelineEvent[]>([]);
-
-  const [externalEventsForInterval, setExternalEventsForInterval] = useState<
-    DayEvent[]
-  >([]);
-  const [editedSavedDateIds, setEditedSavedDateIds] = useState<string[]>([]);
-  useEffect(() => {
-    const selectedSpaceRaw = window.sessionStorage.getItem(
-      "cubiculos:selectedSpace",
-    );
-
-    if (!selectedSpaceRaw) {
-      router.replace("/cubiculos");
-      return;
-    }
-
-    try {
-      const parsedSpace = JSON.parse(selectedSpaceRaw) as SelectedSpace;
-
-      if (!parsedSpace?.id || !parsedSpace?.name) {
-        router.replace("/cubiculos");
-        return;
-      }
-
-      setSelectedSpace(parsedSpace);
-    } catch {
-      router.replace("/cubiculos");
-    }
-  }, [router]);
   const apiJson = useMemo(() => createApiJson(calendarCells), [calendarCells]);
+  const spaceReservationsByDate = useMemo(() => {
+    if (!spaceName) return {};
 
-  const modifiedDateIds = useMemo(
-    () => uniqueSortedIds(Object.keys(dayBlocks)),
-    [dayBlocks],
-  );
+    return apiJson.spaceReservations
+      .filter((reservation) => reservation.location === spaceName)
+      .reduce<Record<string, TimelineEvent[]>>((acc, reservation) => {
+        const dateId = reservation.dateId;
 
-  function isWeekendDateId(dateId: string) {
-    return calendarCells.find((cell) => cell.id === dateId)?.isWeekend ?? false;
-  }
-  function getAffectedDateIdsForBlock(block: TimeBlock) {
-    const selectableDateIds = selectedDateIds.filter(
-      (dateId) => !isWeekendDateId(dateId),
-    );
-
-    if (selectableDateIds.length === 0) {
-      return [];
-    }
-
-    if (block.applyToAllSelected) {
-      return selectableDateIds;
-    }
-
-    if (!selectableDateIds.includes(activeDayId)) {
-      return [];
-    }
-
-    return [activeDayId];
-  }
-
-  const pendingBlocksForActiveDay = useMemo(
-    () =>
-      pendingBlocks.filter((block) =>
-        getAffectedDateIdsForBlock(block).includes(activeDayId),
-      ),
-    [pendingBlocks, selectedDateIds, activeDayId, calendarCells],
-  );
-  const affectedDateIdsForPendingBlocks = useMemo(
-    () =>
-      uniqueSortedIds(
-        pendingBlocks.flatMap((block) => getAffectedDateIdsForBlock(block)),
-      ),
-    [activeDayId, calendarCells, pendingBlocks, selectedDateIds],
-  );
-  function mergeOrRemoveRange(
-    previousDateIds: string[],
-    rangeDateIds: string[],
-  ) {
-    const previousDateIdsSet = new Set(previousDateIds);
-
-    const fullRangeAlreadySelected = rangeDateIds.every((dateId) =>
-      previousDateIdsSet.has(dateId),
-    );
-
-    if (fullRangeAlreadySelected) {
-      return uniqueSortedIds(
-        previousDateIds.filter((dateId) => !rangeDateIds.includes(dateId)),
-      );
-    }
-
-    return uniqueSortedIds([...previousDateIds, ...rangeDateIds]);
-  }
-  function handleCalendarSelect(action: CalendarSelectionAction) {
-    if (action.type === "day") {
-      const dayId = action.dayId;
-
-      if (isWeekendDateId(dayId)) return;
-
-      if (selectionMode === "single") {
-        setSelectedDateIds([dayId]);
-        setActiveDayId(dayId);
-        setHasAppliedCurrentSelection(false);
-        return;
-      }
-
-      if (selectionMode === "repeat") {
-        const selectedCell = calendarCells.find((cell) => cell.id === dayId);
-        if (!selectedCell) return;
-
-        const repeatedDateIds = calendarCells
-          .filter(
-            (cell) =>
-              !cell.isWeekend &&
-              cell.date >= selectedCell.date &&
-              cell.date.getDay() === selectedCell.date.getDay(),
-          )
-          .map((cell) => cell.id);
-
-        setSelectedDateIds(uniqueSortedIds(repeatedDateIds));
-        setActiveDayId(dayId);
-        setHasAppliedCurrentSelection(false);
-        return;
-      }
-
-      if (selectionMode === "multiple") {
-        if (hasAppliedCurrentSelection) {
-          setSelectedDateIds([dayId]);
-          setActiveDayId(dayId);
-          setHasAppliedCurrentSelection(false);
-          return;
+        if (!acc[dateId]) {
+          acc[dateId] = [];
         }
 
-        setSelectedDateIds((previousDateIds) => {
-          const alreadySelected = previousDateIds.includes(dayId);
-          const alreadyActive = activeDayId === dayId;
+        acc[dateId].push(toTimelineEvent(reservation, "reserved"));
 
-          if (!alreadySelected) {
-            return uniqueSortedIds([...previousDateIds, dayId]);
-          }
+        return acc;
+      }, {});
+  }, [apiJson.spaceReservations, spaceName]);
 
-          if (alreadySelected && !alreadyActive) {
-            return previousDateIds;
-          }
-
-          return uniqueSortedIds(
-            previousDateIds.filter((selectedDayId) => selectedDayId !== dayId),
-          );
-        });
-
-        setActiveDayId(dayId);
-        return;
-      }
-    }
-
-    if (action.type === "range") {
-      if (selectionMode !== "multiple") return;
-
-      const draggedDateIds = uniqueSortedIds(
-        action.dateIds.filter((dateId) => !isWeekendDateId(dateId)),
-      );
-
-      if (draggedDateIds.length === 0) return;
-
-      setSelectedDateIds((previousDateIds) => {
-        if (hasAppliedCurrentSelection) {
-          return draggedDateIds;
-        }
-
-        return mergeOrRemoveRange(previousDateIds, draggedDateIds);
-      });
-
-      setHasAppliedCurrentSelection(false);
-      setActiveDayId(draggedDateIds[0] ?? activeDayId);
-    }
-  }
-  const conflictDateIds = useMemo(() => {
-    const conflictIds = new Set<string>();
-
-    Object.entries(dayBlocks).forEach(([dateId, blocks]) => {
-      const spaceReservationsForDate = apiJson.spaceReservations.filter(
-        (reservation) =>
-          reservation.dateId === dateId && reservation.location === spaceName,
-      );
-
-      const hasInternalConflict = hasOverlappingBlocks(blocks);
-
-      const hasSpaceConflict = blocks.some((block) =>
-        spaceReservationsForDate.some((reservation) =>
-          blockOverlapsApiReservation(block, reservation),
-        ),
-      );
-
-      if (hasInternalConflict || hasSpaceConflict) {
-        conflictIds.add(dateId);
-      }
-    });
-
-    pendingBlocks.forEach((block) => {
-      getAffectedDateIdsForBlock(block).forEach((dateId) => {
-        const hasPendingSpaceConflict = apiJson.spaceReservations.some(
-          (reservation) =>
-            reservation.dateId === dateId &&
-            reservation.location === spaceName &&
-            blockOverlapsApiReservation(block, reservation),
-        );
-
-        if (hasPendingSpaceConflict) {
-          conflictIds.add(dateId);
-        }
-      });
-    });
-
-    return uniqueSortedIds(Array.from(conflictIds));
-  }, [
-    activeDayId,
-    apiJson.spaceReservations,
+  const scheduler = useReservationScheduler({
     calendarCells,
-    dayBlocks,
-    pendingBlocks,
-    selectedDateIds,
-    spaceName,
-  ]);
+    spaceReservationsByDate,
+  });
+  const { spaceReservationsForActiveDay, externalEventsForInterval } =
+    useReservationQueries({
+      apiJson,
+      calendarCells,
+      activeDayId: scheduler.activeDayId,
+      spaceName,
+      enabled: Boolean(spaceId),
+    });
 
-  const activeBlocks = dayBlocks[activeDayId] ?? [];
+  const [showAllEvents, setShowAllEvents] = useState(false);
 
   const activeDayExternalEvents = useMemo(
     () =>
-      externalEventsForInterval.filter((event) => event.dateId === activeDayId),
-    [activeDayId, externalEventsForInterval],
+      externalEventsForInterval.filter(
+        (event) => event.dateId === scheduler.activeDayId,
+      ),
+    [scheduler.activeDayId, externalEventsForInterval],
   );
 
   const externalTimelineEventsForActiveDay = useMemo(
@@ -326,306 +91,28 @@ export default function ReservationSchedulerPage() {
         .filter((event) => event.status !== "normal")
         .slice(0, 2);
 
-  const selectedSavedBlocksHaveSpaceConflict = selectedDateIds.some(
-    (dateId) => {
-      if (isWeekendDateId(dateId)) return false;
+  function handleContinue() {
+    if (!selectedSpace) return;
 
-      const blocksForDate = dayBlocks[dateId] ?? [];
+    const draft = scheduler.createReservationDraft(selectedSpace);
 
-      return blocksForDate.some((block) =>
-        apiJson.spaceReservations.some(
-          (reservation) =>
-            reservation.dateId === dateId &&
-            reservation.location === spaceName &&
-            blockOverlapsApiReservation(block, reservation),
-        ),
-      );
-    },
-  );
-
-  const pendingBlocksHaveSpaceConflict = pendingBlocks.some((block) =>
-    getAffectedDateIdsForBlock(block).some((dateId) =>
-      apiJson.spaceReservations.some(
-        (reservation) =>
-          reservation.dateId === dateId &&
-          reservation.location === spaceName &&
-          blockOverlapsApiReservation(block, reservation),
-      ),
-    ),
-  );
-
-  const hasBlockingSpaceConflict =
-    selectedSavedBlocksHaveSpaceConflict || pendingBlocksHaveSpaceConflict;
-
-  const hasPendingChanges = pendingBlocks.length > 0;
-  const hasSavedBlockEdits = editedSavedDateIds.length > 0;
-
-  const hasValidPendingTarget =
-    hasPendingChanges && affectedDateIdsForPendingBlocks.length > 0;
-
-  const hasSavedBlocksToContinue = Object.values(dayBlocks).some(
-    (blocks) => blocks.length > 0,
-  );
-
-  const canSaveChanges =
-    (hasValidPendingTarget || hasSavedBlockEdits) && !hasBlockingSpaceConflict;
-
-  const canContinue =
-    !hasBlockingSpaceConflict &&
-    (hasValidPendingTarget || hasSavedBlockEdits || hasSavedBlocksToContinue);
-  useEffect(() => {
-    let cancelled = false;
-
-    if (!spaceId || !spaceName) return;
-
-    apiGetSpaceReservationsByDay({
-      apiJson,
-      dateId: activeDayId,
-      spaceName,
-    }).then((events) => {
-      if (!cancelled) setSpaceReservationsForActiveDay(events);
-    });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [activeDayId, apiJson, spaceId, spaceName]);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    const intervalDateIds = calendarCells.map((cell) => cell.id);
-
-    apiGetExternalEventsInInterval({
-      apiJson,
-      dateIds: intervalDateIds,
-    }).then((externalEvents) => {
-      if (cancelled) return;
-      setExternalEventsForInterval(externalEvents);
-    });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [apiJson, calendarCells]);
-
-  function handleModeChange(mode: SelectionMode) {
-    setSelectionMode(mode);
-
-    if (mode === "single") {
-      const nextDayId = !isWeekendDateId(activeDayId)
-        ? activeDayId
-        : (selectedDateIds.find((dateId) => !isWeekendDateId(dateId)) ??
-          getFirstAvailableDateId(calendarCells));
-
-      setSelectedDateIds([nextDayId]);
-      setActiveDayId(nextDayId);
-      setHasAppliedCurrentSelection(false);
-    }
-  }
-
-  function clearSelection() {
-    setSelectedDateIds([]);
-    setHasAppliedCurrentSelection(false);
-  }
-  function deleteSavedBlock(dateId: string, blockId: string) {
-    setDayBlocks((previousBlocks) => {
-      const blocksForDate = previousBlocks[dateId] ?? [];
-
-      return {
-        ...previousBlocks,
-        [dateId]: blocksForDate.filter((block) => block.id !== blockId),
-      };
-    });
-
-    setEditedSavedDateIds((previousDateIds) =>
-      uniqueSortedIds([...previousDateIds, dateId]),
-    );
-  }
-  function updateSavedBlock(
-    dateId: string,
-    blockId: string,
-    field: "start" | "end",
-    value: string,
-  ) {
-    setDayBlocks((previousBlocks) => {
-      const blocksForDate = previousBlocks[dateId] ?? [];
-
-      return {
-        ...previousBlocks,
-        [dateId]: blocksForDate.map((block) =>
-          block.id === blockId
-            ? {
-                ...block,
-                [field]: value,
-                conflict: undefined,
-              }
-            : block,
-        ),
-      };
-    });
-
-    setEditedSavedDateIds((previousDateIds) =>
-      uniqueSortedIds([...previousDateIds, dateId]),
-    );
-  }
-  function updatePendingBlock(
-    blockId: string,
-    field: "start" | "end",
-    value: string,
-  ) {
-    setPendingBlocks((currentBlocks) =>
-      currentBlocks.map((block) =>
-        block.id === blockId ? { ...block, [field]: value } : block,
-      ),
-    );
-  }
-
-  function togglePendingBlockScope(blockId: string) {
-    setPendingBlocks((currentBlocks) =>
-      currentBlocks.map((block) =>
-        block.id === blockId
-          ? { ...block, applyToAllSelected: !block.applyToAllSelected }
-          : block,
-      ),
-    );
-  }
-
-  function deletePendingBlock(blockId: string) {
-    setPendingBlocks((currentBlocks) =>
-      currentBlocks.filter((block) => block.id !== blockId),
-    );
-  }
-
-  function addPendingBlock() {
-    const nextNumber = pendingBlocks.length + 1;
-
-    setPendingBlocks((currentBlocks) => [
-      ...currentBlocks,
-      {
-        id: `p-${Date.now()}`,
-        label: `Nuevo ${nextNumber}`,
-        start: "08:00 PM",
-        end: "09:00 PM",
-        applyToAllSelected: true,
-      },
-    ]);
-  }
-  function applyPendingBlocks() {
-    if (!canSaveChanges) return;
-
-    if (pendingBlocks.length > 0) {
-      setSelectedDateIds((previousDateIds) =>
-        uniqueSortedIds([
-          ...previousDateIds,
-          ...affectedDateIdsForPendingBlocks,
-        ]),
-      );
-
-      setDayBlocks((previousBlocks) => {
-        const nextDayBlocks = { ...previousBlocks };
-
-        pendingBlocks.forEach((block, blockIndex) => {
-          const dateIdsForBlock = getAffectedDateIdsForBlock(block);
-
-          dateIdsForBlock.forEach((dateId) => {
-            const currentBlocksForDate = nextDayBlocks[dateId] ?? [];
-
-            nextDayBlocks[dateId] = [
-              ...currentBlocksForDate,
-              {
-                ...block,
-                id: `b-${dateId}-${Date.now()}-${blockIndex}`,
-                label: `Bloque ${currentBlocksForDate.length + 1}`,
-                applyToAllSelected: undefined,
-              },
-            ];
-          });
-        });
-
-        return nextDayBlocks;
-      });
-
-      setPendingBlocks([]);
-    }
-
-    setEditedSavedDateIds([]);
-    setHasAppliedCurrentSelection(true);
-  }
-  async function handleContinue() {
-    if (!canContinue || !selectedSpace) return;
-
-    let finalDayBlocks = dayBlocks;
-
-    if (pendingBlocks.length > 0) {
-      const nextDayBlocks = { ...dayBlocks };
-
-      pendingBlocks.forEach((block, blockIndex) => {
-        const dateIdsForBlock = getAffectedDateIdsForBlock(block);
-
-        dateIdsForBlock.forEach((dateId) => {
-          const currentBlocksForDate = nextDayBlocks[dateId] ?? [];
-
-          nextDayBlocks[dateId] = [
-            ...currentBlocksForDate,
-            {
-              ...block,
-              id: `b-${dateId}-${Date.now()}-${blockIndex}`,
-              label: `Bloque ${currentBlocksForDate.length + 1}`,
-              applyToAllSelected: undefined,
-            },
-          ];
-        });
-      });
-
-      finalDayBlocks = nextDayBlocks;
-      setDayBlocks(nextDayBlocks);
-      setPendingBlocks([]);
-      setEditedSavedDateIds([]);
-      setHasAppliedCurrentSelection(true);
-    }
-
-    const schedules: { start_time: string; end_time: string }[] = [];
-
-    Object.entries(finalDayBlocks).forEach(([dateId, blocks]) => {
-      blocks.forEach((block) => {
-        const start = to24Hour(block.start);
-        const end = to24Hour(block.end);
-
-        schedules.push({
-          start_time: new Date(`${dateId}T${start}:00`).toISOString(),
-          end_time: new Date(`${dateId}T${end}:00`).toISOString(),
-        });
-      });
-    });
-
-    if (schedules.length > 0) {
-      window.sessionStorage.setItem(
-        "cubiculos:reservationDraft",
-        JSON.stringify({
-          reservableId: selectedSpace.id,
-          reservableName: selectedSpace.name,
-          schedules,
-        }),
-      );
-    }
+    if (!draft) return;
 
     router.push("/cubiculos/reservacion/confirmar");
   }
+
   return (
     <PageTransition>
       <main className="min-h-screen bg-background-page p-4 text-slate-950 sm:p-6 lg:p-8">
         <header className="mb-5 flex items-center justify-between rounded-2xl px-5">
-          <div className="flex items-center gap-4">
-            <div>
-              <h1 className="text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl">
-                Ajusta tu reservación · {spaceName}
-              </h1>
-              <p className="mt-1 text-sm text-slate-500">
-                Revisa disponibilidad, arrastra días y configura múltiples
-                horarios.
-              </p>
-            </div>
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl">
+              Ajusta tu reservación · {spaceName}
+            </h1>
+            <p className="mt-1 text-sm text-slate-500">
+              Revisa disponibilidad, arrastra días y configura múltiples
+              horarios.
+            </p>
           </div>
         </header>
 
@@ -633,9 +120,9 @@ export default function ReservationSchedulerPage() {
           <div className="space-y-5">
             <Card className="p-5">
               <ReservationTimelineCard
-                activeDayId={activeDayId}
-                activeBlocks={activeBlocks}
-                pendingBlocks={pendingBlocksForActiveDay}
+                activeDayId={scheduler.activeDayId}
+                activeBlocks={scheduler.activeBlocks}
+                pendingBlocks={scheduler.pendingBlocksForActiveDay}
                 spaceReservationsForActiveDay={spaceReservationsForActiveDay}
                 externalTimelineEventsForActiveDay={
                   externalTimelineEventsForActiveDay
@@ -644,41 +131,40 @@ export default function ReservationSchedulerPage() {
             </Card>
 
             <ProposedSchedulesCard
-              activeDayId={activeDayId}
-              activeBlocks={activeBlocks}
-              pendingBlocks={pendingBlocksForActiveDay}
-              onAddPendingBlock={addPendingBlock}
-              onDeletePendingBlock={deletePendingBlock}
-              onDeleteSavedBlock={deleteSavedBlock}
-              onTogglePendingBlockScope={togglePendingBlockScope}
-              onUpdatePendingBlock={updatePendingBlock}
-              onUpdateSavedBlock={updateSavedBlock}
+              activeDayId={scheduler.activeDayId}
+              activeBlocks={scheduler.activeBlocks}
+              pendingBlocks={scheduler.pendingBlocksForActiveDay}
+              onAddPendingBlock={scheduler.addPendingBlock}
+              onDeletePendingBlock={scheduler.deletePendingBlock}
+              onDeleteSavedBlock={scheduler.deleteSavedBlock}
+              onTogglePendingBlockScope={scheduler.togglePendingBlockScope}
+              onUpdatePendingBlock={scheduler.updatePendingBlock}
+              onUpdateSavedBlock={scheduler.updateSavedBlock}
             />
 
             <ReservationFooter
-              selectedCount={selectedDateIds.length}
-              activeSavedBlocksCount={activeBlocks.length}
-              pendingBlocksCount={pendingBlocks.length}
-              savedEditsCount={editedSavedDateIds.length}
-              hasBlockingSpaceConflict={hasBlockingSpaceConflict}
-              canSaveChanges={canSaveChanges}
-              canContinue={canContinue}
-              onSaveChanges={applyPendingBlocks}
-              onCancel={() => {
-                router.push("/cubiculos");
-              }}
+              selectedCount={scheduler.selectedDateIds.length}
+              activeSavedBlocksCount={scheduler.activeBlocks.length}
+              pendingBlocksCount={scheduler.pendingBlocks.length}
+              savedEditsCount={scheduler.editedSavedDateIds.length}
+              hasBlockingSpaceConflict={scheduler.hasBlockingSpaceConflict}
+              canSaveChanges={scheduler.canSaveChanges}
+              canContinue={scheduler.canContinue}
+              onSaveChanges={scheduler.applyPendingBlocks}
+              onCancel={() => router.push("/cubiculos")}
               onContinue={handleContinue}
             />
           </div>
-          <aside className="sticky top-5 self-start space-y-5 ">
+
+          <aside className="sticky top-5 self-start space-y-5">
             <Card className="p-5">
               <div className="mb-4 grid grid-cols-3 rounded-xl border border-slate-200 bg-slate-50 p-1 text-sm font-semibold text-slate-600">
                 <button
                   type="button"
-                  onClick={() => handleModeChange("single")}
+                  onClick={() => scheduler.handleModeChange("single")}
                   className={cn(
                     "rounded-lg px-3 py-2 transition",
-                    selectionMode === "single"
+                    scheduler.selectionMode === "single"
                       ? "bg-violet-700 text-white shadow-sm"
                       : "hover:bg-white",
                   )}
@@ -688,10 +174,10 @@ export default function ReservationSchedulerPage() {
 
                 <button
                   type="button"
-                  onClick={() => handleModeChange("multiple")}
+                  onClick={() => scheduler.handleModeChange("multiple")}
                   className={cn(
                     "rounded-lg px-3 py-2 transition",
-                    selectionMode === "multiple"
+                    scheduler.selectionMode === "multiple"
                       ? "bg-violet-700 text-white shadow-sm"
                       : "hover:bg-white",
                   )}
@@ -701,10 +187,10 @@ export default function ReservationSchedulerPage() {
 
                 <button
                   type="button"
-                  onClick={() => handleModeChange("repeat")}
+                  onClick={() => scheduler.handleModeChange("repeat")}
                   className={cn(
                     "rounded-lg px-3 py-2 transition",
-                    selectionMode === "repeat"
+                    scheduler.selectionMode === "repeat"
                       ? "bg-violet-700 text-white shadow-sm"
                       : "hover:bg-white",
                   )}
@@ -714,25 +200,27 @@ export default function ReservationSchedulerPage() {
               </div>
 
               <MonthCalendar
-                activeDayId={activeDayId}
-                selectionMode={selectionMode}
-                selectedDateIds={selectedDateIds}
-                modifiedDateIds={modifiedDateIds}
-                conflictDateIds={conflictDateIds}
+                activeDayId={scheduler.activeDayId}
+                selectionMode={scheduler.selectionMode}
+                selectedDateIds={scheduler.selectedDateIds}
+                modifiedDateIds={scheduler.modifiedDateIds}
+                conflictDateIds={scheduler.conflictDateIds}
                 calendarCells={calendarCells}
-                onSelect={handleCalendarSelect}
+                onSelect={scheduler.handleCalendarSelect}
               />
-              <div className="flex flex-wrap gap-2 mt-5">
+
+              <div className="mt-5 flex flex-wrap gap-2">
                 <button
                   type="button"
-                  onClick={clearSelection}
-                  disabled={selectedDateIds.length === 0}
-                  className="flex items-center justify-center flex-1  gap-1 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-600 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:text-slate-300"
+                  onClick={scheduler.clearSelection}
+                  disabled={scheduler.selectedDateIds.length === 0}
+                  className="flex flex-1 items-center justify-center gap-1 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-600 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:text-slate-300"
                 >
                   <X className="h-3.5 w-3.5" />
                   Limpiar selección
                 </button>
               </div>
+
               <div className="border-slate-200 pt-4 text-sm">
                 <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500">
                   <span className="flex items-center gap-2">
@@ -752,6 +240,7 @@ export default function ReservationSchedulerPage() {
                 </div>
               </div>
             </Card>
+
             <EventsAndConflictsCard
               events={activeDayExternalEvents}
               visibleEvents={visibleEvents}
