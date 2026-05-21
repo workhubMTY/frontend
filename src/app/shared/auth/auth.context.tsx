@@ -1,14 +1,6 @@
-import {
-  createContext,
-  useEffect,
-  useMemo,
-  useState,
-  type ReactNode,
-} from "react";
-
+import { createContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import type { AuthContextType, LoginInput, User } from "./auth.types";
 import { authService } from "./auth.service";
-import { Finlandica } from "next/font/google";
 
 export const AuthContext = createContext<AuthContextType | null>(null);
 

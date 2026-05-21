@@ -5,8 +5,9 @@ import { useState, useEffect } from "react";
 import AccentureLogo from "../../../../../public/accenture_logo_purple1.png";
 import Image from "next/image";
 import NotificationsPanel from "../NotificationsPanel/NotificationsPanel";
+import { useAuth } from "../../auth/useAuth";
 
-const routes = [
+const baseRoutes = [
   { name: "Inicio", href: "/home" },
   { name: "Tablero", href: "/tablero" },
   { name: "Cubículos", href: "/cubiculos" },
@@ -14,7 +15,13 @@ const routes = [
   { name: "Estacionamientos", href: "/estacionamientos" },
 ];
 
+const adminRoutes = [
+  {name: "Estadísticas", href: "/estadisticas"}
+]
+
 export default function Navbar() {
+  const { user, logout } = useAuth();  
+  const routes = user?.role === "ADMIN" ? [...baseRoutes, ...adminRoutes] : baseRoutes;
   const pathname = usePathname();
   const route = useRouter();
   const [open, setOpen] = useState(false);
@@ -109,6 +116,16 @@ export default function Navbar() {
               person
             </label>
           </Link>
+          <button
+            onClick={async () => {
+              await logout();
+              route.push("/login");
+            }}
+            className="bg-background-page self-center p-2 select-none rounded-full text-on-background-2 hover:text-red-500 transition-colors material-symbols-outlined"
+            aria-label="Cerrar sesión"
+          >
+            logout
+          </button>
           <button
             data-hamburger
             onClick={() => setOpen((o) => !o)}
