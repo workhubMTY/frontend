@@ -145,15 +145,7 @@ export function SelectedSpacePanel({
       </div>
 
       <button
-        onClick={() => {
-          if (selectedSpace) {
-            window.sessionStorage.setItem(
-              "cubiculos:selectedSpace",
-              JSON.stringify(selectedSpace),
-            );
-          }
-          router.push("/cubiculos/reservacion");
-        }}
+        onClick={onContinue}
         className="mt-6 h-11 w-full bg-primary-2 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-1"
       >
         Continuar con este espacio

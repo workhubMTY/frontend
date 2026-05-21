@@ -45,13 +45,21 @@ import type {
 export interface ReservationSchedulerPageProps {
   spaceName: string;
 }
+type SelectedSpace = {
+  id: string;
+  name: string;
+};
 
 export default function ReservationSchedulerPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
 
-  const spaceId = searchParams.get("spaceId");
-  const spaceName = searchParams.get("spaceName");
+  const [selectedSpace, setSelectedSpace] = useState<SelectedSpace | null>(
+    null,
+  );
+
+  const spaceId = selectedSpace?.id;
+  const spaceName = selectedSpace?.name ?? "Cubículo";
+
   const calendarCells = useMemo(() => createCalendarCells(), []);
 
   const [selectionMode, setSelectionMode] = useState<SelectionMode>("multiple");
@@ -76,7 +84,29 @@ export default function ReservationSchedulerPage() {
     DayEvent[]
   >([]);
   const [editedSavedDateIds, setEditedSavedDateIds] = useState<string[]>([]);
+  useEffect(() => {
+    const selectedSpaceRaw = window.sessionStorage.getItem(
+      "cubiculos:selectedSpace",
+    );
 
+    if (!selectedSpaceRaw) {
+      router.replace("/cubiculos");
+      return;
+    }
+
+    try {
+      const parsedSpace = JSON.parse(selectedSpaceRaw) as SelectedSpace;
+
+      if (!parsedSpace?.id || !parsedSpace?.name) {
+        router.replace("/cubiculos");
+        return;
+      }
+
+      setSelectedSpace(parsedSpace);
+    } catch {
+      router.replace("/cubiculos");
+    }
+  }, [router]);
   const apiJson = useMemo(() => createApiJson(calendarCells), [calendarCells]);
 
   const modifiedDateIds = useMemo(
@@ -345,12 +375,13 @@ export default function ReservationSchedulerPage() {
     (hasValidPendingTarget || hasSavedBlockEdits || hasSavedBlocksToContinue);
   useEffect(() => {
     let cancelled = false;
-    if (!spaceName || !spaceId) return;
+
+    if (!spaceId || !spaceName) return;
 
     apiGetSpaceReservationsByDay({
       apiJson,
       dateId: activeDayId,
-      spaceName: spaceName,
+      spaceName,
     }).then((events) => {
       if (!cancelled) setSpaceReservationsForActiveDay(events);
     });
@@ -358,7 +389,7 @@ export default function ReservationSchedulerPage() {
     return () => {
       cancelled = true;
     };
-  }, [activeDayId, apiJson, spaceName]);
+  }, [activeDayId, apiJson, spaceId, spaceName]);
 
   useEffect(() => {
     let cancelled = false;
@@ -522,23 +553,45 @@ export default function ReservationSchedulerPage() {
     setHasAppliedCurrentSelection(true);
   }
   async function handleContinue() {
-    if (!canContinue) return;
+    if (!canContinue || !selectedSpace) return;
+
+    let finalDayBlocks = dayBlocks;
 
     if (pendingBlocks.length > 0) {
-      applyPendingBlocks();
+      const nextDayBlocks = { ...dayBlocks };
+
+      pendingBlocks.forEach((block, blockIndex) => {
+        const dateIdsForBlock = getAffectedDateIdsForBlock(block);
+
+        dateIdsForBlock.forEach((dateId) => {
+          const currentBlocksForDate = nextDayBlocks[dateId] ?? [];
+
+          nextDayBlocks[dateId] = [
+            ...currentBlocksForDate,
+            {
+              ...block,
+              id: `b-${dateId}-${Date.now()}-${blockIndex}`,
+              label: `Bloque ${currentBlocksForDate.length + 1}`,
+              applyToAllSelected: undefined,
+            },
+          ];
+        });
+      });
+
+      finalDayBlocks = nextDayBlocks;
+      setDayBlocks(nextDayBlocks);
+      setPendingBlocks([]);
+      setEditedSavedDateIds([]);
+      setHasAppliedCurrentSelection(true);
     }
-    const selectedSpaceRaw = window.sessionStorage.getItem(
-      "cubiculos:selectedSpace",
-    );
-    const selectedSpace = selectedSpaceRaw
-      ? JSON.parse(selectedSpaceRaw)
-      : null;
-    const reservableId = selectedSpace?.id;
+
     const schedules: { start_time: string; end_time: string }[] = [];
-    Object.entries(dayBlocks).forEach(([dateId, blocks]) => {
+
+    Object.entries(finalDayBlocks).forEach(([dateId, blocks]) => {
       blocks.forEach((block) => {
         const start = to24Hour(block.start);
         const end = to24Hour(block.end);
+
         schedules.push({
           start_time: new Date(`${dateId}T${start}:00`).toISOString(),
           end_time: new Date(`${dateId}T${end}:00`).toISOString(),
@@ -546,16 +599,17 @@ export default function ReservationSchedulerPage() {
       });
     });
 
-    if (reservableId && schedules.length > 0) {
+    if (schedules.length > 0) {
       window.sessionStorage.setItem(
         "cubiculos:reservationDraft",
         JSON.stringify({
-          reservableId,
+          reservableId: selectedSpace.id,
+          reservableName: selectedSpace.name,
           schedules,
-          reservableName: selectedSpace?.name ?? spaceName,
         }),
       );
     }
+
     router.push("/cubiculos/reservacion/confirmar");
   }
   return (

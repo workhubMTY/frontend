@@ -28,9 +28,17 @@ export default function ReservableSpacesSearchPage() {
   const router = useRouter();
 
   function handleOnContinue() {
-    router.push(
-      `/cubiculos/reservacion?spaceId=${selectedSpace?.id}&spaceName=${selectedSpace?.name}`,
-    );
+    // router.push(
+    //   `/cubiculos/reservacion?spaceId=${selectedSpace?.id}&spaceName=${selectedSpace?.name}`,
+    // );
+
+    if (selectedSpace) {
+      window.sessionStorage.setItem(
+        "cubiculos:selectedSpace",
+        JSON.stringify(selectedSpace),
+      );
+    }
+    router.push("/cubiculos/reservacion");
   }
 
   return (
