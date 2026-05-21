@@ -20,8 +20,10 @@ import { getInitials } from "../../lib/formatting";
 
 type AchievementComparisonDrawerProps = {
   isOpen: boolean;
-  personalData: AchievementUserData;
+  personalData: AchievementUserData | null;
   friendData: AchievementUserData | null;
+  friendDataLoading?: boolean;
+  friendDataError?: Error | null;
   friends: Friend[];
   selectedFriendId: string | null;
   onSelectFriend: (friendId: string | null) => void;
@@ -33,6 +35,8 @@ export function AchievementComparisonDrawer({
   isOpen,
   personalData,
   friendData,
+  friendDataError,
+  friendDataLoading,
   friends,
   selectedFriendId,
   onSelectFriend,
@@ -40,6 +44,45 @@ export function AchievementComparisonDrawer({
   onClearComparison,
 }: AchievementComparisonDrawerProps) {
   if (!isOpen) return null;
+
+  if (!personalData) {
+    return (
+      <div className="fixed inset-0 z-50">
+        <button
+          type="button"
+          aria-label="Cerrar panel de logros"
+          onClick={onClose}
+          className="absolute inset-0 bg-black/50"
+        />
+
+        <aside className="absolute right-0 top-0 flex h-full w-full max-w-[860px] flex-col border-l border-neutral-200 bg-white shadow-2xl">
+          <header className="flex items-start justify-between gap-6 border-b border-neutral-100 px-8 py-6">
+            <div>
+              <div className="flex items-center gap-3">
+                <Trophy size={24} className="text-neutral-700" />
+                <h2 className="text-2xl font-semibold tracking-tight text-neutral-950">
+                  Logros
+                </h2>
+              </div>
+
+              <p className="mt-2 text-sm text-neutral-500">
+                No se pudieron cargar tus logros personales.
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={onClose}
+              className="grid h-9 w-9 shrink-0 place-items-center text-neutral-500 transition hover:bg-neutral-100 hover:text-neutral-900"
+              aria-label="Cerrar drawer"
+            >
+              <X size={20} />
+            </button>
+          </header>
+        </aside>
+      </div>
+    );
+  }
 
   const isComparing = Boolean(selectedFriendId && friendData);
 
@@ -180,16 +223,19 @@ export function AchievementComparisonDrawer({
         </header>
 
         <div className="min-h-0 flex-1 overflow-y-auto">
-          {isComparing && friendData ? (
+          {selectedFriendId && friendDataLoading ? (
+            <DrawerLoadingState />
+          ) : selectedFriendId && friendDataError ? (
+            <DrawerErrorState />
+          ) : isComparing && friendData ? (
             <ComparisonTable
               personalData={personalData}
               friendData={friendData}
             />
           ) : (
-            <AchievementsList personalData={personalData} />
+            <AchievementsList achievements={personalData.achievements} />
           )}
         </div>
-
         <footer className="border-t border-neutral-100 bg-white px-8 py-5">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-2 text-sm text-neutral-500">
@@ -254,10 +300,10 @@ function ComparisonTable({ personalData, friendData }: ComparisonTableProps) {
 }
 
 type AchievementsListProps = {
-  personalData: AchievementUserData;
+  achievements: Achievement[];
 };
 
-function AchievementsList({ personalData }: AchievementsListProps) {
+function AchievementsList({ achievements }: AchievementsListProps) {
   return (
     <>
       <div className="grid grid-cols-[1fr_140px] gap-5 border-b border-neutral-100 bg-white px-8 py-3 text-xs font-semibold uppercase tracking-wide text-neutral-500">
@@ -266,7 +312,7 @@ function AchievementsList({ personalData }: AchievementsListProps) {
       </div>
 
       <div className="divide-y divide-neutral-100">
-        {personalData.achievements.map((achievement) => (
+        {achievements.map((achievement) => (
           <AchievementRow
             key={achievement.id}
             achievement={achievement}
@@ -488,4 +534,43 @@ function getSharedCompletedCount(
 
 function getFirstName(name: string) {
   return name.trim().split(" ")[0] ?? name;
+}
+
+function DrawerLoadingState() {
+  return (
+    <div className="space-y-4 px-8 py-6">
+      {Array.from({ length: 5 }).map((_, index) => (
+        <div
+          key={index}
+          className="grid grid-cols-[1fr_120px_120px] gap-5 border-b border-neutral-100 py-4"
+        >
+          <div className="flex gap-4">
+            <div className="h-11 w-11 animate-pulse rounded-full bg-neutral-100" />
+            <div className="flex-1 space-y-2">
+              <div className="h-4 w-48 animate-pulse rounded bg-neutral-100" />
+              <div className="h-3 w-full animate-pulse rounded bg-neutral-100" />
+            </div>
+          </div>
+
+          <div className="h-4 w-16 animate-pulse rounded bg-neutral-100" />
+          <div className="h-4 w-16 animate-pulse rounded bg-neutral-100" />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function DrawerErrorState() {
+  return (
+    <div className="px-8 py-6">
+      <div className="rounded-xl border border-red-100 bg-red-50 px-4 py-4">
+        <h3 className="text-sm font-semibold text-red-900">
+          No se pudieron cargar los logros de esta amistad
+        </h3>
+        <p className="mt-1 text-sm text-red-700">
+          Intenta seleccionar otra amistad o vuelve a intentarlo más tarde.
+        </p>
+      </div>
+    </div>
+  );
 }

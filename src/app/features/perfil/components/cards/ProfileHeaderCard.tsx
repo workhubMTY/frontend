@@ -14,6 +14,17 @@ type ProfileHeaderCardProps = {
 };
 
 export function ProfileHeaderCard({ profile }: ProfileHeaderCardProps) {
+  // QUITAR ESTO CUANDO YA ESTEN SINCRONIZADOS LOS SCHEMAS
+  if (!profile.stats) {
+    profile.stats = {
+      points: 2450,
+      streakDays: 12,
+      friendsCount: 8,
+      completedAchievements: 5,
+      inProgressAchievements: 3,
+      pendingAchievements: 2,
+    };
+  }
   return (
     <section className="h-full border border-neutral-1 bg-white shadow-sm">
       <div className="grid h-full grid-cols-1 gap-8 p-7 lg:grid-cols-12">

@@ -1,24 +1,17 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo } from "react";
 import {
-  type UserProfile,
-  type Friend,
-  Achievement,
-  Team,
-  AchievementUserData,
-} from "@/app/features/perfil/types/profile";
-import {
-  getAchievements,
-  getTeams,
-  getTeamMembers,
   getSuggestions,
+  getTeamMembers,
 } from "@/app/features/perfil/data/mock/mockProfileApi";
+
 import { ProfileHeaderCard } from "@/app/features/perfil/components/cards/ProfileHeaderCard";
 import { ProgressSummaryCard } from "@/app/features/perfil/components/cards/ProgressSumaryCard";
 import { FriendsCard } from "@/app/features/perfil/components/cards/FriendsCard";
 import { TeamsCard } from "@/app/features/perfil/components/cards/TeamsCard";
 import { AchievementComparisonCard } from "@/app/features/perfil/components/cards/AchievementComparisonCard";
+
 import { FriendsDrawer } from "@/app/features/perfil/components/drawers/FriendsDrawer";
 import { TeamsDrawer } from "@/app/features/perfil/components/drawers/TeamsDrawer";
 import { AchievementComparisonDrawer } from "@/app/features/perfil/components/drawers/AchievementComparisonDrawer";
@@ -27,163 +20,102 @@ import {
   useProfile,
   useFriends,
   useAchievements,
+  useTeams,
+  useSelectedFriendAchievements,
 } from "@/app/features/perfil/data/hooks";
 
+import { useAuth } from "@/app/shared/auth/useAuth";
+import { useProfilePageController } from "@/app/features/perfil/hooks/useProfilePageController";
+import { ProfilePageSkeleton } from "@/app/features/perfil/components/feedback/ProfileSkeleton";
+import { ProfilePageMessage } from "@/app/features/perfil/components/feedback/ProfilePageMessage";
+
 export default function UserProfilePage() {
-  const USER_ID = "MF"; // Esto deberiamos poder sacarlo de un context o algo
+  const { user, isLoading: authLoading } = useAuth();
 
   const {
-  data: profile,
-  isLoading: profileLoading,
+    selectedFriendId,
+    setSelectedFriendId,
+
+    isFriendDrawerOpen,
+    isTeamDrawerOpen,
+    isAchievementDrawerOpen,
+
+    initialOpenTeamId,
+    initialTeamDrawerMode,
+    initialFriendDrawerMode,
+
+    handleDisplayAllFriends,
+    handleInviteFriends,
+    handleDisplayAllTeams,
+    handleDisplayTeamMembers,
+    handleCreateTeamShortcut,
+    handleDisplayAllAchievements,
+    handleCompareFriend,
+    handleClearComparison,
+    handleCloseFriendDrawer,
+    handleCloseTeamDrawer,
+    handleCloseAchievementDrawer,
+  } = useProfilePageController();
+
+  const {
+    data: profile,
+    isLoading: profileLoading,
+    error: profileError,
   } = useProfile();
 
-const {
-  data: friends = [],
-  isLoading: friendsLoading,
+  const {
+    data: friends = [],
+    isLoading: friendsLoading,
+    error: friendsError,
   } = useFriends();
 
- const { data: achievements = [] } = useAchievements(USER_ID);
+  const {
+    data: teams = [],
+    isLoading: teamsLoading,
+    error: teamsError,
+  } = useTeams();
 
-  const [teams, setTeams] = useState<Team[] | null>(null);
+  const {
+    data: achievements = [],
+    isLoading: achievementsLoading,
+    error: achievementsError,
+  } = useAchievements(user?.eId, {
+    enabled: Boolean(user?.eId),
+  });
 
-  const [selectedFriendId, setSelectedFriendId] = useState<string | null>(null);
-  const [selectedFriendsData, setSelectedFriendsData] =
-    useState<AchievementUserData | null>(null);
+  const {
+    data: selectedFriendAchievementData,
+    isLoading: selectedFriendAchievementsLoading,
+    error: selectedFriendAchievementsError,
+  } = useSelectedFriendAchievements({
+    selectedFriendId: selectedFriendId,
+    friends,
+  });
 
-  const [isFriendDrawerOpen, setIsFriendDrawerOpen] = useState(false);
-  const [isTeamDrawerOpen, setIsTeamDrawerOpen] = useState(false);
-  const [isAchievementDrawerOpen, setIsAchievementDrawerOpen] = useState(false);
+  // const personalAchievementData = useMemo(() => {
+  //   if (!profile) return null;
 
-  const isLoading =
-  profileLoading ||
-  friendsLoading;
-
-  const [initialOpenTeamId, setInitialOpenTeamId] = useState<string | null>(
-    null,
-  );
-
-  const [initialTeamDrawerMode, setInitialTeamDrawerMode] = useState<
-    "list" | "create"
-  >("list");
-  const [initialFriendDrawerMode, setInitialFriendDrawerMode] = useState<
-    "list" | "invite"
-  >("list");
-
-  const personalAchievementData = useMemo<AchievementUserData | null>(() => {
-    if (!profile || !achievements) return null;
-
-    return {
-      name: profile.name,
-      achievements,
-    };
-  }, [profile, achievements]);
-
-  function handleDisplayAllTeams() {
-    setInitialOpenTeamId(null);
-    setIsTeamDrawerOpen(true);
-    setIsFriendDrawerOpen(false);
-    setIsAchievementDrawerOpen(false);
-  }
-
-  function handleDisplayTeamMembers(teamId: string) {
-    setInitialOpenTeamId(teamId);
-    setIsTeamDrawerOpen(true);
-    setIsFriendDrawerOpen(false);
-    setIsAchievementDrawerOpen(false);
-  }
-
-  function handleDisplayAllAchievements() {
-    setIsAchievementDrawerOpen(true);
-    setIsFriendDrawerOpen(false);
-    setIsTeamDrawerOpen(false);
-  }
+  //   return {
+  //     name: profile.name,
+  //     achievements: achievements,
+  //   };
+  // }, [profile, achievements]);
 
   const handleSearchSuggestions = useCallback(async () => {
     return await getSuggestions();
   }, []);
 
-  function handleDisplayAllFriends() {
-    setInitialFriendDrawerMode("list");
-    setIsFriendDrawerOpen(true);
-    setIsTeamDrawerOpen(false);
-  }
-
-  function handleInviteFriends() {
-    setInitialFriendDrawerMode("invite");
-    setIsFriendDrawerOpen(true);
-    setIsAchievementDrawerOpen(false);
-    setIsTeamDrawerOpen(false);
-  }
-  function handleCompareFriend(friendId: string) {
-    setSelectedFriendId(friendId);
-    setIsAchievementDrawerOpen(true);
-    setIsFriendDrawerOpen(false);
-    setIsTeamDrawerOpen(false);
-  }
-
-  function handleCreateTeamShortcut() {
-    setInitialTeamDrawerMode("create");
-    setIsTeamDrawerOpen(true);
-    setIsAchievementDrawerOpen(false);
-    setIsFriendDrawerOpen(false);
-  }
-
-  function handleSelectFriendInsideAchievementDrawer(friendId: string | null) {
-    setSelectedFriendId(friendId);
-  }
-
-  function handleClearComparison() {
-    setSelectedFriendId(null);
-  }
-
-  useEffect(() => {
-    async function loadFriendsAchievements() {
-      if (!selectedFriendId) {
-        setSelectedFriendsData(null);
-        return;
-      }
-
-      const selectedFriend = friends?.find(
-        (current: Friend) => current.id === selectedFriendId,
-      );
-
-      if (!selectedFriend) return;
-
-      try {
-        const achievementsResponse =
-          await getAchievements({ userId: selectedFriendId });
-
-        setSelectedFriendsData({
-          name: selectedFriend.name,
-          achievements: achievementsResponse,
-        });
-      } catch (error) {
-        console.log(error);
-      }
-    }
-
-    loadFriendsAchievements();
-  }, [selectedFriendId, friends]);
-
-  if (isLoading) {
+  if (authLoading || profileLoading) {
     return <ProfilePageSkeleton />;
   }
 
-  if (
-    !profile ||
-    !teams ||
-    !friends ||
-    !achievements ||
-    !personalAchievementData
-  ) {
+  if (!user) {
+    return <ProfilePageMessage title="No se encontró una sesión activa" />;
+  }
+
+  if (profileError || !profile) {
     return (
-      <main className="min-h-screen bg-neutral-100 px-8 py-8">
-        <div className="mx-auto max-w-screen-2xl border border-neutral-200 bg-white p-8 shadow-sm">
-          <h1 className="text-2xl font-semibold text-neutral-950">
-            No se pudo cargar el perfil
-          </h1>
-        </div>
-      </main>
+      <ProfilePageMessage title="No se pudo cargar la información principal del perfil" />
     );
   }
 
@@ -214,6 +146,8 @@ const {
             <div id="friends-section" className="min-w-0 lg:col-span-4">
               <FriendsCard
                 friends={friends}
+                isLoading={friendsLoading}
+                error={friendsError}
                 selectedFriendId={selectedFriendId}
                 onCompareFriend={handleCompareFriend}
                 onClearComparison={handleClearComparison}
@@ -225,6 +159,8 @@ const {
             <div className="min-w-0 lg:col-span-4">
               <TeamsCard
                 teams={teams}
+                isLoading={teamsLoading}
+                error={teamsError}
                 onDisplayAll={handleDisplayAllTeams}
                 onCreateTeamShortcut={handleCreateTeamShortcut}
                 onDisplayMembers={handleDisplayTeamMembers}
@@ -234,6 +170,8 @@ const {
             <div className="min-w-0 lg:col-span-4">
               <AchievementComparisonCard
                 achievements={achievements}
+                isLoading={achievementsLoading}
+                error={achievementsError}
                 onDisplayAll={handleDisplayAllAchievements}
               />
             </div>
@@ -249,66 +187,41 @@ const {
         onSearchSuggestions={handleSearchSuggestions}
         onCompareFriend={handleCompareFriend}
         onClearComparison={handleClearComparison}
-        onClose={() => setIsFriendDrawerOpen(false)}
+        onClose={handleCloseFriendDrawer}
         onSendFriendRequests={async (payload) => {
           console.log("Solicitudes enviadas:", payload);
-          // AQUI HACEMOS POST
         }}
       />
 
       <TeamsDrawer
         open={isTeamDrawerOpen}
         teams={teams}
-        onClose={() => {
-          setIsTeamDrawerOpen(false);
-          setInitialTeamDrawerMode("list");
-        }}
+        onClose={handleCloseTeamDrawer}
         initialOpenTeamId={initialOpenTeamId}
         initialTeamDrawerMode={initialTeamDrawerMode}
         onGetTeamMembers={(teamId) => getTeamMembers({ teamId })}
         inviteCandidates={friends}
         onCreateTeam={async (payload) => {
           console.log("Crear equipo:", payload);
-          // Aqui metemos la llamada a la api
         }}
       />
 
       <AchievementComparisonDrawer
         isOpen={isAchievementDrawerOpen}
-        personalData={personalAchievementData}
-        friendData={selectedFriendsData}
+        personalData={{
+          name: profile.name,
+          avatarUrl: profile.avatarUrl,
+          achievements,
+        }}
+        friendData={selectedFriendAchievementData}
+        friendDataLoading={selectedFriendAchievementsLoading}
+        friendDataError={selectedFriendAchievementsError}
         friends={friends}
         selectedFriendId={selectedFriendId}
-        onSelectFriend={handleSelectFriendInsideAchievementDrawer}
-        onClose={() => {
-          setIsAchievementDrawerOpen(false);
-          setSelectedFriendsData(null);
-          setSelectedFriendId(null);
-        }}
+        onSelectFriend={setSelectedFriendId}
+        onClose={handleCloseAchievementDrawer}
         onClearComparison={handleClearComparison}
       />
     </>
-  );
-}
-
-function ProfilePageSkeleton() {
-  return (
-    <main className="min-h-screen bg-background-page px-8 py-8">
-      <div className="mx-auto min-w-full max-w-screen-2xl animate-pulse">
-        <div className="h-10 w-72 bg-container" />
-        <div className="mt-3 h-5 w-96 bg-container" />
-
-        <div className="mt-7 grid grid-cols-1 gap-6 lg:grid-cols-12">
-          <div className="h-64 border border-neutral-200 bg-container lg:col-span-9" />
-          <div className="h-64 border border-neutral-200 bg-container lg:col-span-3" />
-        </div>
-
-        <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-12">
-          <div className="h-[430px] border border-neutral-200 bg-container lg:col-span-4" />
-          <div className="h-[430px] border border-neutral-200 bg-container lg:col-span-4" />
-          <div className="h-[430px] border border-neutral-200 bg-container lg:col-span-4" />
-        </div>
-      </div>
-    </main>
   );
 }
