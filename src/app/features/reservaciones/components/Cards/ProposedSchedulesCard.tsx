@@ -1,9 +1,9 @@
 import { Clock3, GripVertical, Plus, Settings, Trash2 } from "lucide-react";
 
-import type { TimeBlock } from "../types/reservaciones";
-import { blockHasConflict } from "../lib/conflicts";
-import { cn } from "../lib/cn";
-import { Card } from "./Card";
+import type { TimeBlock } from "../../types/reservaciones";
+import { blockHasConflict } from "../../lib/conflicts";
+import { cn } from "../../lib/cn";
+import { Card } from "../../../../shared/components/Card";
 
 type ProposedSchedulesCardProps = {
   activeDayId: string;

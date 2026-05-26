@@ -1,8 +1,8 @@
 import { AlertTriangle, CalendarDays, ChevronRight } from "lucide-react";
 
-import type { DayEvent } from "../types/reservaciones";
-import { cn } from "../lib/cn";
-import { Card } from "./Card";
+import type { DayEvent } from "../../types/reservaciones";
+import { cn } from "../../lib/cn";
+import { Card } from "../../../../shared/components/Card";
 
 type EventsAndConflictsCardProps = {
   events: DayEvent[];

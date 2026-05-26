@@ -2,7 +2,7 @@
 
 import { CalendarDays, MapPin, Settings } from "lucide-react";
 
-import { Card } from "@/app/features/reservaciones/components/Card";
+import { Card } from "@/app/shared/components/Card";
 
 type ParkingReservationHeaderCardProps = {
   parkingName: string;

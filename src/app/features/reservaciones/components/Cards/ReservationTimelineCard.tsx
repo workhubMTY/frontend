@@ -1,11 +1,11 @@
 import { CalendarCheck, Lock, Users } from "lucide-react";
 
-import type { TimeBlock, TimelineEvent } from "../types/reservaciones";
-import { getOverlapSegments } from "../lib/conflicts";
-import { Card } from "./Card";
-import { TimelineAxis } from "./Timeline/TimelineAxis";
-import { TimelineBlock } from "./Timeline/TimelineBlock";
-import { SelectionBlock } from "./Timeline/SelectionBlock";
+import type { TimeBlock, TimelineEvent } from "../../types/reservaciones";
+import { getOverlapSegments } from "../../lib/conflicts";
+import { Card } from "@/app/shared/components/Card";
+import { TimelineAxis } from "../Timeline/TimelineAxis";
+import { TimelineBlock } from "../Timeline/TimelineBlock";
+import { SelectionBlock } from "../Timeline/SelectionBlock";
 
 type ReservationTimelineCardProps = {
   activeDayId: string;
@@ -23,7 +23,7 @@ export function ReservationTimelineCard({
   externalTimelineEventsForActiveDay,
 }: ReservationTimelineCardProps) {
   return (
-    <Card className="p-5">
+    <div className="p-5">
       <div className="overflow-x-auto pb-2">
         <div className="min-w-[880px]">
           <TimelineAxis />
@@ -128,6 +128,6 @@ export function ReservationTimelineCard({
           Conflicto
         </span>
       </div>
-    </Card>
+    </div>
   );
 }

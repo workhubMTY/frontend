@@ -3,7 +3,7 @@
 import { X } from "lucide-react";
 
 import { MonthCalendar } from "@/app/features/reservaciones/components/Calendar/MonthCalendar";
-import { Card } from "@/app/features/reservaciones/components/Card";
+import { Card } from "@/app/shared/components/Card";
 import { cn } from "@/app/features/reservaciones/lib/cn";
 
 import type {

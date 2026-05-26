@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { cn } from "../lib/cn";
+import { cn } from "../../features/reservaciones/lib/cn";
 
 type CardProps = {
   children: ReactNode;
@@ -8,6 +8,8 @@ type CardProps = {
 
 export function Card({ children, className }: CardProps) {
   return (
-    <section className={cn(" bg-container", className)}>{children}</section>
+    <section className={cn("border border-grid-lines bg-container", className)}>
+      {children}
+    </section>
   );
 }

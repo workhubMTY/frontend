@@ -6,9 +6,9 @@ import { useRouter, useSearchParams } from "next/navigation";
 import PageTransition from "@/app/shared/components/PageTransition/PageTransition";
 
 import { Card } from "@/app/features/reservaciones/components/Card";
-import { ProposedSchedulesCard } from "@/app/features/reservaciones/components/ProposedSchedulesCard";
+import { ProposedSchedulesCard } from "@/app/features/reservaciones/components/Cards/ProposedSchedulesCard";
 import { ReservationFooter } from "@/app/features/reservaciones/components/ReservationFooter";
-import { ReservationTimelineCard } from "@/app/features/reservaciones/components/ReservationTimelineCard";
+import { ReservationTimelineCard } from "@/app/features/reservaciones/components/Cards/ReservationTimelineCard";
 
 import { ReservationDaysSelectorCard } from "@/app/features/estacionamientos/components/ReservationDaysSelectorCard";
 import { AvailabilityIntervalCard } from "@/app/features/estacionamientos/components/AvailabilityIntervalCard";

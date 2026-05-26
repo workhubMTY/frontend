@@ -9,7 +9,7 @@ import {
   CheckCircle2,
 } from "lucide-react";
 
-import { Card } from "@/app/features/reservaciones/components/Card";
+import { Card } from "@/app/shared/components/Card";
 import { cn } from "@/app/features/reservaciones/lib/cn";
 
 type AvailabilityStatus = "available" | "partial" | "conflict";
