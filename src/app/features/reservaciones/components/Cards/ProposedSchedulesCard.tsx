@@ -49,8 +49,8 @@ export function ProposedSchedulesCard({
             </h2>
           </div>
           <p className="mt-1 text-sm text-slate-500">
-            Los guardados ya existen en el día activo; también puedes editarlos
-            y guardar esos cambios.
+            Estos horarios se aplicarán a los días seleccionados cuando
+            continúes con la reservación.
           </p>
         </div>
       </div>
@@ -59,7 +59,7 @@ export function ProposedSchedulesCard({
         {activeBlocks.length === 0 && pendingBlocks.length === 0 && (
           <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 px-4 py-6 text-center">
             <p className="text-sm font-semibold text-slate-700">
-              Este día todavía no tiene horarios guardados.
+              Todavía no has agregado horarios
             </p>
             <p className="mt-1 text-xs text-slate-500">
               Agrega un horario para crear bloques en los días seleccionados.

@@ -3,8 +3,8 @@
 import { X } from "lucide-react";
 
 import { Card } from "@/app/shared/components/Card";
-import { MonthCalendar } from "@/app/shared/components/Calendar/MonthCalendar";
-import { SelectionModeSegmentedControl } from "@/app/shared/components/Calendar/DaysSelection/SelectionModeSegmentedControl";
+import { MonthCalendar } from "@/app/features/reservaciones/components/Calendar/MonthCalendar";
+import { SelectionModeSegmentedControl } from "@/app/features/reservaciones/components/Calendar/DaysSelection/SelectionModeSegmentedControl";
 
 import { cn } from "@/app/features/reservaciones/lib/cn";
 
