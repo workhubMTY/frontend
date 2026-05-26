@@ -51,10 +51,6 @@ function getCalendarDayClassName({
       "cursor-not-allowed border border-slate-200 bg-slate-200 text-slate-400 opacity-70 shadow-inner",
 
     !cell.isWeekend &&
-      !cell.isStartMonth &&
-      "bg-slate-50 text-slate-500 ring-1 ring-slate-200",
-
-    !cell.isWeekend &&
       cell.isMonthBoundary &&
       !cell.isStartMonth &&
       "border-l-4 border-slate-300",
