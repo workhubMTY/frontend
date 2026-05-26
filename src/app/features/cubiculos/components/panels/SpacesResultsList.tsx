@@ -28,12 +28,12 @@ function getStatusDot(status: SpaceStatus) {
   return "bg-blue-500";
 }
 
-function getSpaceDisplayName(space: ReservableSpace) {
+function getSpaceDisplayName(space: ReservableSpace, defaultName = "cubículo") {
   if (space.name) {
     return `${space.code} ${space.name}`;
   }
 
-  return space.code;
+  return defaultName;
 }
 
 export function SpacesResultsList({
