@@ -7,16 +7,24 @@
 
 @theme {
   --color-primary-1: #a100ff;
+  --color-primary-2: #6d28d9;
+  --color-on-primary: #ffffff;
 
-  --color-background: #ededed;
-  --color-background-page: #e3e3e3;
+  --color-background: #e3e3e3;
+  --color-background-page: #f3f3f3;
 
   --color-on-background: #000000;
   --color-on-background-2: #505050;
 
   --color-surface-lowest: #000000;
-  --color-neutral-1: #f0f0f0;
-  --color-on-surface-container: #ffffff;
+  --color-neutral-1: #e7e7e7;
+
+  --color-container: #ffffff;
+  --color-on-container: #000000;
+  --color-container-border: #dcdcdc;
+  --color-grid-lines: #e7e7e7;
+
+  --color-container-on-container: #f9f9f9;
 }
 /* 
 @media (prefers-color-scheme: dark) {

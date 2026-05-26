@@ -1,0 +1,28 @@
+name: Deploy Frontend
+
+on:
+  push:
+    branches:
+      - Production
+      - main
+
+jobs:
+  deploy:
+    runs-on: [self-hosted, workhub]
+
+    steps:
+      - name: Update frontend repo
+        working-directory: /home/costra/workhubMTY/frontend
+        run: |
+          git fetch origin
+          git reset --hard origin/${{ github.ref_name }}
+
+      - name: Rebuild only frontend
+        working-directory: /home/costra/workhubMTY
+        run: |
+          docker compose up -d --build --no-deps frontend
+
+      - name: Check frontend logs
+        run: |
+          docker ps
+          docker logs --tail=80 whmty-frontend

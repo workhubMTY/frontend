@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Manrope } from "next/font/google";
 import "./globals.css";
+import { Providers } from "./providers";
 
 const manrope = Manrope({
   subsets: ["latin"],
@@ -39,7 +40,9 @@ export default function RootLayout({
           href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined"
         />
       </head>
-      <body className="min-h-full flex flex-row bg-background">{children}</body>
+      <body className="min-h-full flex flex-row bg-background">
+        <Providers>{children}</Providers>
+      </body>
     </html>
   );
 }

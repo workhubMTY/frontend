@@ -1,128 +1,479 @@
-import Image from "next/image";
-import AddFriend from "../../../../public/add_friend.png";
-import RightArrow from "../../../../public/right_arrow.png";
-import LeftArrow from "../../../../public/left_arrow.png";
+﻿"use client";
+
+import { useMemo, useState } from "react";
+import { CalendarDays, Users, MailOpen } from "lucide-react";
+import PageTransition from "@/app/shared/components/PageTransition/PageTransition";
+import { useFriends } from "@/app/shared/data/friendships/hooks";
+import { useEvents, useFriendsReservations, useMyReservations } from "@/app/features/cubiculos/data/hooks";
+import { formatHourRange, getInitials, toAgendaDay, toDate, toDecimalHour } from "@/app/features/home/utils/utils";
+import type { ReservationEvent, ReservationSummary } from "@/app/features/cubiculos/data/types";
+import { DiaInvitaciones, EventoGeneral, Invitacion, Persona, Reserva } from "@/app/features/home/types/types";
+import { PanelRed } from "@/app/features/home/components/PanelRed";
+import AgendaRapida, { ExternalEvent } from "@/app/features/home/components/AgendaRapida/AgendaRapida";
+import { PanelInvitaciones } from "@/app/features/home/components/PanelInvitaciones";
+import { EventoGeneralDetail } from "@/app/features/home/components/EventoGeneralDetail";
+import { useAuth } from "@/app/shared/auth/useAuth";
+
+type MobileTab = "agenda" | "red" | "invitaciones";
+
+const PERSON_COLORS = [
+  { bg: "#EEEDFE", text: "#534AB7" },
+  { bg: "#DDEEFE", text: "#185FA5" },
+  { bg: "#D6F5E6", text: "#0F6E56" },
+];
+
+const TIPO_EVENTO_COLORS: Record<
+  EventoGeneral["tipo"],
+  { bg: string; text: string; border: string }
+> = {
+  Festivo: { bg: "#FEF9C3", text: "#713F12", border: "#EAB308" },
+  Corporativo: { bg: "#EDE9FE", text: "#4C1D95", border: "#7C3AED" },
+  Social: { bg: "#D6F5E6", text: "#065F46", border: "#10B981" },
+};
+
+const DIAS = [
+  "Lunes",
+  "Martes",
+  "Miércoles",
+  "Jueves",
+  "Viernes",
+  "Sábado",
+  "Domingo",
+];
+
+function eventType(evt: ReservationEvent): EventoGeneral["tipo"] {
+  const text = `${evt.title} ${evt.description}`.toLowerCase();
+  if (text.includes("holiday") || text.includes("festivo")) return "Festivo";
+  if (text.includes("social") || text.includes("happy")) return "Social";
+  return "Corporativo";
+}
+
+function eventIcon(tipo: EventoGeneral["tipo"]) {
+  if (tipo === "Festivo") return "??";
+  if (tipo === "Social") return "??";
+  return "??";
+}
+
+function mapReservation(res: ReservationSummary): Reserva {
+  const start = toDate(res.start_time);
+  const end = toDate(res.end_time);
+  return {
+    id: res.id,
+    titulo: "Reservación",
+    hora: formatHourRange(res.start_time, res.end_time),
+    lugar: `${res.reservable_name} · ${res.floor_name}`,
+    estado: res.status === "ACCEPTED" ? "Confirmada" : "Pendiente",
+    day: toAgendaDay(start),
+    start: toDecimalHour(start),
+    end: toDecimalHour(end),
+  };
+}
 
 export default function Home() {
-  return (
-    <section className="flex h-[100svh] w-full overflow-hidden bg-gray-200">
-      <div className="flex-1 px-[4rem] py-8 pt-25">
-        <h3 className="text-4xl font-semibold leading-tight">
-          Bienvenido, Croissant
-        </h3>
+  const [selectedPerson, setSelectedPerson] = useState<number | null>(null);
+  const [selInv, setSelInv] = useState<string | null>(null);
+  const [curEv, setCurEv] = useState(0);
+  const [eventOnAgenda, setEventOnAgenda] = useState<string | null>(null);
+  const [mobileTab, setMobileTab] = useState<MobileTab>("agenda");
+  const { user } = useAuth();
+  const name = user?.name;
 
-        <div className="flex gap-10 mx-[2svw] my-[3svh] h-[85%]">
-          
-          <div className="flex w-[30%] flex-col rounded-[0.5rem] bg-white p-6">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-xl font-bold">Red personal</h3>
-              <Image
-                src={AddFriend}
-                alt="Add Friend"
-                className="w-6 cursor-pointer select-none"
-                priority
+  const { data: friends = [] } = useFriends();
+  const { data: friendsReservations = [] } = useFriendsReservations();
+  const { data: myReservationsData } = useMyReservations();
+  const { data: eventsData = [] } = useEvents();
+
+  const personas = useMemo<Persona[]>(() => {
+    return friends.map((friend: any) => {
+      const fr = friendsReservations.find((x: any) => x.user_id === friend.eId);
+      const reservas = (fr?.reservations ?? [])
+        .filter((r: any) => r.status === "ACCEPTED")
+        .map(mapReservation);
+
+      return {
+        id: friend.eId,
+        initials: getInitials(friend.name),
+        name: friend.name,
+        role: friend.roleName,
+        userId: friend.eId,
+        reservas,
+      };
+    });
+  }, [friends, friendsReservations]);
+
+  const invitaciones = useMemo<DiaInvitaciones[]>(() => {
+    const grouped = new Map<number, Invitacion[]>();
+
+    (myReservationsData?.reservations ?? [])
+      .filter((r: any) => r.status === "PENDING")
+      .forEach((res: any) => {
+        const start = toDate(res.start_time);
+        const end = toDate(res.end_time);
+        const dayIndex = toAgendaDay(start);
+        const item: Invitacion = {
+          nombre: "Invitación de reservación",
+          sala: `${res.reservable_name} · ${res.floor_name}`,
+          hora: formatHourRange(res.start_time, res.end_time),
+          tipo: "PENDING",
+          day: dayIndex,
+          start: toDecimalHour(start),
+          end: toDecimalHour(end),
+        };
+        const arr = grouped.get(dayIndex) ?? [];
+        arr.push(item);
+        grouped.set(dayIndex, arr);
+      });
+
+    return Array.from(grouped.entries())
+      .sort((a, b) => a[0] - b[0])
+      .map(([dayIndex, items]) => ({
+        dia: DIAS[dayIndex],
+        dayIndex,
+        items,
+      }));
+  }, [myReservationsData]);
+
+  const eventosGenerales = useMemo<EventoGeneral[]>(() => {
+    if (!eventsData.length) {
+      return [
+        {
+          id: -1,
+          titulo: "Sin eventos",
+          descripcion: "No hay eventos cargados",
+          tipo: "Corporativo",
+          icono: "??",
+          day: 0,
+          start: 0,
+          end: 0,
+          startAt: undefined,
+          endAt: undefined,
+        },
+      ];
+    }
+
+    return eventsData.map((evt: any) => {
+      const start = toDate(evt.start_time);
+      const end = toDate(evt.end_time);
+      const tipo = eventType(evt);
+      return {
+        id: evt.id,
+        titulo: evt.title,
+        descripcion: evt.description || "Sin descripción",
+        tipo,
+        icono: eventIcon(tipo),
+        day: toAgendaDay(start),
+        start: toDecimalHour(start),
+        end: toDecimalHour(end),
+        startAt: evt.start_time,
+        endAt: evt.end_time,
+      };
+    });
+  }, [eventsData]);
+
+  const acceptedMine = useMemo(() => {
+    return (myReservationsData?.reservations ?? [])
+      .filter((r: any) => r.status === "ACCEPTED")
+      .map(mapReservation);
+  }, [myReservationsData]);
+
+  const externalEvents = useMemo<ExternalEvent[]>(() => {
+    const evts: ExternalEvent[] = [];
+
+    acceptedMine.forEach((r: any) => {
+      evts.push({
+        day: r.day,
+        start: r.start,
+        end: r.end,
+        label: r.titulo,
+        sublabel: r.lugar,
+        kind: "friend",
+      });
+    });
+
+    if (selectedPerson !== null && personas[selectedPerson]) {
+      personas[selectedPerson].reservas.forEach((r) => {
+        evts.push({
+          day: r.day,
+          start: r.start,
+          end: r.end,
+          label: r.titulo,
+          sublabel: r.lugar,
+          kind: "friend",
+        });
+      });
+    }
+
+    if (selInv !== null) {
+      invitaciones.forEach((sec) =>
+        sec.items.forEach((item, ii) => {
+          if (selInv === `inv_${sec.dayIndex}_${ii}`) {
+            evts.push({
+              day: item.day,
+              start: item.start,
+              end: item.end,
+              label: item.nombre,
+              sublabel: item.sala,
+              kind: "invitation",
+            });
+          }
+        }),
+      );
+    }
+
+    eventosGenerales.forEach((eg) => {
+      if (eg.tipo === "Festivo") {
+        evts.push({
+          day: eg.day,
+          start: 6,
+          end: 18,
+          label: eg.titulo,
+          kind: "holiday",
+        });
+      }
+    });
+
+    if (eventOnAgenda) {
+      const target = eventosGenerales.find((ev) => ev.titulo === eventOnAgenda);
+      if (target) {
+        evts.push({
+          day: target.day,
+          start: target.start,
+          end: target.end,
+          label: target.titulo,
+          sublabel: target.descripcion,
+          kind: "holiday",
+        });
+      }
+    }
+
+    return evts;
+  }, [
+    acceptedMine,
+    selectedPerson,
+    personas,
+    selInv,
+    invitaciones,
+    eventosGenerales,
+    eventOnAgenda,
+  ]);
+
+  const handlePersonClick = (i: number) => {
+    const next = selectedPerson === i ? null : i;
+    setSelectedPerson(next);
+    if (next !== null) setMobileTab("agenda");
+  };
+
+  const handleInvClick = (dayIndex: number, ii: number) => {
+    const id = `inv_${dayIndex}_${ii}`;
+    const next = selInv === id ? null : id;
+    setSelInv(next);
+    if (next !== null) setMobileTab("agenda");
+  };
+
+  const carouselProps = {
+    evento: eventosGenerales[curEv] ?? eventosGenerales[0],
+    onPrev: () =>
+      setCurEv(
+        (c) => (c - 1 + eventosGenerales.length) % eventosGenerales.length,
+      ),
+    onNext: () => setCurEv((c) => (c + 1) % eventosGenerales.length),
+    dotCount: eventosGenerales.length,
+    dotActive: curEv,
+    onDot: (i: number) => setCurEv(i),
+    onViewInAgenda: () => {
+      const target = eventosGenerales[curEv] ?? eventosGenerales[0];
+      if (!target) return;
+      setEventOnAgenda(target.titulo);
+      setMobileTab("agenda");
+    },
+  };
+
+  const TABS: {
+    key: MobileTab;
+    label: string;
+    icon: React.ReactNode;
+    badge?: boolean;
+  }[] = [
+    { key: "agenda", label: "Agenda", icon: <CalendarDays size={18} /> },
+    {
+      key: "red",
+      label: "Red",
+      icon: <Users size={18} />,
+      badge: selectedPerson !== null,
+    },
+    {
+      key: "invitaciones",
+      label: "Invitaciones",
+      icon: <MailOpen size={18} />,
+      badge: selInv !== null,
+    },
+  ];
+
+  const AgendaPanel = (
+    <div className="flex flex-col min-h-0 gap-3 flex-1">
+      <div className="flex-1 min-h-0 overflow-hidden rounded-xl shadow-sm border border-gray-100 bg-white">
+        <AgendaRapida externalEvents={externalEvents} />
+      </div>
+      <EventoGeneralDetail {...carouselProps} />
+    </div>
+  );
+
+  return (
+    <PageTransition>
+      <style>{`
+  .home-safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom, 8px);
+  }
+
+  .home-outer {
+    max-width: 2000px;
+    margin: 0 auto;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+  }
+
+  @media (min-width: 1024px) {
+    .desktop-grid {
+      display: grid !important;
+      grid-template-columns: 300px minmax(0, 1fr) 300px;
+      align-items: stretch;
+      gap: 1rem;
+    }
+
+    .col-center {
+      min-width: 0;
+    }
+  }
+
+  @media (min-width: 1280px) {
+    .desktop-grid {
+      grid-template-columns: 320px minmax(0, 1fr) 320px;
+    }
+  }
+
+  @media (min-width: 1536px) {
+    .desktop-grid {
+      grid-template-columns: 340px minmax(0, 1fr) 340px;
+    }
+  }
+
+  @media (min-width: 640px) and (max-width: 1023px) {
+    .desktop-grid {
+      display: grid !important;
+      grid-template-columns: 1fr minmax(240px, 32%);
+      grid-template-rows: 1fr auto;
+      grid-template-areas:
+        "center right"
+        "center left";
+      gap: 1rem;
+    }
+
+    .col-left {
+      grid-area: left;
+      max-height: 240px;
+    }
+
+    .col-center {
+      grid-area: center;
+      min-width: 0;
+    }
+
+    .col-right {
+      grid-area: right;
+      max-height: 320px;
+    }
+  }
+`}</style>
+      <section className="flex h-full w-full flex-col overflow-hidden bg-background-page">
+        <div className="home-outer px-6 pt-4 pb-0 sm:px-6 sm:pb-6 lg:px-12">
+          <header className="space-y-1 py-4">
+            <h1 className="text-2xl font-semibold tracking-tight text-slate-950 md:text-4xl">
+              Hola{`, ${name}`}
+            </h1>
+
+            <p className="text-sm text-slate-500 md:text-base">
+              Visualiza tus contactos, invitaciones y eventos
+            </p>
+          </header>
+          <div className="desktop-grid hidden sm:flex flex-1 min-h-0 flex-col">
+            <div className="col-left flex flex-col bg-container shadow-sm border border-neutral-1 overflow-hidden p-4 min-h-0">
+              <PanelRed
+                selectedPerson={selectedPerson}
+                onPersonClick={handlePersonClick}
+                personas={personas}
               />
             </div>
-
-            <div className="flex-1 flex flex-col gap-4">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-gray-300" />
-                  <div>
-                    <p className="font-medium text-sm">Cristina Gonzalez</p>
-                    <p className="text-xs text-gray-400">Senior Developer</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="mt-4">
-              <div className="flex items-center gap-3 bg-gray-100 px-4 py-3 rounded-xl">
-                <span className="text-gray-400">🔍</span>
-                <input
-                  type="text"
-                  placeholder="Buscar"
-                  className="bg-transparent outline-none w-full text-sm"
-                />
+            <div className="col-center flex flex-col min-h-0 gap-3">
+              <div className="flex-1 min-h-0 overflow-hidden shadow-sm border border-neutral-1 bg-container">
+                <AgendaRapida externalEvents={externalEvents} />
               </div>
+              <EventoGeneralDetail {...carouselProps} />
+            </div>
+            <div className="col-right flex flex-col bg-white shadow-sm border border-gray-100 overflow-hidden p-4 min-h-0">
+              <PanelInvitaciones
+                selInv={selInv}
+                onInvClick={handleInvClick}
+                invitaciones={invitaciones}
+              />
             </div>
           </div>
-
-         
-          <div className="flex w-[60%] flex-col gap-6">
-            
-            
-            <div className="flex flex-1 flex-col rounded-[0.5rem] bg-white p-6">
-              <h3 className="text-xl font-bold mb-4">Agenda rápida</h3>
-
-              <div className="relative w-full h-full pl-16 pb-6">
-                
-                
-                <div className="absolute inset-0 grid grid-cols-8 grid-rows-6">
-                  {Array.from({ length: 48 }).map((_, i) => (
-                    <div key={i} className="border border-gray-200" />
-                  ))}
-                </div>
-
-                
-                <div className="absolute left-0 top-0 h-full flex flex-col justify-between pr-2">
-                  {["LUNES", "MARTES", "MIÉRCOLES", "JUEVES", "VIERNES", "SÁBADO"].map((day) => (
-                    <span key={day} className="text-xs text-gray-400">
-                      {day}
-                    </span>
-                  ))}
-                </div>
-
-               
-                <div className="absolute inset-0">
-                  <div
-                    className="absolute bg-purple-600 h-2 rounded-full"
-                    style={{ top: "5%", left: "10%", width: "35%" }}
-                  />
-                  <div
-                    className="absolute bg-purple-600 h-2 rounded-full"
-                    style={{ top: "5%", left: "55%", width: "35%" }}
-                  />
-                  <div
-                    className="absolute bg-purple-600 h-2 rounded-full"
-                    style={{ top: "25%", left: "10%", width: "25%" }}
-                  />
-                </div>
-
-                <div className="absolute bottom-0 left-16 right-0 flex justify-between text-xs text-gray-400">
-                  {["6:00","8:00","10:00","12:00","14:00","16:00","18:00"].map(h => (
-                    <span key={h}>{h}</span>
-                  ))}
-                </div>
-
-              </div>
-            </div>
-
-            <div className="flex flex-col rounded-[0.5rem] bg-white p-6 cursor-pointer hover:shadow-md transition">
-              <h3 className="text-xl font-bold mb-4">Juntas y Eventos</h3>
-              <div className="flex justify-end gap-4 mt-auto">
-                
-                <Image
-                  src={LeftArrow}
-                  alt="Left Arrow"
-                  className="w-6 select-none cursor-pointer"
-                  priority
+          <div className="flex sm:hidden flex-1 min-h-0 flex-col">
+            {mobileTab === "agenda" && AgendaPanel}
+            {mobileTab === "red" && (
+              <div className="flex flex-1 min-h-0 flex-col rounded-xl bg-white shadow-sm border border-gray-100 p-4 overflow-hidden">
+                <PanelRed
+                  selectedPerson={selectedPerson}
+                  onPersonClick={handlePersonClick}
+                  personas={personas}
                 />
-
-                <Image
-                  src={RightArrow}
-                  alt="Right Arrow"
-                  className="w-6 select-none cursor-pointer"
-                  priority
-                />
-
               </div>
-
-            </div>
-
+            )}
+            {mobileTab === "invitaciones" && (
+              <div className="flex flex-1 min-h-0 flex-col rounded-xl bg-white shadow-sm border border-gray-100 p-4 overflow-hidden">
+                <PanelInvitaciones
+                  selInv={selInv}
+                  onInvClick={handleInvClick}
+                  invitaciones={invitaciones}
+                />
+              </div>
+            )}
           </div>
         </div>
-      </div>
-    </section>
+        <nav
+          className="home-safe-bottom flex sm:hidden shrink-0 items-stretch bg-white border-t border-gray-100 shadow-[0_-4px_20px_rgba(0,0,0,0.07)]"
+          style={{ zIndex: 30 }}
+        >
+          {TABS.map((tab) => {
+            const isActive = mobileTab === tab.key;
+            return (
+              <button
+                type="button"
+                key={tab.key}
+                onClick={() => setMobileTab(tab.key)}
+                className="relative flex flex-1 flex-col items-center justify-center gap-0.5 py-2.5 border-none bg-transparent cursor-pointer"
+                style={{ color: isActive ? "#7C3AED" : "#9CA3AF" }}
+              >
+                {isActive && (
+                  <span className="absolute top-0 left-1/2 -translate-x-1/2 h-[3px] w-8 rounded-full bg-violet-600" />
+                )}
+                {tab.badge && !isActive && (
+                  <span className="absolute top-2.5 right-[calc(50%-10px)] h-2 w-2 rounded-full bg-orange-400 border-2 border-white" />
+                )}
+                <span style={{ opacity: isActive ? 1 : 0.55 }}>{tab.icon}</span>
+                <span
+                  className="text-[10px]"
+                  style={{ fontWeight: isActive ? 600 : 400 }}
+                >
+                  {tab.label}
+                </span>
+              </button>
+            );
+          })}
+        </nav>
+      </section>
+    </PageTransition>
   );
 }
