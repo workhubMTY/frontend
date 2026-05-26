@@ -8,7 +8,7 @@ import { EventsAndConflictsCard } from "@/app/features/reservaciones/components/
 import { ProposedSchedulesCard } from "@/app/features/reservaciones/components/Cards/ProposedSchedulesCard";
 import { ReservationFooter } from "@/app/features/reservaciones/components/ReservationFooter";
 import { ReservationTimelineCard } from "@/app/features/reservaciones/components/Cards/ReservationTimelineCard";
-import { SelectionModeCalendarCard } from "@/app/features/reservaciones/components/Cards/SelectionModeCalendarCard";
+import { SelectionModeCalendarCard } from "@/app/shared/components/Calendar/DaysSelection/SelectionModeCalendarCard";
 
 import { useReservationSchedulerPage } from "@/app/features/reservaciones/hooks/useReservationSchedulerPage";
 

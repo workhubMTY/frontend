@@ -28,7 +28,15 @@ export function ReservationFilters({
             })
           }
         />
-
+        <PeriodFilter
+          value={value.period}
+          onChange={(period) =>
+            onChange({
+              ...value,
+              period,
+            })
+          }
+        />
         <TimeFilter
           value={value.time}
           onChange={(time) =>
@@ -49,15 +57,6 @@ export function ReservationFilters({
           }
         />
 
-        <PeriodFilter
-          value={value.period}
-          onChange={(period) =>
-            onChange({
-              ...value,
-              period,
-            })
-          }
-        />
         <button
           type="button"
           onClick={() => onSubmit(value)}

@@ -3,7 +3,8 @@
 import { X } from "lucide-react";
 
 import { Card } from "@/app/shared/components/Card";
-import { MonthCalendar } from "@/app/features/reservaciones/components/Calendar/MonthCalendar";
+import { MonthCalendar } from "@/app/shared/components/Calendar/MonthCalendar";
+import { SelectionModeSegmentedControl } from "@/app/shared/components/Calendar/DaysSelection/SelectionModeSegmentedControl";
 
 import { cn } from "@/app/features/reservaciones/lib/cn";
 
@@ -12,26 +13,6 @@ import type {
   CalendarSelectionAction,
   SelectionMode,
 } from "@/app/features/reservaciones/types/reservaciones";
-
-type SelectionModeOption = {
-  value: SelectionMode;
-  label: string;
-};
-
-const SELECTION_MODE_OPTIONS: SelectionModeOption[] = [
-  {
-    value: "single",
-    label: "Un día",
-  },
-  {
-    value: "multiple",
-    label: "Varios días",
-  },
-  {
-    value: "repeat",
-    label: "Repetir",
-  },
-];
 
 type SelectionModeCalendarCardProps = {
   calendarCells: CalendarCell[];
@@ -61,9 +42,8 @@ export function SelectionModeCalendarCard({
 
   return (
     <Card className="p-5">
-      <SelectionModeTabs
+      <SelectionModeSegmentedControl
         value={selectionMode}
-        options={SELECTION_MODE_OPTIONS}
         onChange={onModeChange}
       />
 
@@ -89,42 +69,6 @@ export function SelectionModeCalendarCard({
   );
 }
 
-type SelectionModeTabsProps = {
-  value: SelectionMode;
-  options: SelectionModeOption[];
-  onChange: (mode: SelectionMode) => void;
-};
-
-function SelectionModeTabs({
-  value,
-  options,
-  onChange,
-}: SelectionModeTabsProps) {
-  return (
-    <div className="grid grid-cols-3 rounded-xl border border-slate-200 bg-slate-50 p-1 text-sm font-semibold text-slate-600">
-      {options.map((option) => {
-        const isActive = option.value === value;
-
-        return (
-          <button
-            key={option.value}
-            type="button"
-            onClick={() => onChange(option.value)}
-            className={cn(
-              "rounded-lg px-3 py-2 transition",
-              isActive
-                ? "bg-violet-700 text-white shadow-sm"
-                : "hover:bg-white",
-            )}
-          >
-            {option.label}
-          </button>
-        );
-      })}
-    </div>
-  );
-}
-
 type CalendarActionsProps = {
   disabled: boolean;
   onClearSelection: () => void;
@@ -137,7 +81,7 @@ function CalendarActions({ disabled, onClearSelection }: CalendarActionsProps) {
         type="button"
         onClick={onClearSelection}
         disabled={disabled}
-        className="flex flex-1 items-center justify-center gap-1 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-600 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:text-slate-300"
+        className="flex flex-1 items-center justify-center gap-1 border border-neutral-300 bg-white px-3 py-2 text-xs font-medium text-neutral-700 transition hover:bg-neutral-50 disabled:cursor-not-allowed disabled:text-neutral-300"
       >
         <X className="h-3.5 w-3.5" />
         Limpiar selección

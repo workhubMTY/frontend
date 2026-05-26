@@ -4,10 +4,10 @@ import type {
   CalendarCell,
   CalendarSelectionAction,
   SelectionMode,
-} from "../../types/reservaciones";
+} from "../../../features/reservaciones/types/reservaciones";
 
-import { cn } from "../../lib/cn";
-import { useCalendarDragSelection } from "./useCalendarDragSelection";
+import { cn } from "../../../features/reservaciones/lib/cn";
+import { useCalendarDragSelection } from "./hooks/useCalendarDragSelection";
 import { CalendarHeader } from "./CalendarHeader";
 import { CalendarDayButton } from "./CalendarDayButton";
 
@@ -69,7 +69,7 @@ export function MonthCalendar({
       <div
         className={cn(
           "grid select-none grid-cols-7 text-center text-xs",
-          variant === "compact" ? "gap-y-1" : "gap-y-3",
+          variant === "compact" ? "gap-y-2" : "gap-y-3",
         )}
       >
         <WeekdayLabels />

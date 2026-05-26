@@ -2,8 +2,8 @@
 
 import { CalendarDays } from "lucide-react";
 
-import { MonthCalendar } from "@/app/features/reservaciones/components/Calendar/MonthCalendar";
-import { cn } from "@/app/features/reservaciones/lib/cn";
+import { MonthCalendar } from "@/app/shared/components/Calendar/MonthCalendar";
+import { SelectionModeSegmentedControl } from "@/app/shared/components/Calendar/DaysSelection/SelectionModeSegmentedControl";
 
 import { FilterFlyout } from "./FilterFlyout";
 import { usePeriodFilter } from "../../hooks/usePeriodFilter";
@@ -45,46 +45,11 @@ export function PeriodFilter({ value, onChange }: PeriodFilterProps) {
             </p>
           </div>
 
-          <div className="mb-5 grid grid-cols-3 border border-neutral-200 bg-neutral-50 p-1">
-            <button
-              type="button"
-              onClick={() => periodFilter.handlePeriodModeChange("single")}
-              className={cn(
-                "h-10 text-sm font-medium transition",
-                periodFilter.periodSelectionMode === "single"
-                  ? "bg-primary-2 text-on-primary shadow-sm"
-                  : "text-neutral-700 hover:bg-white",
-              )}
-            >
-              Un día
-            </button>
-
-            <button
-              type="button"
-              onClick={() => periodFilter.handlePeriodModeChange("multiple")}
-              className={cn(
-                "h-10 text-sm font-medium transition",
-                periodFilter.periodSelectionMode === "multiple"
-                  ? "bg-primary-2 text-on-primary shadow-sm"
-                  : "text-neutral-700 hover:bg-white",
-              )}
-            >
-              Varios días
-            </button>
-
-            <button
-              type="button"
-              onClick={() => periodFilter.handlePeriodModeChange("repeat")}
-              className={cn(
-                "h-10 text-sm font-medium transition",
-                periodFilter.periodSelectionMode === "repeat"
-                  ? "bg-primary-2 text-on-primary shadow-sm"
-                  : "text-neutral-700 hover:bg-white",
-              )}
-            >
-              Repetir
-            </button>
-          </div>
+          <SelectionModeSegmentedControl
+            className="mb-5"
+            value={periodFilter.periodSelectionMode}
+            onChange={periodFilter.handlePeriodModeChange}
+          />
 
           <MonthCalendar
             variant="compact"
