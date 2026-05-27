@@ -2,23 +2,20 @@ import { CalendarCheck, Lock, Users } from "lucide-react";
 
 import type { TimeBlock, TimelineEvent } from "../../types/reservaciones";
 import { getOverlapSegments } from "../../lib/conflicts";
-import { Card } from "@/app/shared/components/Card";
 import { TimelineAxis } from "../Timeline/TimelineAxis";
 import { TimelineBlock } from "../Timeline/TimelineBlock";
 import { SelectionBlock } from "../Timeline/SelectionBlock";
 
 type ReservationTimelineCardProps = {
   activeDayId: string;
-  activeBlocks: TimeBlock[];
-  pendingBlocks: TimeBlock[];
+  proposedBlocks: TimeBlock[];
   spaceReservationsForActiveDay: TimelineEvent[];
   externalTimelineEventsForActiveDay: TimelineEvent[];
 };
 
 export function ReservationTimelineCard({
   activeDayId,
-  activeBlocks,
-  pendingBlocks,
+  proposedBlocks,
   spaceReservationsForActiveDay,
   externalTimelineEventsForActiveDay,
 }: ReservationTimelineCardProps) {
@@ -54,34 +51,21 @@ export function ReservationTimelineCard({
               <div className="flex items-center gap-3 border-r border-slate-200 bg-white px-3 py-5">
                 <CalendarCheck className="h-4 w-4" />
                 <p className="text-xs font-semibold leading-tight text-violet-700">
-                  Selección
+                  Horarios
                   <br />
-                  actual
+                  propuestos
                 </p>
               </div>
 
               <div className="relative min-h-[72px] bg-[linear-gradient(to_right,rgba(148,163,184,.18)_1px,transparent_1px)] bg-[length:calc(100%/24)_100%]">
-                {activeBlocks.slice(0, 3).map((block) => (
+                {proposedBlocks.slice(0, 3).map((block) => (
                   <SelectionBlock
                     key={`${activeDayId}-${block.id}`}
                     block={block}
-                    variant="saved"
-                    conflictSegments={getOverlapSegments(block, [
-                      ...pendingBlocks,
-                      ...spaceReservationsForActiveDay,
-                    ])}
-                  />
-                ))}
-
-                {pendingBlocks.slice(0, 3).map((block) => (
-                  <SelectionBlock
-                    key={`pending-${block.id}`}
-                    block={block}
                     variant="pending"
                     conflictSegments={getOverlapSegments(block, [
-                      ...activeBlocks,
-                      ...pendingBlocks.filter(
-                        (pendingBlock) => pendingBlock.id !== block.id,
+                      ...proposedBlocks.filter(
+                        (proposedBlock) => proposedBlock.id !== block.id,
                       ),
                       ...spaceReservationsForActiveDay,
                     ])}
@@ -117,12 +101,14 @@ export function ReservationTimelineCard({
       <div className="mt-4 flex flex-wrap items-center gap-5 text-xs text-slate-600">
         <span className="flex items-center gap-2">
           <span className="h-4 w-7 rounded border border-slate-400 bg-slate-100" />
-          Horario guardado
+          Espacio ocupado
         </span>
+
         <span className="flex items-center gap-2">
           <span className="h-4 w-7 rounded border border-violet-600 bg-violet-50" />
-          Horario a aplicar
+          Horario propuesto
         </span>
+
         <span className="flex items-center gap-2">
           <span className="h-4 w-7 rounded border border-red-300 bg-[repeating-linear-gradient(135deg,rgba(248,113,113,.25)_0,rgba(248,113,113,.25)_4px,transparent_4px,transparent_8px)]" />
           Conflicto
