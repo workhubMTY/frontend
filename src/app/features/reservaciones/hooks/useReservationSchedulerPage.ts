@@ -55,6 +55,19 @@ export function useReservationSchedulerPage({
     calendarCells,
     spaceReservationsByDate,
   });
+  const proposedTimelineEventsForActiveDay = useMemo(
+    () =>
+      scheduler.proposedBlocksForActiveDay.map((block) => ({
+        id: block.id,
+        dateId: scheduler.activeDayId,
+        start: block.start,
+        end: block.end,
+        title: block.label ?? "Horario propuesto",
+        type: "pending",
+        status: "normal",
+      })),
+    [scheduler.proposedBlocksForActiveDay, scheduler.activeDayId],
+  );
 
   const { spaceReservationsForActiveDay, externalEventsForInterval } =
     useReservationQueries({
@@ -104,6 +117,7 @@ export function useReservationSchedulerPage({
     scheduler,
     activeDayExternalEvents,
     externalTimelineEventsForActiveDay,
+    proposedTimelineEventsForActiveDay,
     spaceReservationsForActiveDay,
     conflictCount,
     visibleEvents,

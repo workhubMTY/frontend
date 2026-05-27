@@ -56,7 +56,6 @@ export function PeriodFilter({ value, onChange }: PeriodFilterProps) {
             activeDayId={periodFilter.periodActiveDayId}
             selectionMode={periodFilter.periodSelectionMode}
             selectedDateIds={periodFilter.draftPeriodDateIds}
-            modifiedDateIds={[]}
             conflictDateIds={[]}
             calendarCells={periodFilter.periodCalendarCells}
             onSelect={periodFilter.handlePeriodCalendarSelect}

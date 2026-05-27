@@ -19,20 +19,16 @@ type SelectionModeCalendarCardProps = {
   activeDayId: string;
   selectionMode: SelectionMode;
   selectedDateIds: string[];
-  modifiedDateIds: string[];
   conflictDateIds: string[];
-
   onModeChange: (mode: SelectionMode) => void;
   onSelect: (action: CalendarSelectionAction) => void;
   onClearSelection: () => void;
 };
-
 export function SelectionModeCalendarCard({
   calendarCells,
   activeDayId,
   selectionMode,
   selectedDateIds,
-  modifiedDateIds,
   conflictDateIds,
   onModeChange,
   onSelect,
@@ -52,7 +48,6 @@ export function SelectionModeCalendarCard({
           activeDayId={activeDayId}
           selectionMode={selectionMode}
           selectedDateIds={selectedDateIds}
-          modifiedDateIds={modifiedDateIds}
           conflictDateIds={conflictDateIds}
           calendarCells={calendarCells}
           onSelect={onSelect}

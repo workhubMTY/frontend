@@ -15,7 +15,6 @@ type MonthCalendarProps = {
   activeDayId: string;
   selectionMode: SelectionMode;
   selectedDateIds: string[];
-  modifiedDateIds: string[];
   conflictDateIds: string[];
   calendarCells: CalendarCell[];
   variant?: "default" | "compact";
@@ -28,7 +27,6 @@ export function MonthCalendar({
   activeDayId,
   selectionMode,
   selectedDateIds,
-  modifiedDateIds,
   conflictDateIds,
   calendarCells,
   variant = "default",
@@ -37,11 +35,6 @@ export function MonthCalendar({
   const selectedDatesSet = useMemo(
     () => new Set(selectedDateIds),
     [selectedDateIds],
-  );
-
-  const modifiedDatesSet = useMemo(
-    () => new Set(modifiedDateIds),
-    [modifiedDateIds],
   );
 
   const conflictDatesSet = useMemo(
@@ -83,7 +76,6 @@ export function MonthCalendar({
             variant={variant}
             isActive={activeDayId === cell.id}
             isSelected={selectedDatesSet.has(cell.id)}
-            isModified={modifiedDatesSet.has(cell.id)}
             hasConflict={conflictDatesSet.has(cell.id)}
             isPreview={dragPreviewDatesSet.has(cell.id)}
             onPointerDown={handlePointerDown}
