@@ -17,7 +17,6 @@ type ReservationDaysSelectorCardProps = {
   activeDayId: string;
   selectionMode: SelectionMode;
   selectedDateIds: string[];
-  modifiedDateIds: string[];
   conflictDateIds: string[];
   calendarCells: CalendarCell[];
   onModeChange: (mode: SelectionMode) => void;
@@ -29,7 +28,6 @@ export function ReservationDaysSelectorCard({
   activeDayId,
   selectionMode,
   selectedDateIds,
-  modifiedDateIds,
   conflictDateIds,
   calendarCells,
   onModeChange,

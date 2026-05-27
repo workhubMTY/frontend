@@ -23,6 +23,7 @@ export function ReservationSchedulerContent() {
     scheduler,
     activeDayExternalEvents,
     externalTimelineEventsForActiveDay,
+    proposedTimelineEventsForActiveDay,
     spaceReservationsForActiveDay,
     conflictCount,
     visibleEvents,
