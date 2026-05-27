@@ -87,6 +87,7 @@ export function ReservationDaysSelectorCard({
         activeDayId={activeDayId}
         selectionMode={selectionMode}
         selectedDateIds={selectedDateIds}
+        modifiedDateIds={modifiedDateIds}
         conflictDateIds={conflictDateIds}
         calendarCells={calendarCells}
         onSelect={onSelect}

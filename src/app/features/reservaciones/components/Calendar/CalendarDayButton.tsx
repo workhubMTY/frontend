@@ -6,6 +6,7 @@ type CalendarDayButtonProps = {
   variant: "default" | "compact";
   isActive: boolean;
   isSelected: boolean;
+  isModified: boolean;
   hasConflict: boolean;
   isPreview: boolean;
   onPointerDown: (dayId: string) => void;
@@ -25,6 +26,7 @@ type GetCalendarDayClassNameParams = {
   variant: "default" | "compact";
   isActive: boolean;
   isSelected: boolean;
+  isModified: boolean;
   hasConflict: boolean;
   isPreview: boolean;
 };
@@ -34,9 +36,11 @@ function getCalendarDayClassName({
   variant,
   isActive,
   isSelected,
+  isModified,
   hasConflict,
   isPreview,
 }: GetCalendarDayClassNameParams) {
+  const isModifiedAndSelected = isModified && isSelected;
   const isConflictAndSelected = hasConflict && isSelected;
 
   return cn(
@@ -53,24 +57,27 @@ function getCalendarDayClassName({
 
     !cell.isWeekend &&
       !isSelected &&
+      !isModified &&
       !hasConflict &&
       !isPreview &&
       "hover:bg-slate-100",
 
     !cell.isWeekend &&
       isSelected &&
+      !isModified &&
       !hasConflict &&
       "border border-violet-200 bg-violet-50 text-violet-700",
 
-    // !cell.isWeekend &&
-    //   isSelected &&
-    //   !hasConflict &&
-    //   "bg-violet-600 text-white shadow-sm",
+    !cell.isWeekend &&
+      isModified &&
+      !isSelected &&
+      !hasConflict &&
+      "bg-violet-600 text-white shadow-sm",
 
-    // !cell.isWeekend &&
-    //   isSelected &&
-    //   !hasConflict &&
-    //   "border-2 border-violet-950 bg-violet-600 text-white shadow-sm ring-4 ring-violet-100",
+    !cell.isWeekend &&
+      isModifiedAndSelected &&
+      !hasConflict &&
+      "border-2 border-violet-950 bg-violet-600 text-white shadow-sm ring-4 ring-violet-100",
 
     !cell.isWeekend &&
       hasConflict &&
@@ -83,12 +90,13 @@ function getCalendarDayClassName({
 
     !cell.isWeekend &&
       isPreview &&
+      !isModified &&
       !hasConflict &&
       "border-2 border-violet-600 bg-violet-50 text-violet-700",
 
     !cell.isWeekend &&
       isPreview &&
-      (isSelected || hasConflict) &&
+      (isModified || hasConflict) &&
       "ring-4 ring-violet-100",
 
     !cell.isWeekend &&
@@ -103,6 +111,7 @@ export function CalendarDayButton({
   variant,
   isActive,
   isSelected,
+  isModified,
   hasConflict,
   isPreview,
   onPointerDown,
@@ -120,6 +129,7 @@ export function CalendarDayButton({
         variant,
         isActive,
         isSelected,
+        isModified,
         hasConflict,
         isPreview,
       })}

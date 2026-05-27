@@ -47,8 +47,7 @@ export function ReservationSchedulerContent() {
           </h1>
 
           <p className="mt-1 text-sm text-slate-500">
-            Revisa disponibilidad, arrastra días y configura los horarios de tu
-            reservación.
+            Revisa disponibilidad, arrastra días y configura múltiples horarios.
           </p>
         </div>
       </header>
@@ -58,28 +57,35 @@ export function ReservationSchedulerContent() {
           <Card className="p-5">
             <ReservationTimelineCard
               activeDayId={scheduler.activeDayId}
-              proposedBlocks={scheduler.proposedBlocksForActiveDay}
+              activeBlocks={scheduler.activeBlocks}
+              pendingBlocks={scheduler.pendingBlocksForActiveDay}
               spaceReservationsForActiveDay={spaceReservationsForActiveDay}
               externalTimelineEventsForActiveDay={
                 externalTimelineEventsForActiveDay
               }
             />
           </Card>
-
           <ProposedSchedulesCard
-            proposedBlocks={scheduler.proposedBlocks}
-            selectedDateCount={scheduler.selectableSelectedDateIds.length}
-            hasSelectedDates={scheduler.selectableSelectedDateIds.length > 0}
-            onAddBlock={scheduler.addProposedBlock}
-            onDeleteBlock={scheduler.deleteProposedBlock}
-            onUpdateBlock={scheduler.updateProposedBlock}
+            activeDayId={scheduler.activeDayId}
+            activeBlocks={scheduler.activeBlocks}
+            pendingBlocks={scheduler.pendingBlocks}
+            onAddPendingBlock={scheduler.addPendingBlock}
+            onDeletePendingBlock={scheduler.deletePendingBlock}
+            onDeleteSavedBlock={scheduler.deleteSavedBlock}
+            onTogglePendingBlockScope={scheduler.togglePendingBlockScope}
+            onUpdatePendingBlock={scheduler.updatePendingBlock}
+            onUpdateSavedBlock={scheduler.updateSavedBlock}
           />
 
           <ReservationFooter
-            selectedCount={scheduler.selectableSelectedDateIds.length}
-            proposedBlocksCount={scheduler.proposedBlocks.length}
-            hasBlockingConflict={scheduler.hasBlockingConflict}
+            selectedCount={scheduler.selectedDateIds.length}
+            activeSavedBlocksCount={scheduler.activeBlocks.length}
+            pendingBlocksCount={scheduler.pendingBlocks.length}
+            savedEditsCount={scheduler.editedSavedDateIds.length}
+            hasBlockingSpaceConflict={scheduler.hasBlockingSpaceConflict}
+            canSaveChanges={scheduler.canSaveChanges}
             canContinue={scheduler.canContinue}
+            onSaveChanges={scheduler.applyPendingBlocks}
             onCancel={() => router.push("/cubiculos")}
             onContinue={handleContinue}
           />
@@ -91,6 +97,7 @@ export function ReservationSchedulerContent() {
             activeDayId={scheduler.activeDayId}
             selectionMode={scheduler.selectionMode}
             selectedDateIds={scheduler.selectedDateIds}
+            modifiedDateIds={scheduler.modifiedDateIds}
             conflictDateIds={scheduler.conflictDateIds}
             onModeChange={scheduler.handleModeChange}
             onSelect={scheduler.handleCalendarSelect}
