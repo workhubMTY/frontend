@@ -46,7 +46,7 @@ export function SocketProvider({ children, isAuthenticated, accessToken }: Socke
     const socketRef = useRef<AppSocket | null>(null);
 
     if (!socketRef.current) {
-        socketRef.current = io(process.env.NEXT_PUBLIC_SOCKET_URL!, {
+        socketRef.current = io(process.env.NEXT_PUBLIC_API_URL!, {
             auth: { token: accessToken ?? "" },
             autoConnect: false,
             transports: ["websocket", "polling"],
