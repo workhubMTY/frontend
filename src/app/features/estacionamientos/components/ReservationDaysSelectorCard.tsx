@@ -3,7 +3,7 @@
 import { X } from "lucide-react";
 
 import { MonthCalendar } from "@/app/features/reservaciones/components/Calendar/MonthCalendar";
-import { Card } from "@/app/features/reservaciones/components/Card";
+import { Card } from "@/app/shared/components/Card";
 import { cn } from "@/app/features/reservaciones/lib/cn";
 
 import type {
@@ -17,7 +17,6 @@ type ReservationDaysSelectorCardProps = {
   activeDayId: string;
   selectionMode: SelectionMode;
   selectedDateIds: string[];
-  modifiedDateIds: string[];
   conflictDateIds: string[];
   calendarCells: CalendarCell[];
   onModeChange: (mode: SelectionMode) => void;
@@ -29,7 +28,6 @@ export function ReservationDaysSelectorCard({
   activeDayId,
   selectionMode,
   selectedDateIds,
-  modifiedDateIds,
   conflictDateIds,
   calendarCells,
   onModeChange,
@@ -87,7 +85,6 @@ export function ReservationDaysSelectorCard({
         activeDayId={activeDayId}
         selectionMode={selectionMode}
         selectedDateIds={selectedDateIds}
-        modifiedDateIds={modifiedDateIds}
         conflictDateIds={conflictDateIds}
         calendarCells={calendarCells}
         onSelect={onSelect}

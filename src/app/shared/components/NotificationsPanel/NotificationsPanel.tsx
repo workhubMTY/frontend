@@ -125,11 +125,11 @@ export default function NotificationsPanel() {
     }
   }, []);
 
-  useEffect(() => {
-    fetchAll();
-    const id = setInterval(fetchAll, 30_000); // poll every 30s
-    return () => clearInterval(id);
-  }, [fetchAll]);
+  // useEffect(() => {
+  //   fetchAll();
+  //   const id = setInterval(fetchAll, 30_000); // poll every 30s
+  //   return () => clearInterval(id);
+  // }, [fetchAll]);
 
   useEffect(() => {
     if (!open) return;

@@ -22,8 +22,9 @@ export type TimeBlock = {
 
 export type TimelineEvent = {
   id: string;
+  dateId: string;
   label: string;
-  title?: string;
+  title: string;
   start: string;
   end: string;
   row: "reserved" | "external";

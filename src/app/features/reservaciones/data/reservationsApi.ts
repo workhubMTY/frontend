@@ -1,17 +1,50 @@
 import { officeSlotsApi } from "@/app/features/cubiculos/data/api";
+
+import type {
+  ReservationEvent,
+  ReservationSummary,
+} from "@/app/features/cubiculos/data/types";
+
 import type {
   ApiReservation,
   CalendarCell,
   DayEvent,
-  MockApiJson,
   TimelineEvent,
-} from "../types/reservaciones";
-import { dateToId } from "../lib/dates";
+} from "@/app/features/reservaciones/types/reservaciones";
 
-export function createApiJson(_calendarCells: CalendarCell[]): MockApiJson {
+import { dateToId } from "@/app/features/reservaciones/lib/dates";
+
+type SpaceReservationsByDate = Record<string, TimelineEvent[]>;
+
+function getTimeFromIso(isoDate: string) {
+  return isoDate.slice(11, 16);
+}
+function getEventLocation(event: ReservationEvent) {
+  return event.reservable?.name ?? "Reservación";
+}
+
+function toApiReservationFromMyReservation(
+  reservation: ReservationSummary,
+): ApiReservation {
   return {
-    spaceReservations: [],
-    externalEvents: [],
+    id: String(reservation.id),
+    dateId: dateToId(new Date(reservation.start_time)),
+    title: "Mi reservación",
+    location: "Calendario externo",
+    start: getTimeFromIso(reservation.start_time),
+    end: getTimeFromIso(reservation.end_time),
+  };
+}
+function toApiReservationFromEvent(event: ReservationEvent): ApiReservation {
+  const location = getEventLocation(event);
+
+  return {
+    id: String(event.id),
+    dateId: dateToId(new Date(event.start_time)),
+    title: event.title ?? location,
+    location,
+    start: getTimeFromIso(event.start_time),
+    end: getTimeFromIso(event.end_time),
   };
 }
 
@@ -21,6 +54,7 @@ export function toTimelineEvent(
 ): TimelineEvent {
   return {
     id: event.id,
+    dateId: event.dateId,
     label: `${event.start} - ${event.end}`,
     title: `${event.title} · ${event.location}`,
     start: event.start,
@@ -47,75 +81,78 @@ export function toDayEvent(
   };
 }
 
-const toApiReservation = (event: any): ApiReservation => ({
-  id: String(event.id),
-  dateId: dateToId(new Date(event.start_time)),
-  title: event.title,
-  location: event.reservable?.name ?? "Calendario externo",
-  start: event.start_time.slice(11, 16),
-  end: event.end_time.slice(11, 16),
-});
+export function getVisibleRange(calendarCells: CalendarCell[]) {
+  const dateIds = calendarCells.map((cell) => cell.id).sort();
 
-export async function apiGetSpaceReservationsByDay({
-  apiJson,
-  dateId,
-  spaceName,
-}: {
-  apiJson: MockApiJson;
-  dateId: string;
-  spaceName: string;
-}) {
-  const sessionSpaceRaw = window.sessionStorage.getItem(
-    "cubiculos:selectedSpace",
-  );
-  const sessionSpace = sessionSpaceRaw ? JSON.parse(sessionSpaceRaw) : null;
-  const reservableId = sessionSpace?.id as number | undefined;
+  const firstDateId = dateIds[0];
+  const lastDateId = dateIds[dateIds.length - 1];
 
-  if (reservableId) {
-    const start_time = new Date(`${dateId}T00:00:00`).toISOString();
-    const end_time = new Date(`${dateId}T23:59:59`).toISOString();
-    const events = await officeSlotsApi.getEvents({
-      reservable_id: reservableId,
-      start_time,
-      end_time,
-    });
-    return events.map((event) =>
-      toTimelineEvent(toApiReservation(event), "reserved"),
-    );
+  if (!firstDateId || !lastDateId) {
+    return null;
   }
 
-  return apiJson.spaceReservations
-    .filter((event) => event.dateId === dateId && event.location === spaceName)
-    .map((event) => toTimelineEvent(event, "reserved"));
+  return {
+    firstDateId,
+    lastDateId,
+    start_time: new Date(`${firstDateId}T00:00:00`).toISOString(),
+    end_time: new Date(`${lastDateId}T23:59:59`).toISOString(),
+  };
 }
 
-export async function apiGetExternalEventsInInterval({
-  apiJson,
-  dateIds,
-}: {
-  apiJson: MockApiJson;
-  dateIds: string[];
-}) {
-  const dates = dateIds
-    .map((id) => new Date(`${id}T00:00:00`))
-    .filter((d) => !Number.isNaN(d.getTime()));
-  const first = dates[0];
-  const last = dates[dates.length - 1];
-  if (first && last) {
-    const myReservations = await officeSlotsApi.getMyReservations();
-    const filtered = myReservations.reservations.filter((r) => {
-      if (r.status !== "ACCEPTED") return false;
-      return true;
-    });
-    console.log("Mis reservaciones en el intervalo:", myReservations);
-    console.log("Reservaciones filtradas por status ACCEPTED:", filtered);
-    return filtered.map((event) =>
-      toDayEvent(toApiReservation(event), "external", "partial"),
-    );
-  }
+export function groupTimelineEventsByDate(
+  events: TimelineEvent[],
+): SpaceReservationsByDate {
+  return events.reduce<SpaceReservationsByDate>((eventsByDate, event) => {
+    const dateId = event.dateId;
 
-  const dateSet = new Set(dateIds);
-  return apiJson.externalEvents
-    .filter((event) => dateSet.has(event.dateId))
-    .map((event) => toDayEvent(event, "external", "partial"));
+    if (!eventsByDate[dateId]) {
+      eventsByDate[dateId] = [];
+    }
+
+    eventsByDate[dateId].push(event);
+
+    return eventsByDate;
+  }, {});
+}
+
+export async function apiGetSpaceReservationsInVisibleRange({
+  reservableId,
+  calendarCells,
+}: {
+  reservableId: number;
+  calendarCells: CalendarCell[];
+}): Promise<TimelineEvent[]> {
+  const visibleRange = getVisibleRange(calendarCells);
+
+  if (!visibleRange) return [];
+
+  const events = await officeSlotsApi.getEvents({
+    reservable_id: reservableId,
+    start_time: visibleRange.start_time,
+    end_time: visibleRange.end_time,
+  });
+
+  return events.map((event) =>
+    toTimelineEvent(toApiReservationFromEvent(event), "reserved"),
+  );
+}
+
+export async function apiGetExternalEventsInVisibleRange({
+  calendarCells,
+}: {
+  calendarCells: CalendarCell[];
+}): Promise<DayEvent[]> {
+  const visibleRange = getVisibleRange(calendarCells);
+
+  if (!visibleRange) return [];
+
+  const dateIds = new Set(calendarCells.map((cell) => cell.id));
+
+  const myReservations = await officeSlotsApi.getMyReservations();
+
+  return myReservations.reservations
+    .filter((reservation) => reservation.status === "ACCEPTED")
+    .map(toApiReservationFromMyReservation)
+    .filter((reservation) => dateIds.has(reservation.dateId))
+    .map((reservation) => toDayEvent(reservation, "external", "partial"));
 }
