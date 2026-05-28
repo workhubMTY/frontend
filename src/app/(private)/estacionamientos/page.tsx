@@ -10,10 +10,10 @@ import { SelectionModeCalendarCard } from "@/app/features/reservaciones/componen
 import { AvailabilityIntervalCard } from "@/app/features/estacionamientos/components/AvailabilityIntervalCard";
 import { ParkingCapacityTimelineCard } from "@/app/features/estacionamientos/components/ParkingCapacityTimelineCard";
 
-import {
-  createApiJson,
-  toTimelineEvent,
-} from "@/app/features/reservaciones/data/reservationsApi";
+// import {
+//   createApiJson,
+//   toTimelineEvent,
+// } from "@/app/features/reservaciones/data/reservationsApi";
 
 import { createCalendarCells } from "@/app/features/reservaciones/lib/dates";
 
@@ -29,112 +29,112 @@ const BASE_OCCUPIED_SPOTS = 34;
 const HIGH_OCCUPATION_THRESHOLD = 37;
 
 export default function ParkingReservationSchedulerPage() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
+  // const router = useRouter();
+  // const searchParams = useSearchParams();
 
-  const [showAllEvents, setShowAllEvents] = useState(false);
+  // const [showAllEvents, setShowAllEvents] = useState(false);
 
-  const parkingId =
-    searchParams.get("parkingId") ?? searchParams.get("spaceId");
+  // const parkingId =
+  //   searchParams.get("parkingId") ?? searchParams.get("spaceId");
 
-  const parkingName =
-    searchParams.get("parkingName") ??
-    searchParams.get("spaceName") ??
-    "Estacionamiento";
+  // const parkingName =
+  //   searchParams.get("parkingName") ??
+  //   searchParams.get("spaceName") ??
+  //   "Estacionamiento";
 
-  const calendarCells = useMemo(() => createCalendarCells(), []);
+  // const calendarCells = useMemo(() => createCalendarCells(), []);
 
-  const apiJson = useMemo(() => createApiJson(calendarCells), [calendarCells]);
+  // const apiJson = useMemo(() => createApiJson(calendarCells), [calendarCells]);
 
-  const spaceReservationsByDate = useMemo(() => {
-    if (!parkingName) return {};
+  // const spaceReservationsByDate = useMemo(() => {
+  //   if (!parkingName) return {};
 
-    return apiJson.spaceReservations
-      .filter((reservation) => reservation.location === parkingName)
-      .reduce<Record<string, TimelineEvent[]>>(
-        (reservationsByDate, reservation) => {
-          const dateId = reservation.dateId;
+  //   return apiJson.spaceReservations
+  //     .filter((reservation) => reservation.location === parkingName)
+  //     .reduce<Record<string, TimelineEvent[]>>(
+  //       (reservationsByDate, reservation) => {
+  //         const dateId = reservation.dateId;
 
-          if (!reservationsByDate[dateId]) {
-            reservationsByDate[dateId] = [];
-          }
+  //         if (!reservationsByDate[dateId]) {
+  //           reservationsByDate[dateId] = [];
+  //         }
 
-          reservationsByDate[dateId].push(
-            toTimelineEvent(reservation, "reserved"),
-          );
+  //         reservationsByDate[dateId].push(
+  //           toTimelineEvent(reservation, "reserved"),
+  //         );
 
-          return reservationsByDate;
-        },
-        {},
-      );
-  }, [apiJson.spaceReservations, parkingName]);
+  //         return reservationsByDate;
+  //       },
+  //       {},
+  //     );
+  // }, [apiJson.spaceReservations, parkingName]);
 
-  const scheduler = useReservationScheduler({
-    calendarCells,
-    spaceReservationsByDate,
-  });
+  // const scheduler = useReservationScheduler({
+  //   calendarCells,
+  //   spaceReservationsByDate,
+  // });
 
-  const { spaceReservationsForActiveDay, externalEventsForInterval } =
-    useReservationQueries({
-      apiJson,
-      calendarCells,
-      activeDayId: scheduler.activeDayId,
-      spaceName: parkingName,
-      enabled: Boolean(parkingId || parkingName),
-    });
+  // const { spaceReservationsForActiveDay, externalEventsForInterval } =
+  //   useReservationQueries({
+  //     apiJson,
+  //     calendarCells,
+  //     activeDayId: scheduler.activeDayId,
+  //     spaceName: parkingName,
+  //     enabled: Boolean(parkingId || parkingName),
+  //   });
 
-  const activeDayExternalEvents = useMemo(
-    () =>
-      externalEventsForInterval.filter(
-        (event) => event.dateId === scheduler.activeDayId,
-      ),
-    [externalEventsForInterval, scheduler.activeDayId],
-  );
+  // const activeDayExternalEvents = useMemo(
+  //   () =>
+  //     externalEventsForInterval.filter(
+  //       (event) => event.dateId === scheduler.activeDayId,
+  //     ),
+  //   [externalEventsForInterval, scheduler.activeDayId],
+  // );
 
-  const conflictCount = useMemo(
-    () =>
-      activeDayExternalEvents.filter((event) => event.status !== "normal")
-        .length,
-    [activeDayExternalEvents],
-  );
+  // const conflictCount = useMemo(
+  //   () =>
+  //     activeDayExternalEvents.filter((event) => event.status !== "normal")
+  //       .length,
+  //   [activeDayExternalEvents],
+  // );
 
-  const visibleEvents = useMemo(() => {
-    if (showAllEvents) return activeDayExternalEvents;
+  // const visibleEvents = useMemo(() => {
+  //   if (showAllEvents) return activeDayExternalEvents;
 
-    return activeDayExternalEvents
-      .filter((event) => event.status !== "normal")
-      .slice(0, 2);
-  }, [activeDayExternalEvents, showAllEvents]);
+  //   return activeDayExternalEvents
+  //     .filter((event) => event.status !== "normal")
+  //     .slice(0, 2);
+  // }, [activeDayExternalEvents, showAllEvents]);
 
-  const parkingAvailability = useMemo(
-    () =>
-      getParkingAvailability({
-        capacity: PARKING_CAPACITY,
-        baseOccupiedSpots: BASE_OCCUPIED_SPOTS,
-        highOccupationThreshold: HIGH_OCCUPATION_THRESHOLD,
-        activeBlocks: [],
-        pendingBlocks: scheduler.proposedBlocksForActiveDay,
-        spaceReservationsForActiveDay,
-      }),
-    [spaceReservationsForActiveDay, scheduler.proposedBlocksForActiveDay],
-  );
+  // const parkingAvailability = useMemo(
+  //   () =>
+  //     getParkingAvailability({
+  //       capacity: PARKING_CAPACITY,
+  //       baseOccupiedSpots: BASE_OCCUPIED_SPOTS,
+  //       highOccupationThreshold: HIGH_OCCUPATION_THRESHOLD,
+  //       activeBlocks: [],
+  //       pendingBlocks: scheduler.proposedBlocksForActiveDay,
+  //       spaceReservationsForActiveDay,
+  //     }),
+  //   [spaceReservationsForActiveDay, scheduler.proposedBlocksForActiveDay],
+  // );
 
-  function handleContinue() {
-    const selectedParking = {
-      id: parkingId ?? "parking-default",
-      name: parkingName,
-    };
+  // function handleContinue() {
+  //   const selectedParking = {
+  //     id: parkingId ?? "parking-default",
+  //     name: parkingName,
+  //   };
 
-    const draft = scheduler.createReservationDraft(selectedParking);
+  //   const draft = scheduler.createReservationDraft(selectedParking);
 
-    if (!draft) return;
+  //   if (!draft) return;
 
-    router.push("/estacionamientos/reservacion/confirmar");
-  }
+  //   router.push("/estacionamientos/reservacion/confirmar");
+  // }
 
   return (
     <main className="min-h-screen bg-background-page p-4 text-slate-950 sm:p-6 lg:p-8">
-      <header className="mb-5 flex items-center justify-between rounded-2xl px-5">
+      {/* <header className="mb-5 flex items-center justify-between rounded-2xl px-5">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl">
             Ajusta tu reservación · {parkingName}
@@ -187,11 +187,11 @@ export default function ParkingReservationSchedulerPage() {
           <AvailabilityIntervalCard
             {...parkingAvailability}
             onViewCapacityDetail={() => {
-              // Aquí podrías abrir un modal o redirigir a una página con más detalles de la disponibilidad
+              // aqui podemos detallar mas, pero la neta no creo que sea necesario por ahora
             }}
           />
         </aside>
-      </div>
+      </div> */}
     </main>
   );
 }

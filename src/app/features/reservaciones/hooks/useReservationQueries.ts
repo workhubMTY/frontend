@@ -1,81 +1,78 @@
-import { useEffect, useState } from "react";
-import type {
-  CalendarCell,
-  DayEvent,
-  TimelineEvent,
-} from "@/app/features/reservaciones/types/reservaciones";
+import { useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
+
+import type { CalendarCell } from "@/app/features/reservaciones/types/reservaciones";
+
 import {
-  apiGetExternalEventsInInterval,
-  apiGetSpaceReservationsByDay,
+  apiGetExternalEventsInVisibleRange,
+  apiGetSpaceReservationsInVisibleRange,
+  getVisibleRange,
+  groupTimelineEventsByDate,
 } from "@/app/features/reservaciones/data/reservationsApi";
 
 type UseReservationQueriesParams = {
-  apiJson: ReturnType<
-    typeof import("@/app/features/reservaciones/data/reservationsApi").createApiJson
-  >;
   calendarCells: CalendarCell[];
-  activeDayId: string;
-  spaceName: string;
+  reservableId: number | null;
   enabled: boolean;
 };
 
 export function useReservationQueries({
-  apiJson,
   calendarCells,
-  activeDayId,
-  spaceName,
+  reservableId,
   enabled,
 }: UseReservationQueriesParams) {
-  const [spaceReservationsForActiveDay, setSpaceReservationsForActiveDay] =
-    useState<TimelineEvent[]>([]);
+  const visibleRange = useMemo(
+    () => getVisibleRange(calendarCells),
+    [calendarCells],
+  );
 
-  const [externalEventsForInterval, setExternalEventsForInterval] = useState<
-    DayEvent[]
-  >([]);
+  const spaceReservationsQuery = useQuery({
+    queryKey: [
+      "reservations",
+      "events",
+      "space",
+      reservableId,
+      visibleRange?.firstDateId,
+      visibleRange?.lastDateId,
+    ],
+    enabled: enabled && Boolean(reservableId) && Boolean(visibleRange),
+    queryFn: () =>
+      apiGetSpaceReservationsInVisibleRange({
+        reservableId: reservableId as number,
+        calendarCells,
+      }),
+  });
 
-  useEffect(() => {
-    let cancelled = false;
+  const externalEventsQuery = useQuery({
+    queryKey: [
+      "reservations",
+      "events",
+      "external",
+      visibleRange?.firstDateId,
+      visibleRange?.lastDateId,
+    ],
+    enabled: enabled && Boolean(visibleRange),
+    queryFn: () =>
+      apiGetExternalEventsInVisibleRange({
+        calendarCells,
+      }),
+  });
 
-    if (!enabled) return;
-
-    apiGetSpaceReservationsByDay({
-      apiJson,
-      dateId: activeDayId,
-      spaceName,
-    }).then((events) => {
-      if (!cancelled) {
-        setSpaceReservationsForActiveDay(events);
-      }
-    });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [activeDayId, apiJson, spaceName, enabled]);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    if (!enabled) return;
-
-    const intervalDateIds = calendarCells.map((cell) => cell.id);
-
-    apiGetExternalEventsInInterval({
-      apiJson,
-      dateIds: intervalDateIds,
-    }).then((externalEvents) => {
-      if (!cancelled) {
-        setExternalEventsForInterval(externalEvents);
-      }
-    });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [apiJson, calendarCells, enabled]);
+  const spaceReservationsByDate = useMemo(
+    () => groupTimelineEventsByDate(spaceReservationsQuery.data ?? []),
+    [spaceReservationsQuery.data],
+  );
 
   return {
-    spaceReservationsForActiveDay,
-    externalEventsForInterval,
+    spaceReservationsByDate,
+    externalEventsForInterval: externalEventsQuery.data ?? [],
+
+    isLoading:
+      spaceReservationsQuery.isLoading || externalEventsQuery.isLoading,
+
+    isFetching:
+      spaceReservationsQuery.isFetching || externalEventsQuery.isFetching,
+
+    error: spaceReservationsQuery.error ?? externalEventsQuery.error,
   };
 }

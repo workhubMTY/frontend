@@ -2,18 +2,13 @@
 
 import { useMemo } from "react";
 
-import {
-  createApiJson,
-  toTimelineEvent,
-} from "@/app/features/reservaciones/data/reservationsApi";
+import { toTimelineEvent } from "@/app/features/reservaciones/data/reservationsApi";
 
 import { createCalendarCells } from "@/app/features/reservaciones/lib/dates";
 
 import { useSelectedSpace } from "@/app/features/reservaciones/hooks/useSelectedSpace";
 import { useReservationQueries } from "@/app/features/reservaciones/hooks/useReservationQueries";
 import { useReservationScheduler } from "@/app/features/reservaciones/hooks/useReservationScheduler";
-
-import type { TimelineEvent } from "@/app/features/reservaciones/types/reservaciones";
 
 type UseReservationSchedulerPageParams = {
   showAllEvents: boolean;
@@ -26,35 +21,39 @@ export function useReservationSchedulerPage({
 
   const calendarCells = useMemo(() => createCalendarCells(), []);
 
-  const apiJson = useMemo(() => createApiJson(calendarCells), [calendarCells]);
-
-  const spaceReservationsByDate = useMemo(() => {
-    if (!spaceName) return {};
-
-    return apiJson.spaceReservations
-      .filter((reservation) => reservation.location === spaceName)
-      .reduce<Record<string, TimelineEvent[]>>(
-        (reservationsByDate, reservation) => {
-          const dateId = reservation.dateId;
-
-          if (!reservationsByDate[dateId]) {
-            reservationsByDate[dateId] = [];
-          }
-
-          reservationsByDate[dateId].push(
-            toTimelineEvent(reservation, "reserved"),
-          );
-
-          return reservationsByDate;
-        },
-        {},
-      );
-  }, [apiJson.spaceReservations, spaceName]);
+  const reservationQueries = useReservationQueries({
+    calendarCells,
+    reservableId: spaceId ? Number(spaceId) : null,
+    enabled: Boolean(spaceId),
+  });
 
   const scheduler = useReservationScheduler({
     calendarCells,
-    spaceReservationsByDate,
+    spaceReservationsByDate: reservationQueries.spaceReservationsByDate,
   });
+
+  const spaceReservationsForActiveDay = useMemo(
+    () =>
+      reservationQueries.spaceReservationsByDate[scheduler.activeDayId] ?? [],
+    [reservationQueries.spaceReservationsByDate, scheduler.activeDayId],
+  );
+
+  const activeDayExternalEvents = useMemo(
+    () =>
+      reservationQueries.externalEventsForInterval.filter(
+        (event) => event.dateId === scheduler.activeDayId,
+      ),
+    [reservationQueries.externalEventsForInterval, scheduler.activeDayId],
+  );
+
+  const externalTimelineEventsForActiveDay = useMemo(
+    () =>
+      activeDayExternalEvents.map((event) =>
+        toTimelineEvent(event, "external"),
+      ),
+    [activeDayExternalEvents],
+  );
+
   const proposedTimelineEventsForActiveDay = useMemo(
     () =>
       scheduler.proposedBlocksForActiveDay.map((block) => ({
@@ -67,31 +66,6 @@ export function useReservationSchedulerPage({
         status: "normal",
       })),
     [scheduler.proposedBlocksForActiveDay, scheduler.activeDayId],
-  );
-
-  const { spaceReservationsForActiveDay, externalEventsForInterval } =
-    useReservationQueries({
-      apiJson,
-      calendarCells,
-      activeDayId: scheduler.activeDayId,
-      spaceName,
-      enabled: Boolean(spaceId),
-    });
-
-  const activeDayExternalEvents = useMemo(
-    () =>
-      externalEventsForInterval.filter(
-        (event) => event.dateId === scheduler.activeDayId,
-      ),
-    [externalEventsForInterval, scheduler.activeDayId],
-  );
-
-  const externalTimelineEventsForActiveDay = useMemo(
-    () =>
-      activeDayExternalEvents.map((event) =>
-        toTimelineEvent(event, "external"),
-      ),
-    [activeDayExternalEvents],
   );
 
   const conflictCount = useMemo(
@@ -109,17 +83,31 @@ export function useReservationSchedulerPage({
       .slice(0, 2);
   }, [activeDayExternalEvents, showAllEvents]);
 
+  console.log("DEBUG RESERVATION PAGE", {
+    activeDayId: scheduler.activeDayId,
+    externalEventsForInterval: reservationQueries.externalEventsForInterval,
+    activeDayExternalEvents,
+    spaceReservationsByDate: reservationQueries.spaceReservationsByDate,
+    spaceReservationsForActiveDay,
+  });
+
   return {
     selectedSpace,
     spaceId,
     spaceName,
     calendarCells,
     scheduler,
+
     activeDayExternalEvents,
     externalTimelineEventsForActiveDay,
     proposedTimelineEventsForActiveDay,
     spaceReservationsForActiveDay,
+
     conflictCount,
     visibleEvents,
+
+    isLoading: reservationQueries.isLoading,
+    isFetching: reservationQueries.isFetching,
+    error: reservationQueries.error,
   };
 }
