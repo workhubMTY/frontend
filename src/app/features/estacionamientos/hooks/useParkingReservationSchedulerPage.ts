@@ -1,135 +1,113 @@
-// "use client";
+"use client";
 
-// import { useMemo } from "react";
+import { useMemo } from "react";
 
-// import {
-//   createApiJson,
-//   toTimelineEvent,
-// } from "@/app/features/reservaciones/data/reservationsApi";
+import { useParkingLotDetail, useParkingReservations } from "@/app/features/estacionamientos/data/hooks";
 
-// import { createCalendarCells } from "@/app/features/reservaciones/lib/dates";
+import { createCalendarCells } from "@/app/features/reservaciones/lib/dates";
+import {
+  getVisibleRange,
+  groupTimelineEventsByDate,
+} from "@/app/features/reservaciones/data/reservationsApi";
 
-// import { useReservationQueries } from "@/app/features/reservaciones/hooks/useReservationQueries";
-// import { useReservationScheduler } from "@/app/features/reservaciones/hooks/useReservationScheduler";
+import { useReservationScheduler } from "@/app/features/reservaciones/hooks/useReservationScheduler";
 
-// import type { TimelineEvent } from "@/app/features/reservaciones/types/reservaciones";
+import type { TimelineEvent } from "@/app/features/reservaciones/types/reservaciones";
+import type {
+  ListReservationsQuery,
+  ParkingReservation,
+} from "@/app/features/estacionamientos/data/types";
 
-// type UseParkingReservationSchedulerPageParams = {
-//   showAllEvents: boolean;
-//   parkingId: string | null;
-//   parkingName: string;
-// };
+function toDateId(value: Date | string) {
+  return new Date(value).toISOString().slice(0, 10);
+}
 
-// export function useParkingReservationSchedulerPage({
-//   showAllEvents,
-//   parkingId,
-//   parkingName,
-// }: UseParkingReservationSchedulerPageParams) {
-//   const calendarCells = useMemo(() => createCalendarCells(), []);
+function toTime(value: Date | string) {
+  return new Date(value).toTimeString().slice(0, 5);
+}
 
-//   const apiJson = useMemo(() => createApiJson(calendarCells), [calendarCells]);
+function toParkingTimelineEvent(
+  reservation: ParkingReservation,
+): TimelineEvent {
+  return {
+    id: String(reservation.id),
+    dateId: toDateId(reservation.start_time),
+    start: toTime(reservation.start_time),
+    end: toTime(reservation.end_time),
+    title: "Reservación",
+    label: `${toTime(reservation.start_time)} - ${toTime(reservation.end_time)}`,
+    row: "reserved",
+  };
+}
 
-//   const spaceReservationsByDate = useMemo(() => {
-//     if (!parkingName) return {};
+type UseParkingReservationSchedulerPageParams = {
+  parkingId: number | null;
+};
 
-//     return apiJson.spaceReservations
-//       .filter((reservation) => reservation.location === parkingName)
-//       .reduce<Record<string, TimelineEvent[]>>(
-//         (reservationsByDate, reservation) => {
-//           const dateId = reservation.dateId;
+export function useParkingReservationSchedulerPage({
+  parkingId,
+}: UseParkingReservationSchedulerPageParams) {
+  const calendarCells = useMemo(() => createCalendarCells(), []);
 
-//           if (!reservationsByDate[dateId]) {
-//             reservationsByDate[dateId] = [];
-//           }
+  const visibleRange = useMemo(
+    () => getVisibleRange(calendarCells),
+    [calendarCells],
+  );
 
-//           reservationsByDate[dateId].push(
-//             toTimelineEvent(reservation, "reserved"),
-//           );
+  const parkingLotQuery = useParkingLotDetail(parkingId ?? 0);
 
-//           return reservationsByDate;
-//         },
-//         {},
-//       );
-//   }, [apiJson.spaceReservations, parkingName]);
+  const reservationsQueryParams = useMemo<ListReservationsQuery | undefined>(
+    () => {
+      if (!parkingId || !visibleRange) return undefined;
 
-//   const scheduler = useReservationScheduler({
-//     calendarCells,
-//     spaceReservationsByDate,
-//   });
+      return {
+        parking_lot_id: parkingId,
+        start_time: new Date(`${visibleRange.firstDateId}T00:00:00.000Z`),
+        end_time: new Date(`${visibleRange.lastDateId}T23:59:59.999Z`),
+      };
+    },
+    [parkingId, visibleRange],
+  );
 
-//   const proposedTimelineEventsForActiveDay = useMemo(
-//     () =>
-//       scheduler.proposedBlocksForActiveDay.map((block) => ({
-//         id: block.id,
-//         dateId: scheduler.activeDayId,
-//         start: block.start,
-//         end: block.end,
-//         title: block.label ?? "Horario propuesto",
-//         type: "pending",
-//         status: "normal",
-//       })),
-//     [scheduler.proposedBlocksForActiveDay, scheduler.activeDayId],
-//   );
+  const reservationsQuery = useParkingReservations(reservationsQueryParams, {
+    enabled: Boolean(parkingId && visibleRange),
+  });
 
-//   const { spaceReservationsForActiveDay, externalEventsForInterval } =
-//     useReservationQueries({
-//       apiJson,
-//       calendarCells,
-//       activeDayId: scheduler.activeDayId,
-//       spaceName: parkingName,
-//       enabled: Boolean(parkingId),
-//     });
+  const parkingTimelineEvents = useMemo(
+    () =>
+      (reservationsQuery.data?.items ?? []).map((reservation) =>
+        toParkingTimelineEvent(reservation),
+      ),
+    [reservationsQuery.data?.items],
+  );
 
-//   const activeDayExternalEvents = useMemo(
-//     () =>
-//       externalEventsForInterval.filter(
-//         (event) => event.dateId === scheduler.activeDayId,
-//       ),
-//     [externalEventsForInterval, scheduler.activeDayId],
-//   );
+  const parkingReservationsByDate = useMemo(
+    () => groupTimelineEventsByDate(parkingTimelineEvents),
+    [parkingTimelineEvents],
+  );
 
-//   const externalTimelineEventsForActiveDay = useMemo(
-//     () =>
-//       activeDayExternalEvents.map((event) =>
-//         toTimelineEvent(event, "external"),
-//       ),
-//     [activeDayExternalEvents],
-//   );
+  const scheduler = useReservationScheduler({
+    calendarCells,
+    spaceReservationsByDate: parkingReservationsByDate,
+  });
 
-//   const conflictCount = useMemo(
-//     () =>
-//       activeDayExternalEvents.filter((event) => event.status !== "normal")
-//         .length,
-//     [activeDayExternalEvents],
-//   );
+  const parkingReservationsForActiveDay = useMemo(
+    () => parkingReservationsByDate[scheduler.activeDayId] ?? [],
+    [parkingReservationsByDate, scheduler.activeDayId],
+  );
 
-//   const visibleEvents = useMemo(() => {
-//     if (showAllEvents) return activeDayExternalEvents;
+  return {
+    calendarCells,
+    scheduler,
 
-//     return activeDayExternalEvents
-//       .filter((event) => event.status !== "normal")
-//       .slice(0, 2);
-//   }, [activeDayExternalEvents, showAllEvents]);
+    parkingLot: parkingLotQuery.data ?? null,
+    parkingName: parkingLotQuery.data?.name ?? "Estacionamiento",
 
-//   const selectedParking = useMemo(
-//     () => ({
-//       id: parkingId ?? "parking-default",
-//       name: parkingName,
-//     }),
-//     [parkingId, parkingName],
-//   );
+    parkingReservationsByDate,
+    parkingReservationsForActiveDay,
 
-//   return {
-//     selectedParking,
-//     parkingId,
-//     parkingName,
-//     calendarCells,
-//     scheduler,
-//     activeDayExternalEvents,
-//     externalTimelineEventsForActiveDay,
-//     proposedTimelineEventsForActiveDay,
-//     spaceReservationsForActiveDay,
-//     conflictCount,
-//     visibleEvents,
-//   };
-// }
+    isLoading: parkingLotQuery.isLoading || reservationsQuery.isLoading,
+    isFetching: parkingLotQuery.isFetching || reservationsQuery.isFetching,
+    error: parkingLotQuery.error ?? reservationsQuery.error,
+  };
+}
