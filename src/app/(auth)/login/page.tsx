@@ -17,18 +17,18 @@ export default function Login() {
   const [dark, setDark] = useState<boolean>(true);
   const router = useRouter();
 
-  const [verifyingSesion, setVerifyingSesion] = useState(true);
-  useEffect(() => {
-    authService
-      .me()
-      .then(() => {
-        router.replace("/home");
-      })
-      .catch(() => {
-        setVerifyingSesion(false);
-      });
-  }, []);
-  if (verifyingSesion) return null;
+  // const [verifyingSesion, setVerifyingSesion] = useState(true);
+  // useEffect(() => {
+  //   authService
+  //     .me()
+  //     .then(() => {
+  //       router.replace("/home");
+  //     })
+  //     .catch(() => {
+  //       setVerifyingSesion(false);
+  //     });
+  // }, []);
+  // if (verifyingSesion) return null;
 
   function onChangeUser(e: React.ChangeEvent<HTMLInputElement>) {
     setUser({ ...user, [e.target.name]: e.target.value });
