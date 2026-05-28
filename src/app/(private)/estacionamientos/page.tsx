@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 import { ProposedSchedulesCard } from "@/app/features/reservaciones/components/Cards/ProposedSchedulesCard";
@@ -10,131 +10,74 @@ import { SelectionModeCalendarCard } from "@/app/features/reservaciones/componen
 import { AvailabilityIntervalCard } from "@/app/features/estacionamientos/components/AvailabilityIntervalCard";
 import { ParkingCapacityTimelineCard } from "@/app/features/estacionamientos/components/ParkingCapacityTimelineCard";
 
-// import {
-//   createApiJson,
-//   toTimelineEvent,
-// } from "@/app/features/reservaciones/data/reservationsApi";
-
-import { createCalendarCells } from "@/app/features/reservaciones/lib/dates";
-
-import { useReservationQueries } from "@/app/features/reservaciones/hooks/useReservationQueries";
-import { useReservationScheduler } from "@/app/features/reservaciones/hooks/useReservationScheduler";
-
 import { getParkingAvailability } from "@/app/features/estacionamientos/lib/parkingAvailability";
+import { useParkingReservationSchedulerPage } from "@/app/features/estacionamientos/hooks/useParkingReservationSchedulerPage";
 
-import type { TimelineEvent } from "@/app/features/reservaciones/types/reservaciones";
-
-const PARKING_CAPACITY = 40;
-const BASE_OCCUPIED_SPOTS = 34;
-const HIGH_OCCUPATION_THRESHOLD = 37;
+const FALLBACK_PARKING_CAPACITY = 40;
+const BASE_OCCUPIED_SPOTS = 0;
+const HIGH_OCCUPATION_THRESHOLD_PERCENTAGE = 0.9;
 
 export default function ParkingReservationSchedulerPage() {
-  // const router = useRouter();
-  // const searchParams = useSearchParams();
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
-  // const [showAllEvents, setShowAllEvents] = useState(false);
+  const parkingIdParam =
+    searchParams.get("parkingId") ?? searchParams.get("spaceId");
 
-  // const parkingId =
-  //   searchParams.get("parkingId") ?? searchParams.get("spaceId");
+  const parkingId = parkingIdParam ? Number(parkingIdParam) : null;
 
-  // const parkingName =
-  //   searchParams.get("parkingName") ??
-  //   searchParams.get("spaceName") ??
-  //   "Estacionamiento";
+  const {
+    parkingLot,
+    parkingName,
+    calendarCells,
+    scheduler,
+    parkingReservationsForActiveDay,
+  } = useParkingReservationSchedulerPage({
+    parkingId,
+  });
 
-  // const calendarCells = useMemo(() => createCalendarCells(), []);
+  const parkingCapacity = parkingLot?.capacity ?? FALLBACK_PARKING_CAPACITY;
 
-  // const apiJson = useMemo(() => createApiJson(calendarCells), [calendarCells]);
+  const highOccupationThreshold = Math.floor(
+    parkingCapacity * HIGH_OCCUPATION_THRESHOLD_PERCENTAGE,
+  );
 
-  // const spaceReservationsByDate = useMemo(() => {
-  //   if (!parkingName) return {};
+  const parkingAvailability = useMemo(
+    () =>
+      getParkingAvailability({
+        capacity: parkingCapacity,
+        baseOccupiedSpots: BASE_OCCUPIED_SPOTS,
+        highOccupationThreshold,
+        activeBlocks: [],
+        pendingBlocks: scheduler.proposedBlocksForActiveDay,
+        spaceReservationsForActiveDay: parkingReservationsForActiveDay,
+      }),
+    [
+      parkingCapacity,
+      highOccupationThreshold,
+      parkingReservationsForActiveDay,
+      scheduler.proposedBlocksForActiveDay,
+    ],
+  );
 
-  //   return apiJson.spaceReservations
-  //     .filter((reservation) => reservation.location === parkingName)
-  //     .reduce<Record<string, TimelineEvent[]>>(
-  //       (reservationsByDate, reservation) => {
-  //         const dateId = reservation.dateId;
+  function handleContinue() {
+    if (!parkingId) return;
 
-  //         if (!reservationsByDate[dateId]) {
-  //           reservationsByDate[dateId] = [];
-  //         }
+    const selectedParking = {
+      id: String(parkingId),
+      name: parkingName,
+    };
 
-  //         reservationsByDate[dateId].push(
-  //           toTimelineEvent(reservation, "reserved"),
-  //         );
+    const draft = scheduler.createReservationDraft(selectedParking);
 
-  //         return reservationsByDate;
-  //       },
-  //       {},
-  //     );
-  // }, [apiJson.spaceReservations, parkingName]);
+    if (!draft) return;
 
-  // const scheduler = useReservationScheduler({
-  //   calendarCells,
-  //   spaceReservationsByDate,
-  // });
-
-  // const { spaceReservationsForActiveDay, externalEventsForInterval } =
-  //   useReservationQueries({
-  //     apiJson,
-  //     calendarCells,
-  //     activeDayId: scheduler.activeDayId,
-  //     spaceName: parkingName,
-  //     enabled: Boolean(parkingId || parkingName),
-  //   });
-
-  // const activeDayExternalEvents = useMemo(
-  //   () =>
-  //     externalEventsForInterval.filter(
-  //       (event) => event.dateId === scheduler.activeDayId,
-  //     ),
-  //   [externalEventsForInterval, scheduler.activeDayId],
-  // );
-
-  // const conflictCount = useMemo(
-  //   () =>
-  //     activeDayExternalEvents.filter((event) => event.status !== "normal")
-  //       .length,
-  //   [activeDayExternalEvents],
-  // );
-
-  // const visibleEvents = useMemo(() => {
-  //   if (showAllEvents) return activeDayExternalEvents;
-
-  //   return activeDayExternalEvents
-  //     .filter((event) => event.status !== "normal")
-  //     .slice(0, 2);
-  // }, [activeDayExternalEvents, showAllEvents]);
-
-  // const parkingAvailability = useMemo(
-  //   () =>
-  //     getParkingAvailability({
-  //       capacity: PARKING_CAPACITY,
-  //       baseOccupiedSpots: BASE_OCCUPIED_SPOTS,
-  //       highOccupationThreshold: HIGH_OCCUPATION_THRESHOLD,
-  //       activeBlocks: [],
-  //       pendingBlocks: scheduler.proposedBlocksForActiveDay,
-  //       spaceReservationsForActiveDay,
-  //     }),
-  //   [spaceReservationsForActiveDay, scheduler.proposedBlocksForActiveDay],
-  // );
-
-  // function handleContinue() {
-  //   const selectedParking = {
-  //     id: parkingId ?? "parking-default",
-  //     name: parkingName,
-  //   };
-
-  //   const draft = scheduler.createReservationDraft(selectedParking);
-
-  //   if (!draft) return;
-
-  //   router.push("/estacionamientos/reservacion/confirmar");
-  // }
+    router.push("/estacionamientos/reservacion/confirmar");
+  }
 
   return (
     <main className="min-h-screen bg-background-page p-4 text-slate-950 sm:p-6 lg:p-8">
-      {/* <header className="mb-5 flex items-center justify-between rounded-2xl px-5">
+      <header className="mb-5 flex items-center justify-between rounded-2xl px-5">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl">
             Ajusta tu reservación · {parkingName}
@@ -150,7 +93,7 @@ export default function ParkingReservationSchedulerPage() {
       <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_390px]">
         <section className="space-y-5">
           <ParkingCapacityTimelineCard
-            capacity={PARKING_CAPACITY}
+            capacity={parkingCapacity}
             blocks={scheduler.proposedBlocksForActiveDay}
           />
 
@@ -184,14 +127,15 @@ export default function ParkingReservationSchedulerPage() {
             onSelect={scheduler.handleCalendarSelect}
             onClearSelection={scheduler.clearSelection}
           />
+
           <AvailabilityIntervalCard
             {...parkingAvailability}
             onViewCapacityDetail={() => {
-              // aqui podemos detallar mas, pero la neta no creo que sea necesario por ahora
+              // Por ahora no haces nada aquí.
             }}
           />
         </aside>
-      </div> */}
+      </div>
     </main>
   );
 }

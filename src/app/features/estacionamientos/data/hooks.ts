@@ -183,9 +183,12 @@ export function useParkingLotDetail(id: number) {
   }, [socket, queryClient, id]);
 
   return query;
-}
-
-export function useParkingReservations(query?: ListReservationsQuery) {
+} export function useParkingReservations(
+  query?: ListReservationsQuery,
+  options?: {
+    enabled?: boolean;
+  },
+) {
   const queryClient = useQueryClient();
   const socket = useSocket();
 
@@ -194,6 +197,7 @@ export function useParkingReservations(query?: ListReservationsQuery) {
   const queryResult = useQuery({
     queryKey: parkingKeys.reservationsList(query),
     queryFn: () => parkingReservationsApi.list(query),
+    enabled: options?.enabled ?? true,
     staleTime: 1000 * 30,
   });
 
@@ -202,7 +206,6 @@ export function useParkingReservations(query?: ListReservationsQuery) {
 
     function onParkingUpdate(msg: ParkingUpdateMessage) {
       if (msg.type === "reservation.created") {
-        // No hacemos append: el payload público no trae user_id ni start/end_time
         queryClient.invalidateQueries({ queryKey: key });
         return;
       }
@@ -245,7 +248,12 @@ export function useParkingReservations(query?: ListReservationsQuery) {
       queryClient.invalidateQueries({ queryKey: parkingKeys.reservations() }),
   });
 
-  return { ...queryResult, createReservation, cancelReservation, patchAttendance };
+  return {
+    ...queryResult,
+    createReservation,
+    cancelReservation,
+    patchAttendance,
+  };
 }
 
 export function useParkingReservationDetail(id: number) {
