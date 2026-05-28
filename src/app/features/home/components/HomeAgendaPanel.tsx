@@ -1,7 +1,7 @@
 import AgendaRapida from "@/app/features/home/components/AgendaRapida/AgendaRapida";
 import { EventoGeneralDetail } from "@/app/features/home/components/EventoGeneralDetail";
 
-import type { ExternalEvent } from "@/app/features/home/components/AgendaRapida/AgendaRapida";
+import type { ExternalEvent } from "@/app/features/home/types/Agenda";
 
 type HomeAgendaPanelProps = {
   externalEvents: ExternalEvent[];

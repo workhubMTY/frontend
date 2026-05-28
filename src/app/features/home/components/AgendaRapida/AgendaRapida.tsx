@@ -3,6 +3,7 @@
 import { useState, useMemo, useRef } from "react";
 import { ChevronLeft, ChevronRight, CalendarDays } from "lucide-react";
 import { CalEvent } from "../../types/types";
+import { ExternalEvent } from "../../types/Agenda";
 
 const HOURS = [6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17];
 const DAYS_SHORT = ["Lu", "Ma", "Mi", "Ju", "Vi"];
@@ -12,17 +13,6 @@ const TOTAL_H = HOURS.length;
 const COL_MIN_PX = 56;
 const DAY_COL_PX = 38;
 const GRID_MIN_W = DAY_COL_PX + COL_MIN_PX * TOTAL_H;
-
-export interface ExternalEvent {
-  day: number;
-  start: number;
-  end: number;
-  label: string;
-  sublabel?: string;
-  kind: "friend" | "invitation" | "holiday";
-  startAt?: string;
-  endAt?: string;
-}
 
 const EXTERNAL_COLORS: Record<
   ExternalEvent["kind"],

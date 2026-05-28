@@ -12,6 +12,18 @@ export interface CalEvent {
   tipo: string;
 }
 
+
+export interface ExternalEvent {
+  day: number;
+  start: number;
+  end: number;
+  label: string;
+  sublabel?: string;
+  kind: "friend" | "invitation" | "holiday";
+  startAt?: string;
+  endAt?: string;
+}
+
 export type EventColorKey = "purple" | "blue" | "green" | "red";
 
 export const EVENT_COLORS: Record<EventColorKey, {

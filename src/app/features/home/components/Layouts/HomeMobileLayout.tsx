@@ -4,7 +4,7 @@ import { HomeAgendaPanel } from "@/app/features/home/components/HomeAgendaPanel"
 
 import type { MobileTab } from "@/app/features/home/hooks/useHomePage";
 import type { Persona, DiaInvitaciones } from "@/app/features/home/types/types";
-import type { ExternalEvent } from "@/app/features/home/components/AgendaRapida/AgendaRapida";
+import type { ExternalEvent } from "@/app/features/home/types/Agenda";
 import type { EventoGeneralDetail } from "@/app/features/home/components/EventoGeneralDetail";
 
 type HomeMobileLayoutProps = {
