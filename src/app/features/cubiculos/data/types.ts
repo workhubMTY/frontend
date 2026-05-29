@@ -1,13 +1,5 @@
 export type ParticipantStatus = "PENDING" | "ACCEPTED" | "REJECTED";
 
-export type OfficeSlot = {
-  id: number;
-  name: string;
-  capacity: number;
-  floor_id: number;
-  is_blocked: boolean;
-};
-
 export type Floor = {
   id: number;
   name: string;
@@ -73,7 +65,7 @@ export type FriendOccupancy = {
   end_time: Date;
 };
 
-export type SlotAvailabilityResult = {
+export type OfficeSlot = {
   id: number;
   name: string;
   code: string;

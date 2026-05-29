@@ -2,7 +2,6 @@ import { authFetch } from "@/app/shared/data/api";
 import type {
   OfficeSlot,
   ReservationDetail,
-  SlotAvailabilityResult,
   WorkGroup,
   ReservationParticipant,
   UserSummary,
@@ -40,7 +39,7 @@ export const officeSlotsApi = {
       params.append("end_time", query.end_time);
     if (query.user_id) params.append("user_id", query.user_id);
 
-    return authFetch<SlotAvailabilityResult[]>(
+    return authFetch<OfficeSlot[]>(
       `${RESERVABLES}/available?${params.toString()}`,
     );
   },

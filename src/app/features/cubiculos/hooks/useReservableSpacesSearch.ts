@@ -22,7 +22,32 @@ function parseTimeInput(input: string): string | null {
 
   return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
 }
+function areFiltersEmpty(filters: SpaceSearchFilters) {
+  return (
+    filters.search.trim() === "" &&
+    filters.time.startTime.trim() === "" &&
+    filters.time.endTime.trim() === "" &&
+    filters.capacity.minCapacity === "" &&
+    filters.capacity.maxCapacity === "" &&
+    filters.period.dateIds.length === 0
+  );
+}
+function buildAvailableSlotsFilters(nextFilters: SpaceSearchFilters) {
+  const { time, ...baseFilters } = nextFilters;
 
+  const parsedStartTime = parseTimeInput(time.startTime);
+  const parsedEndTime = parseTimeInput(time.endTime);
+
+  return {
+    ...baseFilters,
+    ...(time.startTime && {
+      start_time: parsedStartTime ?? time.startTime,
+    }),
+    ...(time.endTime && {
+      end_time: parsedEndTime ?? time.endTime,
+    }),
+  };
+}
 export function useReservableSpacesSearch() {
   const [selectedSpaceCode, setSelectedSpaceCode] = useState<
     string | undefined
@@ -47,7 +72,7 @@ export function useReservableSpacesSearch() {
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    void handleSubmitFilters(filters);
+    handleGetSpaces();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -99,28 +124,25 @@ export function useReservableSpacesSearch() {
 
     setSelectedSpaceCode(mapId);
   }
-async function handleSubmitFilters(nextFilters: SpaceSearchFilters) {
-  const { time, ...baseFilters } = nextFilters;
-
-  const parsedStartTime = parseTimeInput(time.startTime);
-  const parsedEndTime = parseTimeInput(time.endTime);
-
-  const parsedFilters = {
-    ...baseFilters,
-    ...(time.startTime && {
-      start_time: parsedStartTime ?? time.startTime,
-    }),
-    ...(time.endTime && {
-      end_time: parsedEndTime ?? time.endTime,
-    }),
-  };
-
-  console.log("Submitting filters:", parsedFilters);
-  setIsLoading(true);
-
- 
+  
+  async function handleGetSpaces() {
+    setIsLoading(true);
     try {
-      const result = await officeSlotsApi.getAvailableSlots(parsedFilters);
+      const result = await officeSlotsApi.getAllSlots();
+      setSpaces(result);
+    } finally {
+      setIsLoading(false);
+    }
+  }
+  async function handleSubmitFilters(nextFilters: SpaceSearchFilters) {
+    setIsLoading(true);
+
+    try {
+      const hasNoFilters = areFiltersEmpty(nextFilters);
+
+      const result = hasNoFilters
+        ? await officeSlotsApi.getAllSlots()
+        : await officeSlotsApi.getAvailableSlots(buildAvailableSlotsFilters(nextFilters));
 
       setSpaces(result);
 
@@ -129,7 +151,7 @@ async function handleSubmitFilters(nextFilters: SpaceSearchFilters) {
       );
 
       if (!stillExists) {
-        setSelectedSpaceCode(result[0]?.code);
+        setSelectedSpaceCode(result[0]?.code ?? undefined);
       }
     } finally {
       setIsLoading(false);
