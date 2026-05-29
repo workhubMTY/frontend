@@ -38,8 +38,7 @@ type TeamsDrawerProps = {
   teams: TeamSummary[];
   initialOpenTeamId?: string | null;
   initialTeamDrawerMode?: "list" | "create";
-  getUsers: (query: string) => Promise<User[]>;
-  inviteCandidates?: User[];
+  getUsers: (query?: string) => Promise<User[]>;
   onClose: () => void;
   onGetTeamMembers: (teamId: string) => Promise<User[]>;
   onCreateTeam?: (payload: CreateTeamPayload) => Promise<void> | void;
@@ -90,7 +89,6 @@ export function TeamsDrawer({
   onClose,
   getUsers,
   initialOpenTeamId,
-  inviteCandidates = [],
   initialTeamDrawerMode = "list",
   onCreateTeam,
   onGetTeamMembers,
@@ -216,7 +214,7 @@ export function TeamsDrawer({
           />
         ) : (
           <CreateTeamMode
-            inviteCandidates={inviteCandidates}
+            onGetCandidates={getUsers}
             onBack={() => setDrawerMode("list")}
             onClose={handleClose}
             onCreateTeam={async (payload) => {
@@ -441,14 +439,14 @@ function TeamsListMode({
 }
 
 type CreateTeamModeProps = {
-  inviteCandidates: User[];
+  onGetCandidates: (query?: string) => Promise<User[]>;
   onBack: () => void;
   onClose: () => void;
   onCreateTeam: (payload: CreateTeamPayload) => Promise<void>;
 };
 
 function CreateTeamMode({
-  inviteCandidates,
+  onGetCandidates,
   onBack,
   onClose,
   onCreateTeam,
@@ -460,25 +458,52 @@ function CreateTeamMode({
   const [selectedMembers, setSelectedMembers] = useState<User[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const filteredCandidates = useMemo(() => {
-    const normalizedSearch = memberSearch.trim().toLowerCase();
+  const [filteredCandidates, setFilteredCandidates] = useState<User[]>([]);
+  const [isSearchingMembers, setIsSearchingMembers] = useState(false);
 
-    if (!normalizedSearch) return [];
+  useEffect(() => {
+    const normalizedSearch = memberSearch.trim();
 
-    return inviteCandidates.filter((candidate) => {
-      const isAlreadySelected = selectedMembers.some(
-        (member) => member.eId === candidate.eId,
-      );
+    if (!normalizedSearch) {
+      setFilteredCandidates([]);
+      return;
+    }
 
-      if (isAlreadySelected) return false;
+    let ignore = false;
 
-      return candidate.name.toLowerCase().includes(normalizedSearch);
-    });
-  }, [inviteCandidates, memberSearch, selectedMembers]);
+    async function searchCandidates() {
+      try {
+        setIsSearchingMembers(true);
+
+        const candidates = await onGetCandidates(normalizedSearch);
+
+        if (ignore) return;
+
+        setFilteredCandidates(
+          candidates.filter(
+            (candidate) =>
+              !selectedMembers.some(
+                (member) => String(member.eId) === String(candidate.eId),
+              ),
+          ),
+        );
+      } finally {
+        if (!ignore) {
+          setIsSearchingMembers(false);
+        }
+      }
+    }
+
+    searchCandidates();
+
+    return () => {
+      ignore = true;
+    };
+  }, [memberSearch, onGetCandidates, selectedMembers]);
 
   const canCreateTeam = teamName.trim().length >= 3 && !isSubmitting;
 
-  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: React.SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
 
     if (!canCreateTeam) return;
