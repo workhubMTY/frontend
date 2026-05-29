@@ -86,7 +86,7 @@ export default function CubiculoConfirmarPage() {
   const [busqueda, setBusqueda] = useState("");
   const [nombreEquipo, setNombreEquipo] = useState("");
   const [dropdownAbierto, setDropdownAbierto] = useState(false);
-  const [crearEquipo, setCrearEquipo] = useState(true);
+  const [crearEquipo, setCrearEquipo] = useState(false);
   const [modalAbierto, setModalAbierto] = useState(false);
   const [mensajeError, setMensajeError] = useState("");
   const searchRef = useRef<HTMLDivElement>(null);
@@ -263,7 +263,7 @@ export default function CubiculoConfirmarPage() {
               if (e.target === e.currentTarget) setModalAbierto(false);
             }}
           >
-            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-6 px-10 py-10 flex flex-col items-center gap-6 animate-in fade-in zoom-in-95 duration-200">
+            <div className="bg-white shadow-2xl w-full max-w-md mx-6 px-10 py-10 flex flex-col items-center gap-6 animate-in fade-in zoom-in-95 duration-200">
               <h2 className="text-2xl font-bold text-gray-900 text-center">
                 Reserva finalizada
               </h2>
@@ -272,7 +272,7 @@ export default function CubiculoConfirmarPage() {
               </p>
               <button
                 onClick={handleRegresar}
-                className="bg-violet-700 hover:bg-violet-800 text-white font-semibold text-base px-8 py-3 rounded-xl cursor-pointer border-none transition-colors w-full max-w-xs"
+                className="bg-violet-700 hover:bg-violet-800 text-white font-semibold text-base px-8 py-3 cursor-pointer border-none transition-colors w-full max-w-xs"
               >
                 Regresar a reservas
               </button>
@@ -287,7 +287,7 @@ export default function CubiculoConfirmarPage() {
           </div>
 
           <div className="flex gap-6 flex-1 min-h-0">
-            <div className="bg-white rounded-lg border border-gray-200 p-6 w-72 shrink-0 flex flex-col shadow-sm">
+            <div className="bg-white border border-gray-200 p-6 w-72 shrink-0 flex flex-col shadow-sm">
               <div className="flex items-baseline justify-between mb-3">
                 <span className="font-bold text-lg text-gray-900">
                   {reservationDraft?.reservableName ?? "Espacio"}
@@ -300,7 +300,7 @@ export default function CubiculoConfirmarPage() {
                 <Users size={16} />
                 <span className="text-sm font-medium">--</span>
               </div>
-              <div className="rounded-xl overflow-hidden w-full h-40 mb-5 bg-gradient-to-br from-slate-300 to-slate-400 flex items-center justify-center text-slate-500 text-sm">
+              <div className="overflow-hidden w-full h-40 mb-5 bg-gradient-to-br from-slate-300 to-slate-400 flex items-center justify-center text-slate-500 text-sm">
                 No me jalo la imagen
               </div>
               <div className="flex flex-col gap-5">
@@ -319,7 +319,7 @@ export default function CubiculoConfirmarPage() {
                 {sesiones.map((s, i) => (
                   <div
                     key={i}
-                    className="grid grid-cols-3 gap-1.5 bg-gray-50 rounded-xl px-2 py-2.5 border border-gray-100"
+                    className="grid grid-cols-3 gap-1.5 bg-gray-50 px-2 py-2.5 border border-gray-100"
                   >
                     <span className="text-xs font-semibold text-gray-700 text-center">
                       {s.fecha}
@@ -337,7 +337,7 @@ export default function CubiculoConfirmarPage() {
             <div className="flex flex-col flex-1 gap-4 min-h-0">
               <div
                 ref={searchRef}
-                className="bg-white rounded-2xl border border-gray-200 px-6 py-5 shadow-sm shrink-0 relative"
+                className="bg-white border border-gray-200 px-6 py-5 shadow-sm shrink-0 relative"
               >
                 <div className="relative">
                   <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none flex">
@@ -349,9 +349,7 @@ export default function CubiculoConfirmarPage() {
                     onChange={(e) => setBusqueda(e.target.value)}
                     onFocus={() => setDropdownAbierto(true)}
                     placeholder="Buscar un correo, nombre o equipo para invitar"
-                    className={`w-full py-3 pl-10 pr-3.5 border border-gray-200 text-sm text-gray-700 outline-none bg-white box-border font-[inherit] transition-colors focus:border-violet-400 ${
-                      dropdownAbierto ? "rounded-t-xl" : "rounded-xl"
-                    }`}
+                    className={`w-full py-3 pl-10 pr-3.5 border border-gray-200 text-sm text-gray-700 outline-none bg-white box-border font-[inherit] transition-colors focus:border-violet-400 `}
                   />
                   {dropdownAbierto && (
                     <div className="absolute top-full left-0 right-0 bg-white border border-violet-400 border-t-0 rounded-b-xl shadow-xl z-50">
@@ -391,7 +389,7 @@ export default function CubiculoConfirmarPage() {
                           <button
                             key={eq.id}
                             onClick={() => agregarEquipo(eq)}
-                            className={`flex items-center gap-1.5 ${eq.color} border-none rounded-full px-3.5 py-1.5 cursor-pointer text-sm font-semibold text-gray-700 font-[inherit] hover:opacity-75 transition-opacity`}
+                            className={`flex items-center gap-1.5 ${eq.color} border-none px-3.5 py-1.5 cursor-pointer text-sm font-semibold text-gray-700 font-[inherit] hover:opacity-75 transition-opacity`}
                           >
                             <Users size={13} />
                             {eq.nombre}
@@ -405,12 +403,12 @@ export default function CubiculoConfirmarPage() {
                   )}
                 </div>
               </div>
-              <div className="bg-white rounded-2xl border border-gray-200 shadow-sm flex-1 min-h-0 flex flex-col">
+              <div className="bg-white border border-gray-200 shadow-sm flex-1 min-h-0 flex flex-col">
                 <div className="flex-1 overflow-y-auto px-6 pt-5 pb-3 flex flex-col gap-2.5">
                   {invitados.map((inv) => (
                     <div
                       key={inv.id}
-                      className="flex items-center gap-3.5 bg-gray-50 rounded-xl px-3.5 py-3 border border-gray-100 shrink-0 overflow-auto"
+                      className="flex items-center gap-3.5 bg-gray-50 px-3.5 py-3 border border-gray-100 shrink-0 overflow-auto"
                     >
                       <Avatar nombre={inv.nombre} variant={inv.tipo} />
                       <div className="flex-1 min-w-0">
@@ -484,7 +482,7 @@ export default function CubiculoConfirmarPage() {
           </div>
           <button
             onClick={handleFinalizar}
-            className="shrink-0 mt-3 w-full p-3 bg-violet-700 text-white border-none rounded-lg text-lg font-bold cursor-pointer tracking-wide transition-all hover:bg-violet-800 active:scale-99 font-[inherit] no-select"
+            className="shrink-0 mt-4 w-full p-3 bg-violet-700 text-white border-none text-lg font-bold cursor-pointer tracking-wide transition-all hover:bg-violet-800 active:scale-99 font-[inherit] no-select"
           >
             Finalizar
           </button>

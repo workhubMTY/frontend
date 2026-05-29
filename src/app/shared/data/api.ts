@@ -36,6 +36,7 @@ async function authFetch<T>(
   endpoint: string,
   options: RequestOptions = {}
 ): Promise<T> {
+  //console.log("API request:", { endpoint, options });
   if (!_auth) {
     throw new Error("[authFetch] Auth accessors not registered. Wrap your app in AuthProvider.");
   }
