@@ -8,8 +8,8 @@ import { FriendsCard } from "@/app/features/perfil/components/cards/FriendsCard"
 import { TeamsCard } from "@/app/features/perfil/components/cards/TeamsCard";
 import { AchievementComparisonCard } from "@/app/features/perfil/components/cards/AchievementComparisonCard";
 
-import { FriendsDrawer } from "@/app/features/perfil/components/drawers/FriendsDrawer";
-import { TeamsDrawer } from "@/app/features/perfil/components/drawers/TeamsDrawer";
+import { FriendsDrawer } from "@/app/features/perfil/components/drawers/Friends/FriendsDrawer";
+import { TeamsDrawer } from "@/app/features/perfil/components/drawers/Teams/TeamsDrawer";
 import { AchievementComparisonDrawer } from "@/app/features/perfil/components/drawers/AchievementComparisonDrawer";
 
 import {
