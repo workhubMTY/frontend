@@ -5,12 +5,28 @@ import type {
   AchievementUserData,
   Friend,
   Team,
+  User,
   UserProfile,
 } from "@/app/features/perfil/types/profile";
 
 export const perfilApi = {
   getProfile: () => authFetch<UserProfile>("/users/profile/me"),
 
+  getUsers: (query?: string, excludeId?: string) => {
+    const params = new URLSearchParams();
+
+    if (query) {
+      params.set("query", query);
+    }
+
+    if (excludeId) {
+      params.set("excludeId", excludeId);
+    }
+
+    const queryString = params.toString();
+
+    return authFetch<User[]>(`/users${queryString ? `?${queryString}` : ""}`);
+  },
   getFriends: () => authFetch<Friend[]>("/users/me/friendships"),
 
   getTeams: (userId: string) => authFetch<Team[]>("/users/me/teams"),

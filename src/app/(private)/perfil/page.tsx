@@ -1,10 +1,6 @@
 "use client";
 
 import { useCallback, useMemo } from "react";
-import {
-  getSuggestions,
-  getTeamMembers,
-} from "@/app/features/perfil/data/mock/mockProfileApi";
 
 import { ProfileHeaderCard } from "@/app/features/perfil/components/cards/ProfileHeaderCard";
 import { ProgressSummaryCard } from "@/app/features/perfil/components/cards/ProgressSumaryCard";
@@ -28,9 +24,12 @@ import { useAuth } from "@/app/shared/auth/useAuth";
 import { useProfilePageController } from "@/app/features/perfil/hooks/useProfilePageController";
 import { ProfilePageSkeleton } from "@/app/features/perfil/components/feedback/ProfileSkeleton";
 import { ProfilePageMessage } from "@/app/features/perfil/components/feedback/ProfilePageMessage";
+import { useQueryClient } from "@tanstack/react-query";
+import { perfilApi } from "@/app/features/perfil/data/api";
 
 export default function UserProfilePage() {
   const { user, isLoading: authLoading } = useAuth();
+  const queryClient = useQueryClient();
 
   const {
     selectedFriendId,
@@ -92,6 +91,20 @@ export default function UserProfilePage() {
     friends,
   });
 
+  const handleSearchUserSuggestions = useCallback(
+  async (query: string) => {
+    return queryClient.fetchQuery({
+      queryKey: ["users", query, user?.eId],
+      queryFn: () => perfilApi.getUsers(query, user?.eId),
+    });
+  },
+  [queryClient, user?.eId],);
+
+  // const handleSearchFriendSuggestions = useCallback(
+  //   async (query: string) => {
+  //     return queryClient.fetchQuery({
+
+
   // const personalAchievementData = useMemo(() => {
   //   if (!profile) return null;
 
@@ -100,10 +113,6 @@ export default function UserProfilePage() {
   //     achievements: achievements,
   //   };
   // }, [profile, achievements]);
-
-  const handleSearchSuggestions = useCallback(async () => {
-    return await getSuggestions();
-  }, []);
 
   if (authLoading || profileLoading) {
     return <ProfilePageSkeleton />;
@@ -184,7 +193,7 @@ export default function UserProfilePage() {
         friends={friends}
         selectedFriendId={selectedFriendId}
         initialMode={initialFriendDrawerMode}
-        onSearchSuggestions={handleSearchSuggestions}
+        onSearchSuggestions={handleSearchUserSuggestions}
         onCompareFriend={handleCompareFriend}
         onClearComparison={handleClearComparison}
         onClose={handleCloseFriendDrawer}
@@ -199,8 +208,8 @@ export default function UserProfilePage() {
         onClose={handleCloseTeamDrawer}
         initialOpenTeamId={initialOpenTeamId}
         initialTeamDrawerMode={initialTeamDrawerMode}
+        getUsers={handleSearchUserSuggestions}
         onGetTeamMembers={(teamId) => getTeamMembers({ teamId })}
-        inviteCandidates={friends}
         onCreateTeam={async (payload) => {
           console.log("Crear equipo:", payload);
         }}

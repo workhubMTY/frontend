@@ -204,11 +204,11 @@ function FriendsListMode({
         {filteredFriends.length > 0 ? (
           <ul className="divide-y divide-neutral-100">
             {filteredFriends.map((friend) => {
-              const isSelected = friend.id === selectedFriendId;
+              const isSelected = friend.eId === selectedFriendId;
 
               return (
                 <article
-                  key={friend.id}
+                  key={friend.eId}
                   className={[
                     "grid items-center gap-4 px-7 py-4 transition",
                     "md:grid-cols-[1fr_auto]",
@@ -235,7 +235,7 @@ function FriendsListMode({
                       onClick={() =>
                         isSelected
                           ? onClearComparison()
-                          : onCompareFriend(friend.id)
+                          : onCompareFriend(friend.eId)
                       }
                       className={[
                         "inline-flex h-10 items-center gap-2 border px-4 text-sm font-medium transition",
@@ -359,10 +359,10 @@ function InviteFriendsMode({
     }
 
     setSelectedUsers((current) => {
-      const exists = current.some((user) => user.id === person.id);
+      const exists = current.some((user) => user.eId === person.eId);
 
       if (exists) {
-        return current.filter((user) => user.id !== person.id);
+        return current.filter((user) => user.eId !== person.eId);
       }
 
       return [...current, person];
@@ -371,7 +371,7 @@ function InviteFriendsMode({
 
   function handleRemoveUser(userId: string) {
     setSelectedUsers((current) => {
-      return current.filter((user) => user.id !== userId);
+      return current.filter((user) => user.eId !== userId);
     });
   }
 
@@ -384,7 +384,7 @@ function InviteFriendsMode({
       setIsSubmitting(true);
 
       await onSendFriendRequests({
-        userIds: selectedUsers.map((user) => user.id),
+        userIds: selectedUsers.map((user) => user.eId),
         message: message.trim() || undefined,
       });
 
@@ -467,14 +467,14 @@ function InviteFriendsMode({
                 <div className="mt-3 flex flex-wrap gap-2">
                   {selectedUsers.map((user) => (
                     <span
-                      key={user.id}
+                      key={user.eId}
                       className="inline-flex h-8 items-center gap-2 bg-neutral-100 px-3 text-sm text-neutral-700"
                     >
                       {user.name}
 
                       <button
                         type="button"
-                        onClick={() => handleRemoveUser(user.id)}
+                        onClick={() => handleRemoveUser(user.eId)}
                         className="text-neutral-500 transition hover:text-neutral-900"
                         aria-label={`Quitar ${user.name}`}
                       >
@@ -508,7 +508,7 @@ function InviteFriendsMode({
                   <div className="max-h-[360px] overflow-y-auto divide-y divide-neutral-100">
                     {filteredSuggestions.map((person) => {
                       const isSelected = selectedUsers.some(
-                        (user) => user.id === person.id,
+                        (user) => user.eId === person.eId,
                       );
 
                       const isDisabled =
@@ -517,7 +517,7 @@ function InviteFriendsMode({
 
                       return (
                         <button
-                          key={person.id}
+                          key={person.eId}
                           type="button"
                           disabled={isDisabled}
                           onClick={() => handleToggleUser(person)}

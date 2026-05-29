@@ -56,6 +56,15 @@ export function useTeams(userId?: string | null, options?: UseTeamsOptions) {
     enabled: Boolean(userId) && (options?.enabled ?? true),
   });
 }
+
+
+export function useUsers(query?: string, excludeId?: string) {
+  return useQuery({
+    queryKey: ["users", query, excludeId],
+    queryFn: () => perfilApi.getUsers(query, excludeId),
+  });
+}
+
 export function useSelectedFriendAchievements({
   selectedFriendId,
   friends,

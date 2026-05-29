@@ -38,6 +38,7 @@ type TeamsDrawerProps = {
   teams: TeamSummary[];
   initialOpenTeamId?: string | null;
   initialTeamDrawerMode?: "list" | "create";
+  getUsers: (query: string) => Promise<User[]>;
   inviteCandidates?: User[];
   onClose: () => void;
   onGetTeamMembers: (teamId: string) => Promise<User[]>;
@@ -87,6 +88,7 @@ export function TeamsDrawer({
   open,
   teams,
   onClose,
+  getUsers,
   initialOpenTeamId,
   inviteCandidates = [],
   initialTeamDrawerMode = "list",
@@ -359,7 +361,7 @@ function TeamsListMode({
                           <div className="max-h-[280px] overflow-y-auto">
                             {membersState.members.map((member) => (
                               <div
-                                key={member.id}
+                                key={member.eId}
                                 className="grid grid-cols-[1fr_auto] items-center gap-4 border-b border-neutral-100 px-5 py-4 last:border-b-0"
                               >
                                 <div className="flex min-w-0 items-center gap-3">
@@ -465,7 +467,7 @@ function CreateTeamMode({
 
     return inviteCandidates.filter((candidate) => {
       const isAlreadySelected = selectedMembers.some(
-        (member) => member.id === candidate.id,
+        (member) => member.eId === candidate.eId,
       );
 
       if (isAlreadySelected) return false;
@@ -487,7 +489,7 @@ function CreateTeamMode({
       await onCreateTeam({
         name: teamName.trim(),
         description: description.trim(),
-        invitedMemberIds: selectedMembers.map((member) => member.id),
+        invitedMemberIds: selectedMembers.map((member) => member.eId),
       });
     } finally {
       setIsSubmitting(false);
@@ -501,7 +503,7 @@ function CreateTeamMode({
 
   function handleRemoveMember(memberId: string) {
     setSelectedMembers((current) =>
-      current.filter((member) => member.id !== memberId),
+      current.filter((member) => member.eId !== memberId),
     );
   }
 
@@ -601,13 +603,13 @@ function CreateTeamMode({
                 <div className="flex min-h-12 w-full flex-wrap items-center gap-2 border border-neutral-200 bg-white px-3 py-2 focus-within:border-purple-500 focus-within:ring-2 focus-within:ring-purple-100">
                   {selectedMembers.map((member) => (
                     <span
-                      key={member.id}
+                      key={member.eId}
                       className="inline-flex h-8 items-center gap-2 bg-neutral-100 px-3 text-sm text-neutral-700"
                     >
                       {member.name}
                       <button
                         type="button"
-                        onClick={() => handleRemoveMember(member.id)}
+                        onClick={() => handleRemoveMember(member.eId)}
                         className="text-neutral-500 transition hover:text-neutral-900"
                         aria-label={`Quitar ${member.name}`}
                       >
@@ -633,7 +635,7 @@ function CreateTeamMode({
                   <div className="absolute left-0 right-0 top-full z-20 mt-2 max-h-56 overflow-y-auto border border-neutral-200 bg-white shadow-lg">
                     {filteredCandidates.map((candidate) => (
                       <button
-                        key={candidate.id}
+                        key={candidate.eId}
                         type="button"
                         onClick={() => handleSelectMember(candidate)}
                         className="flex w-full items-center gap-3 border-b border-neutral-100 px-4 py-3 text-left transition last:border-b-0 hover:bg-neutral-50"
