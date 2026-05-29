@@ -74,6 +74,7 @@ export default function UserProfilePage() {
     error: teamsError,
   } = useTeams();
 
+
   const {
     data: achievements = [],
     isLoading: achievementsLoading,
@@ -99,6 +100,16 @@ export default function UserProfilePage() {
     });
   },
   [queryClient, user?.eId],);
+  
+  const handleGetTeamMembers = useCallback(
+    async (teamId: string) => {
+      return queryClient.fetchQuery({
+        queryKey: ["teamMembers", teamId],
+        queryFn: () => perfilApi.getTeamMembers(teamId),
+      });
+    },
+    [queryClient],
+  );
 
   // const handleSearchFriendSuggestions = useCallback(
   //   async (query: string) => {
@@ -209,7 +220,7 @@ export default function UserProfilePage() {
         initialOpenTeamId={initialOpenTeamId}
         initialTeamDrawerMode={initialTeamDrawerMode}
         getUsers={handleSearchUserSuggestions}
-        onGetTeamMembers={(teamId) => getTeamMembers({ teamId })}
+        onGetTeamMembers={handleGetTeamMembers}
         onCreateTeam={async (payload) => {
           console.log("Crear equipo:", payload);
         }}

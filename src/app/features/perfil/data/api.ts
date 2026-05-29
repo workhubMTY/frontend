@@ -31,6 +31,9 @@ export const perfilApi = {
 
   getTeams: (userId: string) => authFetch<Team[]>("/users/me/teams"),
 
+  getTeamMembers: (teamId: string) =>
+    authFetch<User[]>(`/teams/${teamId}/members`),
+
   getAchievements: (userId: string) =>
     authFetch<Achievement[]>(`/achievements/user/${userId}`),
 
