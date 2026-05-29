@@ -2,6 +2,7 @@ import { authFetch } from "@/app/shared/data/api";
 
 import type {
   Achievement,
+  AchievementUserData,
   Friend,
   Team,
   UserProfile,
@@ -15,10 +16,10 @@ export const perfilApi = {
   getTeams: (userId: string) => authFetch<Team[]>("/users/me/teams"),
 
   getAchievements: (userId: string) =>
-    authFetch<Achievement[]>(`/achievements/${userId}/list`),
+    authFetch<Achievement[]>(`/achievements/user/${userId}`),
 
   getAchievementsByUser: (userId: string) =>
-    authFetch<Achievement[]>(`/achievements/${userId}/list`),
+    authFetch<AchievementUserData>(`/achievements/user/${userId}`),
 
   getSummary: (userId: string) => authFetch(`/achievements/${userId}/summary`),
 };

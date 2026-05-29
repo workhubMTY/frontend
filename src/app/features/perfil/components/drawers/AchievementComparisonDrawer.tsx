@@ -146,7 +146,7 @@ export function AchievementComparisonDrawer({
                   <option value="">Sin comparación</option>
 
                   {friends.map((friend) => (
-                    <option key={friend.id} value={friend.id}>
+                    <option key={friend.eId} value={friend.eId}>
                       {friend.name}
                     </option>
                   ))}

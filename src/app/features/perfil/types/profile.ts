@@ -1,11 +1,11 @@
 export type User = {
-  id: string;
+  eId: string;
   name: string;
   role: string;
   email: string;
   avatarUrl?: string;
 };
-
+  
 export type Friend = User;
 
 export type FriendSuggestion = Friend & {
@@ -36,7 +36,7 @@ export type AchievementUserData = {
 };
 
 export type Achievement = {
-  id: string;
+  id: number;
   title: string;
   description: string;
   icon: "users" | "network" | "flame";
@@ -44,7 +44,7 @@ export type Achievement = {
 };
 
 export type UserProfile = {
-  id: string;
+  eId: string;
   name: string;
   email: string;
   role: string;
