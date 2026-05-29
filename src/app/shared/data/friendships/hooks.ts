@@ -1,44 +1,54 @@
 "use client";
 
+import { useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { usersApi } from "../users/api";
 import { friendshipsApi } from "./api";
+import { createUserViewModel } from "../users/types";
+import type { UserViewModel } from "../users/types";
 import type {
   FriendRequest,
   CreateFriendRequestDto,
   AcceptFriendRequestDto,
 } from "./types";
 
+export const friendsKeys = {
+  all: ["friends"] as const,
+  me: () => [...friendsKeys.all, "me"] as const,
+  requests: {
+    sent: ["friendRequests", "sent"] as const,
+    received: ["friendRequests", "received"] as const,
+  },
+};
+
 export function useFriends() {
   const queryClient = useQueryClient();
 
   const query = useQuery({
-    queryKey: ["friends", "me"],
-    queryFn: () => usersApi.getMeFriendships(),
+    queryKey: friendsKeys.me(),
+    queryFn: usersApi.getMeFriendships,
+    select: (users) => users.map(createUserViewModel),
   });
 
   const removeFriend = useMutation({
-    mutationFn: (userId: string) =>
-      friendshipsApi.remove({ userId }),
+    mutationFn: (eId: string) => friendshipsApi.remove({ userId: eId }),
     onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["friends", "me"],
-      });
+      queryClient.invalidateQueries({ queryKey: friendsKeys.me() });
     },
   });
 
   return {
     ...query,
     removeFriend,
-  }
+  };
 }
 
 export function useSentFriendRequests() {
   const queryClient = useQueryClient();
 
   const query = useQuery({
-    queryKey: ["friendRequests", "sent"],
-    queryFn: () => friendshipsApi.getSentRequests(),
+    queryKey: friendsKeys.requests.sent,
+    queryFn: friendshipsApi.getSentRequests,
   });
 
   const createFriendRequest = useMutation({
@@ -46,17 +56,16 @@ export function useSentFriendRequests() {
       friendshipsApi.createRequest(payload),
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["friendRequests", "sent"],
+        queryKey: friendsKeys.requests.sent,
       });
     },
   });
 
   const cancelFriendRequest = useMutation({
-    mutationFn: (toUser: string) =>
-      friendshipsApi.cancelSentRequest(toUser),
+    mutationFn: (toUser: string) => friendshipsApi.cancelSentRequest(toUser),
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["friendRequests", "sent"],
+        queryKey: friendsKeys.requests.sent,
       });
     },
   });
@@ -72,8 +81,8 @@ export function useReceivedFriendRequests() {
   const queryClient = useQueryClient();
 
   const query = useQuery({
-    queryKey: ["friendRequests", "received"],
-    queryFn: () => friendshipsApi.getReceivedRequests(),
+    queryKey: friendsKeys.requests.received,
+    queryFn: friendshipsApi.getReceivedRequests,
   });
 
   const acceptFriendRequest = useMutation({
@@ -81,8 +90,9 @@ export function useReceivedFriendRequests() {
       friendshipsApi.acceptRequest(payload),
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["friendRequests", "received"],
+        queryKey: friendsKeys.requests.received,
       });
+      queryClient.invalidateQueries({ queryKey: friendsKeys.me() });
     },
   });
 
@@ -91,7 +101,7 @@ export function useReceivedFriendRequests() {
       friendshipsApi.rejectReceivedRequest(fromUser),
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["friendRequests", "received"],
+        queryKey: friendsKeys.requests.received,
       });
     },
   });
