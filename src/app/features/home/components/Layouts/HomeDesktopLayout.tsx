@@ -1,6 +1,6 @@
-import { PanelRed } from "@/app/features/home/components/PanelRed";
-import { PanelInvitaciones } from "@/app/features/home/components/PanelInvitaciones";
-import { HomeAgendaPanel } from "@/app/features/home/components/HomeAgendaPanel";
+import { PanelRed } from "@/app/features/home/components/Panels/PanelRed";
+import { PanelInvitaciones } from "@/app/features/home/components/Panels/PanelInvitaciones";
+import { HomeAgendaPanel } from "@/app/features/home/components/Panels/HomeAgendaPanel";
 
 import type { Persona, DiaInvitaciones } from "@/app/features/home/types/types";
 import type { ExternalEvent } from "@/app/features/home/types/Agenda";

@@ -76,15 +76,15 @@ export type FriendOccupancy = {
 export type SlotAvailabilityResult = {
   id: number;
   name: string;
-  code?: string;
+  code: string;
   capacity: number;
   floor_id: number;
   floor_name: string;
   is_blocked: boolean;
   is_available: boolean;
-  status?: "available" | "occupied" | "soon";
-  statusLabel?: string;
-  timeline?: {
+  status: "available" | "occupied" | "soon";
+  statusLabel: string;
+  timeline: {
     id: string;
     start: string;
     end: string;
@@ -111,8 +111,8 @@ export type BlockSlotDto = {
 
 export type AvailableOfficeSlotsQuery = {
   floor_id?: number;
-  start_time: string;
-  end_time: string;
+  start_time?: string;
+  end_time?: string;
   user_id?: string;
 };
 

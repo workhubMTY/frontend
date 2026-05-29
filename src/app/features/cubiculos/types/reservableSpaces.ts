@@ -7,7 +7,7 @@ export type ReservableSpace = {
   id: number;
   code: string;
   name: string;
-  floor: string;
+  floor?: string;
   capacity: number;
   status: "available" | "occupied" | "soon";
   statusLabel: string;

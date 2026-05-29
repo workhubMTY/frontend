@@ -82,6 +82,7 @@ async function authFetch<T>(
   }
 
   if (!response.ok) {
+    console.log("API error response:", { endpoint, status: response.status, payload });
     throw new Error(payload?.message ?? `Error ${response.status}`);
   }
 

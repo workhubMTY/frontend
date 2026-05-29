@@ -6,11 +6,27 @@ import {
   reservableSpaces,
 } from "@/app/features/cubiculos/data/mock/reservableSpaces";
 import type { SpaceSearchFilters } from "@/app/features/cubiculos/types/searchFilters";
+import { ReservableSpace } from "../types/reservableSpaces";
+import { officeSlotsApi } from "../data/api";
+
+function parseTimeInput(input: string): string | null {
+  const match = input.trim().toLowerCase().match(/^(\d{1,2})(?::(\d{2}))?\s*(am|pm)?$/);
+  if (!match) return null;
+
+  let [_, hStr, mStr, ampm] = match;
+  let hours = parseInt(hStr, 10);
+  const minutes = mStr ? parseInt(mStr, 10) : 0;
+
+  if (ampm === "pm" && hours < 12) hours += 12;
+  if (ampm === "am" && hours === 12) hours = 0;
+
+  return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
+}
 
 export function useReservableSpacesSearch() {
   const [selectedSpaceCode, setSelectedSpaceCode] = useState<
     string | undefined
-  >("MZ001");
+  >(undefined);
 
   const [filters, setFilters] = useState<SpaceSearchFilters>({
     search: "",
@@ -27,7 +43,7 @@ export function useReservableSpacesSearch() {
     },
   });
 
-  const [spaces, setSpaces] = useState(reservableSpaces);
+  const [spaces, setSpaces] = useState<ReservableSpace[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
@@ -58,6 +74,7 @@ export function useReservableSpacesSearch() {
       .filter((space) => space.status === "soon")
       .map((space) => space.code);
   }, [spaces]);
+  
 
   /**
    * OJO:
@@ -82,12 +99,28 @@ export function useReservableSpacesSearch() {
 
     setSelectedSpaceCode(mapId);
   }
+async function handleSubmitFilters(nextFilters: SpaceSearchFilters) {
+  const { time, ...baseFilters } = nextFilters;
 
-  async function handleSubmitFilters(nextFilters: SpaceSearchFilters) {
-    setIsLoading(true);
+  const parsedStartTime = parseTimeInput(time.startTime);
+  const parsedEndTime = parseTimeInput(time.endTime);
 
+  const parsedFilters = {
+    ...baseFilters,
+    ...(time.startTime && {
+      start_time: parsedStartTime ?? time.startTime,
+    }),
+    ...(time.endTime && {
+      end_time: parsedEndTime ?? time.endTime,
+    }),
+  };
+
+  console.log("Submitting filters:", parsedFilters);
+  setIsLoading(true);
+
+ 
     try {
-      const result = await fetchReservableSpaces(nextFilters);
+      const result = await officeSlotsApi.getAvailableSlots(parsedFilters);
 
       setSpaces(result);
 
