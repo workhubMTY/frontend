@@ -1,5 +1,5 @@
 import { Calendar, Clock, MapPin } from "lucide-react";
-import { DiaInvitaciones } from "../types/types";
+import { DiaInvitaciones } from "../../types/types";
 
 export function PanelInvitaciones({
   selInv,

@@ -1,14 +1,14 @@
-export function getTimeButtonLabel(startTime: string, endTime: string) {
-  if (startTime && endTime) {
-    return `${startTime} - ${endTime}`;
+export function getTimeButtonLabel(start_time: string, end_time: string) {
+  if (start_time && end_time) {
+    return `${start_time} - ${end_time}`;
   }
 
-  if (startTime) {
-    return `Desde ${startTime}`;
+  if (start_time) {
+    return `Desde ${start_time}`;
   }
 
-  if (endTime) {
-    return `Hasta ${endTime}`;
+  if (end_time) {
+    return `Hasta ${end_time}`;
   }
 
   return "Horario";

@@ -56,7 +56,6 @@ export function useTeams(userId?: string | null, options?: UseTeamsOptions) {
     enabled: Boolean(userId) && (options?.enabled ?? true),
   });
 }
-
 export function useSelectedFriendAchievements({
   selectedFriendId,
   friends,
@@ -65,11 +64,16 @@ export function useSelectedFriendAchievements({
   friends: Friend[];
 }) {
   const selectedFriend = friends.find(
-    (friend) => friend.id === selectedFriendId,
+    (friend) => String(friend.eId) === String(selectedFriendId),
   );
+console.log("friends:", friends);
+console.log("selectedFriendId:", selectedFriendId);
+console.log("selectedFriend:", selectedFriend);
 
-  const achievementsQuery = useAchievements(selectedFriendId ?? undefined, {
-    enabled: Boolean(selectedFriendId),
+  const friendUserId = selectedFriend?.eId;
+
+  const achievementsQuery = useAchievements(String(friendUserId) ?? undefined, {
+    enabled: Boolean(friendUserId),
   });
 
   return {

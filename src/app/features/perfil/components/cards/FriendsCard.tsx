@@ -61,7 +61,7 @@ const FriendRow = React.memo(
           <button
             type="button"
             onClick={() =>
-              isSelected ? onClearComparison() : onCompareFriend(friend.id)
+              isSelected ? onClearComparison() : onCompareFriend(friend.eId)
             }
             className={[
               "inline-flex h-10 items-center gap-2 border px-4 text-sm font-medium transition",
@@ -122,11 +122,11 @@ export function FriendsCard({
           <FriendsCardEmpty onInviteFriendsShortcut={onInviteFriendsShortcut} />
         ) : (
           friends.slice(0, 3).map((friend) => {
-            const isSelected = selectedFriendId === friend.id;
+            const isSelected = selectedFriendId === friend.eId;
 
             return (
               <FriendRow
-                key={friend.id ?? friend.name} //CAMBIAR ESTO CUANDO YA SE PASEN BIEN LOS ID, NO COMO E_ID
+                key={friend.eId ?? friend.name} //CAMBIAR ESTO CUANDO YA SE PASEN BIEN LOS ID, NO COMO E_ID
                 friend={friend}
                 isSelected={isSelected}
                 onCompareFriend={onCompareFriend}

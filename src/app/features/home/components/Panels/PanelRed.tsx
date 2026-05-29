@@ -1,6 +1,6 @@
 import { Search, Users } from "lucide-react";
-import { getUserColor } from "../utils/utils";
-import { Persona } from "../types/types";
+import { getUserColor } from "../../utils/utils";
+import { Persona } from "../../types/types";
 
 export function PanelRed({
   selectedPerson,
