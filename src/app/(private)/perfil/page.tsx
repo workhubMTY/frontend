@@ -26,6 +26,7 @@ import { ProfilePageSkeleton } from "@/app/features/perfil/components/feedback/P
 import { ProfilePageMessage } from "@/app/features/perfil/components/feedback/ProfilePageMessage";
 import { useQueryClient } from "@tanstack/react-query";
 import { perfilApi } from "@/app/features/perfil/data/api";
+import { CreateTeamPayload } from "@/app/features/perfil/components/drawers/Teams/types";
 
 export default function UserProfilePage() {
   const { user, isLoading: authLoading } = useAuth();
@@ -100,7 +101,17 @@ export default function UserProfilePage() {
     });
   },
   [queryClient, user?.eId],);
-  
+
+  const handleCreateTeam = useCallback(
+    async (payload: CreateTeamPayload) => {
+      return queryClient.fetchQuery({
+        queryKey: ["teams"],
+        queryFn: () => perfilApi.createTeam(payload),
+      });
+    },
+    [queryClient],
+  );
+
   const handleGetTeamMembers = useCallback(
     async (teamId: string) => {
       return queryClient.fetchQuery({
@@ -221,9 +232,7 @@ export default function UserProfilePage() {
         initialTeamDrawerMode={initialTeamDrawerMode}
         getUsers={handleSearchUserSuggestions}
         onGetTeamMembers={handleGetTeamMembers}
-        onCreateTeam={async (payload) => {
-          console.log("Crear equipo:", payload);
-        }}
+        onCreateTeam={handleCreateTeam}
       />
 
       <AchievementComparisonDrawer

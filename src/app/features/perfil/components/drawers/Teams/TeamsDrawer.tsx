@@ -12,7 +12,7 @@ type TeamsDrawerProps = {
   teams: TeamSummary[];
   initialOpenTeamId?: string | null;
   initialTeamDrawerMode?: "list" | "create";
-  getUsers: (query?: string) => Promise<User[]>;
+  getUsers: (query: string) => Promise<User[]>;
   onClose: () => void;
   onGetTeamMembers: (teamId: string) => Promise<User[]>;
   onCreateTeam?: (payload: CreateTeamPayload) => Promise<void> | void;

@@ -6,7 +6,7 @@ import { ChevronLeft, X } from "lucide-react";
 import { Avatar } from "./TeamsDrawer";
 
 type CreateTeamModeProps = {
-  onGetCandidates: (query?: string) => Promise<User[]>;
+  onGetCandidates: (query: string) => Promise<User[]>;
   onBack: () => void;
   onClose: () => void;
   onCreateTeam: (payload: CreateTeamPayload) => Promise<void>;
@@ -81,7 +81,7 @@ export function CreateTeamMode({
       await onCreateTeam({
         name: teamName.trim(),
         description: description.trim(),
-        invitedMemberIds: selectedMembers.map((member) => member.eId),
+        memberEIds: selectedMembers.map((member) => member.eId),
       });
     } finally {
       setIsSubmitting(false);

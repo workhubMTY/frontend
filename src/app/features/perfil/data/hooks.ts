@@ -75,9 +75,6 @@ export function useSelectedFriendAchievements({
   const selectedFriend = friends.find(
     (friend) => String(friend.eId) === String(selectedFriendId),
   );
-console.log("friends:", friends);
-console.log("selectedFriendId:", selectedFriendId);
-console.log("selectedFriend:", selectedFriend);
 
   const friendUserId = selectedFriend?.eId;
 

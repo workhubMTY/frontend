@@ -9,6 +9,46 @@ import type {
   UserProfile,
 } from "@/app/features/perfil/types/profile";
 
+
+// export const parkingReservationsApi = {
+//   create: (payload: CreateParkingReservation) =>
+//     authFetch<ParkingReservation>(`${BASE}/reservations`, {
+//       method: "POST",
+//       body: JSON.stringify(payload),
+//     }),
+
+//   list: (query?: ListReservationsQuery) => {
+//     const qs = query
+//       ? `?${toSearchParams(query as Record<string, unknown>)}`
+//       : "";
+//     return authFetch<ListReservationsResponse>(
+//       `${BASE}/reservations/${qs}`
+//     );
+//   },
+
+//   getBuckets: (query: ReservationBucketsQuery) => {
+//     const qs = toSearchParams(query as Record<string, unknown>);
+//     return authFetch<ReservationBucketsResponse>(
+//       `${BASE}/reservations/buckets?${qs}`
+//     );
+//   },
+
+//   getDetail: (id: number) =>
+//     authFetch<ReservationDetailResponse>(`${BASE}/reservations/${id}`),
+
+//   patchAttendance: (id: number, payload: PatchAttendance) =>
+//     authFetch<ParkingReservation>(`${BASE}/reservations/${id}/attendance`, {
+//       method: "PATCH",
+//       body: JSON.stringify(payload),
+//     }),
+
+//   cancel: (id: number) =>
+//     authFetch<ParkingReservation>(`${BASE}/reservations/${id}`, {
+//       method: "DELETE",
+//     }),
+// } as const;
+
+
 export const perfilApi = {
   getProfile: () => authFetch<UserProfile>("/users/profile/me"),
 
@@ -30,6 +70,12 @@ export const perfilApi = {
   getFriends: () => authFetch<Friend[]>("/users/me/friendships"),
 
   getTeams: (userId: string) => authFetch<Team[]>("/users/me/teams"),
+
+  createTeam: (payload: any) => authFetch<void>("/teams", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  }),
+
 
   getTeamMembers: (teamId: string) =>
     authFetch<User[]>(`/teams/${teamId}/members`),

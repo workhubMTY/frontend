@@ -16,5 +16,5 @@ export type TeamMembersState = {
 export type CreateTeamPayload = {
   name: string;
   description: string;
-  invitedMemberIds: string[];
+  memberEIds: string[];
 };
