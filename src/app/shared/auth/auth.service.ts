@@ -1,4 +1,5 @@
 import type { AuthResponse, LoginInput } from "./auth.types";
+import { queryClient } from "@/app/shared/data/queryClient";
 
 const API_URL = `${process.env.NEXT_PUBLIC_API_URL}`;
 
@@ -31,9 +32,14 @@ export const authService = {
   },
 
   async logout(): Promise<void> {
-    await fetch(`${API_URL}/auth/logout`, {
+    const res = await fetch(`${API_URL}/auth/logout`, {
       method: "POST",
       credentials: "include",
     });
+
+    if (!res.ok) throw new Error("Logout failed");
+
+    await queryClient.cancelQueries();
+    queryClient.clear();
   },
 };
