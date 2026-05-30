@@ -47,10 +47,9 @@ export function useTeams(options?: UseTeamsOptions) {
   return useQuery({
     queryKey: ["teams"],
     queryFn: () => {
-
       return perfilApi.getTeams();
     },
-    enabled: (options?.enabled ?? true),
+    enabled: options?.enabled ?? true,
   });
 }
 type UseTeamMembersOptions = {

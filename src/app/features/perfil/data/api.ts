@@ -10,7 +10,6 @@ import type {
 } from "@/app/features/perfil/types/profile";
 import { UpdateTeamPayload } from "./hooks";
 
-
 // export const parkingReservationsApi = {
 //   create: (payload: CreateParkingReservation) =>
 //     authFetch<ParkingReservation>(`${BASE}/reservations`, {
@@ -49,28 +48,27 @@ import { UpdateTeamPayload } from "./hooks";
 //     }),
 // } as const;
 
-
 export const perfilApi = {
   getProfile: () => authFetch<UserProfile>("/users/profile/me"),
 
   getUsers: (query?: string, excludeId?: string, excludeTeamId?: string) => {
-  const params = new URLSearchParams();
+    const params = new URLSearchParams();
 
-  if (query) params.set("query", query);
-  if (excludeId) params.set("excludeId", excludeId);
-  if (excludeTeamId) params.set("excludeTeamId", excludeTeamId);
+    if (query) params.set("query", query);
+    if (excludeId) params.set("excludeId", excludeId);
+    if (excludeTeamId) params.set("excludeTeamId", excludeTeamId);
 
-  return authFetch<User[]>(`/users?${params.toString()}`);
-},
+    return authFetch<User[]>(`/users?${params.toString()}`);
+  },
   getFriends: () => authFetch<Friend[]>("/users/me/friendships"),
 
-  getTeams: () => authFetch<Team[]>("/users/teams/me"),
+  getTeams: () => authFetch<Team[]>("/teams/me"),
 
-  createTeam: (payload: any) => authFetch<void>("/teams", {
-    method: "POST",
-    body: JSON.stringify(payload),
-  }),
-
+  createTeam: (payload: any) =>
+    authFetch<void>("/teams", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }),
 
   getTeamMembers: (teamId: string) =>
     authFetch<User[]>(`/teams/${teamId}/members`),
@@ -82,10 +80,9 @@ export const perfilApi = {
     authFetch<AchievementUserData>(`/achievements/user/${userId}`),
 
   updateTeam: (teamId: string, payload: UpdateTeamPayload) =>
-  authFetch<Team>(`/teams/${teamId}`, {
-    method: "PATCH",
-    body: JSON.stringify(payload),
-  }),
-
+    authFetch<Team>(`/teams/${teamId}`, {
+      method: "PATCH",
+      body: JSON.stringify(payload),
+    }),
   getSummary: (userId: string) => authFetch(`/achievements/${userId}/summary`),
 };

@@ -18,7 +18,68 @@ import type { UpdateTeamPayload } from "../../../data/hooks";
 import { Avatar } from "./TeamsDrawer";
 import { SearchSelectionBox } from "../../utils/SearchSelectionBox";
 import { useDebouncedSearch } from "@/app/features/perfil/hooks/useDebouncedSearch";
+type BuildUpdateTeamPayloadParams = {
+  originalName: string;
+  nextName: string;
+  originalDescription?: string | null;
+  nextDescription: string;
+  addedMemberEIds: Array<string | number>;
+  removedMemberEIds: Array<string | number>;
+};
 
+export function buildUpdateTeamPayload({
+  originalName,
+  nextName,
+  originalDescription,
+  nextDescription,
+  addedMemberEIds,
+  removedMemberEIds,
+}: BuildUpdateTeamPayloadParams): UpdateTeamPayload {
+  const payload: UpdateTeamPayload = {};
+
+  const normalizedOriginalName = originalName.trim();
+  const normalizedNextName = nextName.trim();
+
+  const normalizedOriginalDescription = (originalDescription ?? "").trim();
+  const normalizedNextDescription = nextDescription.trim();
+
+  if (normalizedNextName !== normalizedOriginalName) {
+    payload.name = normalizedNextName;
+  }
+
+  if (normalizedNextDescription !== normalizedOriginalDescription) {
+    payload.description = normalizedNextDescription;
+  }
+
+  const addMemberEIds = uniqueStringIds(addedMemberEIds);
+  const removeMemberEIds = uniqueStringIds(removedMemberEIds);
+
+  const removeSet = new Set(removeMemberEIds);
+
+  const safeAddMemberEIds = addMemberEIds.filter(
+    (memberEId) => !removeSet.has(memberEId),
+  );
+
+  if (safeAddMemberEIds.length > 0) {
+    payload.addMemberEIds = safeAddMemberEIds;
+  }
+
+  if (removeMemberEIds.length > 0) {
+    payload.removeMemberEIds = removeMemberEIds;
+  }
+
+  return payload;
+}
+
+function uniqueStringIds(ids: Array<string | number>): string[] {
+  return Array.from(
+    new Set(
+      ids
+        .map((id) => String(id).trim())
+        .filter((id) => id.length > 0),
+    ),
+  );
+}
 type ManageTeamModeProps = {
   team: TeamSummary;
   membersState: TeamMembersState;
@@ -90,49 +151,27 @@ export function ManageTeamMode({
       return !isOriginalMember && !isAlreadyAdded;
     });
   }, [candidates, originalMembers, addedMemberIds]);
-
-  const updatePayload = useMemo<UpdateTeamPayload>(() => {
-    const payload: UpdateTeamPayload = {};
-
-    const nextName = teamName.trim();
-    const originalName = team.name.trim();
-
-    const nextDescription = description.trim();
-    const originalDescription = (team.description ?? "").trim();
-
-    const addMemberEIds = addedMembers.map((member) => member.eId);
-    const removeMemberEIds = removedMemberIds;
-
-    if (nextName !== originalName) {
-      payload.name = nextName;
-    }
-
-    if (nextDescription !== originalDescription) {
-      payload.description = nextDescription;
-    }
-
-    if (addMemberEIds.length > 0) {
-      payload.addMemberEIds = addMemberEIds;
-    }
-
-    if (removeMemberEIds.length > 0) {
-      payload.removeMemberEIds = removeMemberEIds;
-    }
-
-    return payload;
+  const updatePayload = useMemo(() => {
+    return buildUpdateTeamPayload({
+      originalName: team.name,
+      nextName: teamName,
+      originalDescription: team.description,
+      nextDescription: description,
+      addedMemberEIds: addedMembers.map((member) => member.eId),
+      removedMemberEIds: removedMemberIds,
+    });
   }, [
-    teamName,
-    description,
     team.name,
     team.description,
+    teamName,
+    description,
     addedMembers,
     removedMemberIds,
   ]);
-
   const hasChanges = Object.keys(updatePayload).length > 0;
 
   const canSave =
-    teamName.trim().length >= 3 &&
+    teamName.trim().length >= 1 &&
     hasChanges &&
     !isSubmitting &&
     !membersState.loading;
@@ -172,15 +211,16 @@ export function ManageTeamMode({
       current.filter((currentMemberId) => currentMemberId !== memberId),
     );
   }
-
-  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: React.SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
 
     if (!canSave) return;
 
     try {
       setIsSubmitting(true);
+
       await onUpdateTeam(team.id, updatePayload);
+
       onBack();
     } finally {
       setIsSubmitting(false);
