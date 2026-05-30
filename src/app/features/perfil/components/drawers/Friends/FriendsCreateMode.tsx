@@ -4,6 +4,7 @@ import { FriendSuggestion } from "../../../types/profile";
 import { SendFriendRequestsPayload } from "./types";
 import { Check, ChevronLeft, Mail, Search, Send, Users, X } from "lucide-react";
 import { Avatar } from "../../utils/Avatar";
+import { useDebouncedSearch } from "../../../hooks/useDebouncedSearch";
 
 type InviteFriendsModeProps = {
   onSearchSuggestions: (query: string) => Promise<FriendSuggestion[]>;
@@ -18,54 +19,18 @@ export function InviteFriendsMode({
   onSendFriendRequests,
 }: InviteFriendsModeProps) {
   const [searchTerm, setSearchTerm] = useState("");
-  const [suggestions, setSuggestions] = useState<FriendSuggestion[]>([]);
   const [selectedUsers, setSelectedUsers] = useState<FriendSuggestion[]>([]);
   const [message, setMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSearching, setIsSearching] = useState(false);
-  const [hasSearched, setHasSearched] = useState(false);
 
-  useEffect(() => {
-    const normalizedSearch = searchTerm.trim();
-
-    if (!normalizedSearch) {
-      setSuggestions([]);
-      setIsSearching(false);
-      setHasSearched(false);
-      return;
-    }
-
-    let isActive = true;
-
-    const timeoutId = window.setTimeout(async () => {
-      try {
-        setIsSearching(true);
-        setHasSearched(true);
-
-        const incomingSuggestions = await onSearchSuggestions(normalizedSearch);
-
-        if (isActive) {
-          setSuggestions(incomingSuggestions);
-        }
-      } catch (error) {
-        console.error("Error loading friend suggestions:", error);
-
-        if (isActive) {
-          setSuggestions([]);
-        }
-      } finally {
-        if (isActive) {
-          setIsSearching(false);
-        }
-      }
-    }, 350);
-
-    return () => {
-      isActive = false;
-      window.clearTimeout(timeoutId);
-    };
-  }, [searchTerm, onSearchSuggestions]);
-
+  const {
+    results: suggestions,
+    isSearching,
+    hasSearched,
+  } = useDebouncedSearch<FriendSuggestion>({
+    searchTerm,
+    searchFn: onSearchSuggestions,
+  });
   const filteredSuggestions = suggestions;
 
   const canSend = selectedUsers.length > 0 && !isSubmitting;

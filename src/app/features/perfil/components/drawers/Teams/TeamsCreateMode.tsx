@@ -1,10 +1,12 @@
 "use client";
-import { useEffect, useState } from "react";
+
+import { useMemo, useState } from "react";
 import { User } from "../../../types/profile";
 import { CreateTeamPayload } from "./types";
 import { ChevronLeft, X } from "lucide-react";
 import { Avatar } from "./TeamsDrawer";
 import { useAuth } from "@/app/shared/auth/useAuth";
+import { useDebouncedSearch } from "../../../hooks/useDebouncedSearch";
 
 type CreateTeamModeProps = {
   onGetCandidates: (query: string) => Promise<User[]>;
@@ -19,93 +21,71 @@ export function CreateTeamMode({
   onClose,
   onCreateTeam,
 }: CreateTeamModeProps) {
-  const {user} = useAuth()
-  
-
-
+  const { user } = useAuth();
 
   const [teamName, setTeamName] = useState("");
   const [description, setDescription] = useState("");
-  // const [privacy, setPrivacy] = useState<"private" | "public">("private");
   const [memberSearch, setMemberSearch] = useState("");
   const [selectedMembers, setSelectedMembers] = useState<User[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const [filteredCandidates, setFilteredCandidates] = useState<User[]>([]);
-  const [isSearchingMembers, setIsSearchingMembers] = useState(false);
-  
+  const {
+    results: candidates,
+    isSearching: isSearchingMembers,
+    hasSearched,
+    hasSearchTerm,
+  } = useDebouncedSearch<User>({
+    searchTerm: memberSearch,
+    searchFn: onGetCandidates,
+  });
 
-  useEffect(() => {
-    const normalizedSearch = memberSearch.trim();
+  const filteredCandidates = useMemo(() => {
+    return candidates.filter(
+      (candidate) =>
+        !selectedMembers.some(
+          (member) => String(member.eId) === String(candidate.eId),
+        ),
+    );
+  }, [candidates, selectedMembers]);
 
-    if (!normalizedSearch) {
-      setFilteredCandidates([]);
-      return;
-    }
+  const canCreateTeam =
+    teamName.trim().length >= 3 && !isSubmitting && Boolean(user?.eId);
 
-    let ignore = false;
-
-    async function searchCandidates() {
-      try {
-        setIsSearchingMembers(true);
-
-        const candidates = await onGetCandidates(normalizedSearch);
-
-        if (ignore) return;
-
-        setFilteredCandidates(
-          candidates.filter(
-            (candidate) =>
-              !selectedMembers.some(
-                (member) => String(member.eId) === String(candidate.eId),
-              ),
-          ),
-        );
-      } finally {
-        if (!ignore) {
-          setIsSearchingMembers(false);
-        }
-      }
-    }
-
-    searchCandidates();
-
-    return () => {
-      ignore = true;
-    };
-  }, [memberSearch, onGetCandidates, selectedMembers]);
-
-const canCreateTeam =
-  teamName.trim().length >= 3 && !isSubmitting && Boolean(user?.eId);
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-  event.preventDefault();
+    event.preventDefault();
 
-  if (!canCreateTeam || !user?.eId) return;
+    if (!canCreateTeam || !user?.eId) return;
 
-  try {
-    setIsSubmitting(true);
+    try {
+      setIsSubmitting(true);
 
-    await onCreateTeam({
-      name: teamName.trim(),
-      description: description.trim(),
-      memberEIds: [
-        ...selectedMembers.map((member) => member.eId),
-        user.eId,
-      ],
-    });
-  } finally {
-    setIsSubmitting(false);
+      await onCreateTeam({
+        name: teamName.trim(),
+        description: description.trim(),
+        memberEIds: [...selectedMembers.map((member) => member.eId), user.eId],
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   }
-}
 
   function handleSelectMember(member: User) {
-    setSelectedMembers((current) => [...current, member]);
+    setSelectedMembers((current) => {
+      const alreadySelected = current.some(
+        (selectedMember) => String(selectedMember.eId) === String(member.eId),
+      );
+
+      if (alreadySelected) return current;
+
+      return [...current, member];
+    });
+
     setMemberSearch("");
   }
 
   function handleRemoveMember(memberId: string) {
     setSelectedMembers((current) =>
-      current.filter((member) => member.eId !== memberId),
+      current.filter((member) => String(member.eId) !== String(memberId)),
     );
   }
 
@@ -233,31 +213,41 @@ const canCreateTeam =
                   />
                 </div>
 
-                {filteredCandidates.length > 0 && (
+                {hasSearchTerm && (
                   <div className="absolute left-0 right-0 top-full z-20 mt-2 max-h-56 overflow-y-auto border border-neutral-200 bg-white shadow-lg">
-                    {filteredCandidates.map((candidate) => (
-                      <button
-                        key={candidate.eId}
-                        type="button"
-                        onClick={() => handleSelectMember(candidate)}
-                        className="flex w-full items-center gap-3 border-b border-neutral-100 px-4 py-3 text-left transition last:border-b-0 hover:bg-neutral-50"
-                      >
-                        <Avatar
-                          name={candidate.name}
-                          src={candidate.avatarUrl}
-                          size="sm"
-                        />
+                    {isSearchingMembers ? (
+                      <div className="px-4 py-4 text-sm text-neutral-500">
+                        Buscando personas...
+                      </div>
+                    ) : hasSearched && filteredCandidates.length > 0 ? (
+                      filteredCandidates.map((candidate) => (
+                        <button
+                          key={candidate.eId}
+                          type="button"
+                          onClick={() => handleSelectMember(candidate)}
+                          className="flex w-full items-center gap-3 border-b border-neutral-100 px-4 py-3 text-left transition last:border-b-0 hover:bg-neutral-50"
+                        >
+                          <Avatar
+                            name={candidate.name}
+                            src={candidate.avatarUrl}
+                            size="sm"
+                          />
 
-                        <div className="min-w-0">
-                          <p className="truncate text-sm font-medium text-neutral-950">
-                            {candidate.name}
-                          </p>
-                          <p className="truncate text-xs text-neutral-500">
-                            {candidate.role}
-                          </p>
-                        </div>
-                      </button>
-                    ))}
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-medium text-neutral-950">
+                              {candidate.name}
+                            </p>
+                            <p className="truncate text-xs text-neutral-500">
+                              {candidate.role}
+                            </p>
+                          </div>
+                        </button>
+                      ))
+                    ) : (
+                      <div className="px-4 py-4 text-sm text-neutral-500">
+                        No hay resultados.
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
