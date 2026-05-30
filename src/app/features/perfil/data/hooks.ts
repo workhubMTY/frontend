@@ -1,6 +1,6 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { perfilApi } from "./api";
 import { Friend } from "./types";
 
@@ -53,7 +53,37 @@ export function useTeams(options?: UseTeamsOptions) {
     enabled: (options?.enabled ?? true),
   });
 }
+type UseTeamMembersOptions = {
+  enabled?: boolean;
+};
 
+export function useTeamMembers(
+  teamId?: string | null,
+  options?: UseTeamMembersOptions,
+) {
+  return useQuery({
+    queryKey: ["team-members", teamId],
+    queryFn: () => {
+      if (!teamId) {
+        throw new Error("teamId is required to fetch team members.");
+      }
+
+      return perfilApi.getTeamMembers(teamId);
+    },
+    enabled: Boolean(teamId) && (options?.enabled ?? true),
+  });
+}
+
+export function useCreateTeam() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: perfilApi.createTeam,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["teams"] });
+    },
+  });
+}
 
 export function useUsers(query?: string, excludeId?: string) {
   return useQuery({

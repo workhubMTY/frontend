@@ -3,9 +3,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { getInitials } from "../../../lib/formatting";
 import type { User } from "../../../types/profile";
-import { CreateTeamPayload, TeamMembersState, TeamSummary } from "./types";
+import { CreateTeamPayload, TeamSummary } from "./types";
 import { TeamsListMode } from "./TeamsListMode";
 import { CreateTeamMode } from "./TeamsCreateMode";
+import { useCreateTeam, useTeamMembers } from "../../../data/hooks";
 
 type TeamsDrawerProps = {
   open: boolean;
@@ -14,8 +15,6 @@ type TeamsDrawerProps = {
   initialTeamDrawerMode?: "list" | "create";
   getUsers: (query: string) => Promise<User[]>;
   onClose: () => void;
-  onGetTeamMembers: (teamId: string) => Promise<User[]>;
-  onCreateTeam?: (payload: CreateTeamPayload) => Promise<void> | void;
 };
 
 type AvatarProps = {
@@ -64,18 +63,19 @@ export function TeamsDrawer({
   getUsers,
   initialOpenTeamId,
   initialTeamDrawerMode = "list",
-  onCreateTeam,
-  onGetTeamMembers,
 }: TeamsDrawerProps) {
   const [drawerMode, setDrawerMode] = useState<DrawerMode>(
     initialTeamDrawerMode,
   );
+
   const [search, setSearch] = useState("");
   const [openTeamId, setOpenTeamId] = useState<string | null>(null);
 
-  const [membersByTeamId, setMembersByTeamId] = useState<
-    Record<string, TeamMembersState>
-  >({});
+  const createTeamMutation = useCreateTeam();
+
+  const teamMembersQuery = useTeamMembers(openTeamId, {
+    enabled: open,
+  });
 
   const filteredTeams = useMemo(() => {
     const normalizedSearch = search.trim().toLowerCase();
@@ -91,75 +91,17 @@ export function TeamsDrawer({
     if (!open) return;
 
     setDrawerMode(initialTeamDrawerMode);
-
-    if (!initialOpenTeamId) {
-      setOpenTeamId(null);
-      return;
-    }
-
-    setOpenTeamId(initialOpenTeamId);
-    loadTeamMembersIfNeeded(initialOpenTeamId);
+    setOpenTeamId(initialOpenTeamId ?? null);
   }, [open, initialOpenTeamId, initialTeamDrawerMode]);
 
-  async function loadTeamMembersIfNeeded(teamId: string) {
-    let shouldFetch = false;
-
-    setMembersByTeamId((current) => {
-      const currentState = current[teamId];
-
-      if (currentState?.loading || currentState?.members.length > 0) {
-        return current;
-      }
-
-      shouldFetch = true;
-
-      return {
-        ...current,
-        [teamId]: {
-          loading: true,
-          members: [],
-        },
-      };
-    });
-
-    if (!shouldFetch) return;
-
-    try {
-      const members = await onGetTeamMembers(teamId);
-
-      setMembersByTeamId((current) => ({
-        ...current,
-        [teamId]: {
-          loading: false,
-          members,
-        },
-      }));
-    } catch {
-      setMembersByTeamId((current) => ({
-        ...current,
-        [teamId]: {
-          loading: false,
-          members: [],
-          error: "No se pudieron cargar los miembros.",
-        },
-      }));
-    }
-  }
-
-  async function handleToggleTeam(teamId: string) {
-    const isCurrentlyOpen = openTeamId === teamId;
-
-    if (isCurrentlyOpen) {
-      setOpenTeamId(null);
-      return;
-    }
-
-    setOpenTeamId(teamId);
-    await loadTeamMembersIfNeeded(teamId);
+  function handleToggleTeam(teamId: string) {
+    setOpenTeamId((current) => (current === teamId ? null : teamId));
   }
 
   function handleClose() {
     setDrawerMode("list");
+    setOpenTeamId(null);
+    setSearch("");
     onClose();
   }
 
@@ -180,7 +122,13 @@ export function TeamsDrawer({
             search={search}
             teams={filteredTeams}
             openTeamId={openTeamId}
-            membersByTeamId={membersByTeamId}
+            selectedTeamMembersState={{
+              loading: teamMembersQuery.isLoading,
+              error: teamMembersQuery.isError
+                ? "No se pudieron cargar los miembros."
+                : undefined,
+              members: teamMembersQuery.data ?? [],
+            }}
             onSearchChange={setSearch}
             onClose={handleClose}
             onToggleTeam={handleToggleTeam}
@@ -192,7 +140,7 @@ export function TeamsDrawer({
             onBack={() => setDrawerMode("list")}
             onClose={handleClose}
             onCreateTeam={async (payload) => {
-              await onCreateTeam?.(payload);
+              await createTeamMutation.mutateAsync(payload);
               setDrawerMode("list");
             }}
           />

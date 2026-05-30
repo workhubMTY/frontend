@@ -102,27 +102,6 @@ export default function UserProfilePage() {
     [queryClient, user?.eId],
   );
 
-  const handleCreateTeam = useCallback(
-    async (payload: CreateTeamPayload) => {
-      await perfilApi.createTeam(payload);
-
-      await queryClient.invalidateQueries({
-        queryKey: ["teams"],
-      });
-    },
-    [queryClient],
-  );
-
-  const handleGetTeamMembers = useCallback(
-    async (teamId: string) => {
-      return queryClient.fetchQuery({
-        queryKey: ["teamMembers", teamId],
-        queryFn: () => perfilApi.getTeamMembers(teamId),
-      });
-    },
-    [queryClient],
-  );
-
   // const handleSearchFriendSuggestions = useCallback(
   //   async (query: string) => {
   //     return queryClient.fetchQuery({
@@ -231,8 +210,6 @@ export default function UserProfilePage() {
         initialOpenTeamId={initialOpenTeamId}
         initialTeamDrawerMode={initialTeamDrawerMode}
         getUsers={handleSearchUserSuggestions}
-        onGetTeamMembers={handleGetTeamMembers}
-        onCreateTeam={handleCreateTeam}
       />
 
       <AchievementComparisonDrawer

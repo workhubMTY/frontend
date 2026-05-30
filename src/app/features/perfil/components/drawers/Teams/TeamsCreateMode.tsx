@@ -20,6 +20,9 @@ export function CreateTeamMode({
   onCreateTeam,
 }: CreateTeamModeProps) {
   const {user} = useAuth()
+  
+
+
 
   const [teamName, setTeamName] = useState("");
   const [description, setDescription] = useState("");
@@ -30,6 +33,7 @@ export function CreateTeamMode({
 
   const [filteredCandidates, setFilteredCandidates] = useState<User[]>([]);
   const [isSearchingMembers, setIsSearchingMembers] = useState(false);
+  
 
   useEffect(() => {
     const normalizedSearch = memberSearch.trim();
@@ -71,25 +75,28 @@ export function CreateTeamMode({
     };
   }, [memberSearch, onGetCandidates, selectedMembers]);
 
-  const canCreateTeam = teamName.trim().length >= 3 && !isSubmitting;
+const canCreateTeam =
+  teamName.trim().length >= 3 && !isSubmitting && Boolean(user?.eId);
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+  event.preventDefault();
 
-  async function handleSubmit(event: React.SubmitEvent<HTMLFormElement>) {
-    event.preventDefault();
+  if (!canCreateTeam || !user?.eId) return;
 
-    if (!canCreateTeam) return;
+  try {
+    setIsSubmitting(true);
 
-    try {
-      setIsSubmitting(true);
-
-      await onCreateTeam({
-        name: teamName.trim(),
-        description: description.trim(),
-        memberEIds: [...selectedMembers.map((member) => member.eId), user!.eId],
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
+    await onCreateTeam({
+      name: teamName.trim(),
+      description: description.trim(),
+      memberEIds: [
+        ...selectedMembers.map((member) => member.eId),
+        user.eId,
+      ],
+    });
+  } finally {
+    setIsSubmitting(false);
   }
+}
 
   function handleSelectMember(member: User) {
     setSelectedMembers((current) => [...current, member]);

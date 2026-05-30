@@ -9,12 +9,12 @@ import {
 import { TeamMembersState, TeamSummary } from "./types";
 import { getInitials } from "../../../lib/formatting";
 import { Avatar } from "./TeamsDrawer";
-
+import { User } from "../../../types/profile";
 type TeamsListModeProps = {
   search: string;
   teams: TeamSummary[];
   openTeamId: string | null;
-  membersByTeamId: Record<string, TeamMembersState>;
+  selectedTeamMembersState: TeamMembersState;
   onSearchChange: (value: string) => void;
   onClose: () => void;
   onToggleTeam: (teamId: string) => void;
@@ -25,7 +25,7 @@ export function TeamsListMode({
   search,
   teams,
   openTeamId,
-  membersByTeamId,
+  selectedTeamMembersState,
   onSearchChange,
   onClose,
   onToggleTeam,
@@ -74,7 +74,7 @@ export function TeamsListMode({
           <div className="divide-y divide-neutral-100">
             {teams.map((team) => {
               const isOpen = openTeamId === team.id;
-              const membersState = membersByTeamId[team.id];
+              const membersState = selectedTeamMembersState;
 
               return (
                 <article key={team.id} className="px-8 py-6">
