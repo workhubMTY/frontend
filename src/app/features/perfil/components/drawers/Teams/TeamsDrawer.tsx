@@ -7,8 +7,13 @@ import { CreateTeamPayload, TeamSummary } from "./types";
 import { TeamsListMode } from "./TeamsListMode";
 import { CreateTeamMode } from "./TeamsCreateMode";
 import { ManageTeamMode } from "./TeamsManageMode";
-import { UpdateTeamPayload, useCreateTeam, useTeamMembers, useUpdateTeam } from "../../../data/hooks";
-import { perfilApi } from "../../../data/api";
+import {
+  UpdateTeamPayload,
+  useCreateTeam,
+  useDeleteTeam,
+  useTeamMembers,
+  useUpdateTeam,
+} from "../../../data/hooks";
 
 type TeamsDrawerProps = {
   open: boolean;
@@ -17,13 +22,6 @@ type TeamsDrawerProps = {
   initialTeamDrawerMode?: "list" | "create";
   getUsers: (query: string) => Promise<User[]>;
   onClose: () => void;
-
-  onUpdateTeam?: (
-    teamId: string,
-    payload: UpdateTeamPayload,
-  ) => Promise<void> | void;
-
-  onDeleteTeam?: (teamId: string) => Promise<void> | void;
 };
 
 type AvatarProps = {
@@ -72,8 +70,6 @@ export function TeamsDrawer({
   getUsers,
   initialOpenTeamId,
   initialTeamDrawerMode = "list",
-  onUpdateTeam,
-  onDeleteTeam,
 }: TeamsDrawerProps) {
   const [drawerMode, setDrawerMode] = useState<DrawerMode>(
     initialTeamDrawerMode,
@@ -82,9 +78,11 @@ export function TeamsDrawer({
   const [search, setSearch] = useState("");
   const [openTeamId, setOpenTeamId] = useState<string | null>(null);
   const [managedTeamId, setManagedTeamId] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const createTeamMutation = useCreateTeam();
   const updateTeamMutation = useUpdateTeam();
+  const deleteTeamMutation = useDeleteTeam();
 
   const teamMembersQuery = useTeamMembers(openTeamId, {
     enabled: open && drawerMode === "list" && Boolean(openTeamId),
@@ -116,13 +114,26 @@ export function TeamsDrawer({
     setDrawerMode(initialTeamDrawerMode);
     setOpenTeamId(initialOpenTeamId ?? null);
     setManagedTeamId(null);
+    setSuccessMessage(null);
   }, [open, initialOpenTeamId, initialTeamDrawerMode]);
+  useEffect(() => {
+    if (!successMessage) return;
+
+    const timeoutId = window.setTimeout(() => {
+      setSuccessMessage(null);
+    }, 4000);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [successMessage]);
 
   function handleToggleTeam(teamId: string) {
     setOpenTeamId((current) => (current === teamId ? null : teamId));
   }
 
   function handleManageTeam(teamId: string) {
+    setSuccessMessage(null);
     setManagedTeamId(teamId);
     setDrawerMode("manage");
   }
@@ -137,7 +148,40 @@ export function TeamsDrawer({
     setOpenTeamId(null);
     setManagedTeamId(null);
     setSearch("");
+    setSuccessMessage(null);
     onClose();
+  }
+
+  async function handleCreateTeam(payload: CreateTeamPayload) {
+    await createTeamMutation.mutateAsync(payload);
+
+    setDrawerMode("list");
+    setSuccessMessage("Se ha creado el equipo correctamente.");
+  }
+
+  async function handleUpdateTeam(teamId: string, payload: UpdateTeamPayload) {
+    await updateTeamMutation.mutateAsync({ teamId, payload });
+
+    setDrawerMode("list");
+    setManagedTeamId(null);
+    setSuccessMessage("Se han guardado los cambios del equipo.");
+  }
+
+  async function handleDeleteTeam(teamId: string) {
+    const deletedTeamName = managedTeam?.name ?? "el equipo";
+
+    /**
+     * Lo movemos a lista antes del mutate porque tu hook probablemente hace
+     * optimistic update. Si el cache borra el equipo inmediatamente, managedTeam
+     * se vuelve null y la vista manage podría quedarse en blanco.
+     */
+    setDrawerMode("list");
+    setManagedTeamId(null);
+    setOpenTeamId(null);
+
+    await deleteTeamMutation.mutateAsync(teamId);
+
+    setSuccessMessage(`Se ha borrado el equipo “${deletedTeamName}”.`);
   }
 
   if (!open) return null;
@@ -157,6 +201,8 @@ export function TeamsDrawer({
             search={search}
             teams={filteredTeams}
             openTeamId={openTeamId}
+            successMessage={successMessage}
+            onDismissSuccessMessage={() => setSuccessMessage(null)}
             selectedTeamMembersState={{
               loading: teamMembersQuery.isLoading,
               error: teamMembersQuery.isError
@@ -168,7 +214,10 @@ export function TeamsDrawer({
             onClose={handleClose}
             onToggleTeam={handleToggleTeam}
             onManageTeam={handleManageTeam}
-            onCreateMode={() => setDrawerMode("create")}
+            onCreateMode={() => {
+              setSuccessMessage(null);
+              setDrawerMode("create");
+            }}
           />
         )}
 
@@ -177,35 +226,27 @@ export function TeamsDrawer({
             onGetCandidates={getUsers}
             onBack={() => setDrawerMode("list")}
             onClose={handleClose}
-            onCreateTeam={async (payload) => {
-              await createTeamMutation.mutateAsync(payload);
-              setDrawerMode("list");
-            }}
+            onCreateTeam={handleCreateTeam}
           />
         )}
 
         {drawerMode === "manage" && managedTeam && (
-  <ManageTeamMode
-    team={managedTeam}
-    membersState={{
-      loading: managedTeamMembersQuery.isLoading,
-      error: managedTeamMembersQuery.isError
-        ? "No se pudieron cargar los miembros."
-        : undefined,
-      members: managedTeamMembersQuery.data ?? [],
-    }}
-    onGetCandidates={(query) =>
-      perfilApi.getUsers(query, undefined, managedTeam.id)
-    }
-    onBack={handleBackToList}
-    onClose={handleClose}
-    onUpdateTeam={async (teamId, payload) => {
-      await updateTeamMutation.mutateAsync({ teamId, payload });
-      setDrawerMode("list");
-      setManagedTeamId(null);
-    }}
-  />
-)}
+          <ManageTeamMode
+            team={managedTeam}
+            membersState={{
+              loading: managedTeamMembersQuery.isLoading,
+              error: managedTeamMembersQuery.isError
+                ? "No se pudieron cargar los miembros."
+                : undefined,
+              members: managedTeamMembersQuery.data ?? [],
+            }}
+            onGetCandidates={(query) => getUsers(query)}
+            onBack={handleBackToList}
+            onClose={handleClose}
+            onUpdateTeam={handleUpdateTeam}
+            onDeleteTeam={handleDeleteTeam}
+          />
+        )}
       </aside>
     </div>
   );

@@ -18,6 +18,7 @@ import type { UpdateTeamPayload } from "../../../data/hooks";
 import { Avatar } from "./TeamsDrawer";
 import { SearchSelectionBox } from "../../utils/SearchSelectionBox";
 import { useDebouncedSearch } from "@/app/features/perfil/hooks/useDebouncedSearch";
+
 type BuildUpdateTeamPayloadParams = {
   originalName: string;
   nextName: string;
@@ -80,6 +81,7 @@ function uniqueStringIds(ids: Array<string | number>): string[] {
     ),
   );
 }
+
 type ManageTeamModeProps = {
   team: TeamSummary;
   membersState: TeamMembersState;
@@ -87,6 +89,7 @@ type ManageTeamModeProps = {
   onBack: () => void;
   onClose: () => void;
   onUpdateTeam: (teamId: string, payload: UpdateTeamPayload) => Promise<void>;
+  onDeleteTeam: (teamId: string) => Promise<void>;
 };
 
 export function ManageTeamMode({
@@ -96,15 +99,16 @@ export function ManageTeamMode({
   onBack,
   onClose,
   onUpdateTeam,
+  onDeleteTeam,
 }: ManageTeamModeProps) {
   const [teamName, setTeamName] = useState(team.name);
   const [description, setDescription] = useState(team.description ?? "");
-
   const [memberSearch, setMemberSearch] = useState("");
   const [addedMembers, setAddedMembers] = useState<User[]>([]);
   const [removedMemberIds, setRemovedMemberIds] = useState<string[]>([]);
-
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const {
     results: candidates,
@@ -122,9 +126,16 @@ export function ManageTeamMode({
     setMemberSearch("");
     setAddedMembers([]);
     setRemovedMemberIds([]);
+    setShowDeleteConfirm(false);
+    setIsSubmitting(false);
+    setIsDeleting(false);
   }, [team.id, team.name, team.description]);
 
   const originalMembers = membersState.members;
+
+  const originalMemberIds = useMemo(() => {
+    return new Set(originalMembers.map((member) => String(member.eId)));
+  }, [originalMembers]);
 
   const activeOriginalMemberIds = useMemo(() => {
     return new Set(
@@ -142,15 +153,13 @@ export function ManageTeamMode({
     return candidates.filter((candidate) => {
       const candidateId = String(candidate.eId);
 
-      const isOriginalMember = originalMembers.some(
-        (member) => String(member.eId) === candidateId,
-      );
-
+      const isOriginalMember = originalMemberIds.has(candidateId);
       const isAlreadyAdded = addedMemberIds.has(candidateId);
 
       return !isOriginalMember && !isAlreadyAdded;
     });
-  }, [candidates, originalMembers, addedMemberIds]);
+  }, [candidates, originalMemberIds, addedMemberIds]);
+
   const updatePayload = useMemo(() => {
     return buildUpdateTeamPayload({
       originalName: team.name,
@@ -168,12 +177,14 @@ export function ManageTeamMode({
     addedMembers,
     removedMemberIds,
   ]);
+
   const hasChanges = Object.keys(updatePayload).length > 0;
 
   const canSave =
     teamName.trim().length >= 1 &&
     hasChanges &&
     !isSubmitting &&
+    !isDeleting &&
     !membersState.loading;
 
   function handleToggleCandidate(member: User) {
@@ -211,6 +222,7 @@ export function ManageTeamMode({
       current.filter((currentMemberId) => currentMemberId !== memberId),
     );
   }
+
   async function handleSubmit(event: React.SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
 
@@ -224,6 +236,20 @@ export function ManageTeamMode({
       onBack();
     } finally {
       setIsSubmitting(false);
+    }
+  }
+
+  async function handleDeleteTeam() {
+    if (isDeleting) return;
+
+    try {
+      setIsDeleting(true);
+
+      await onDeleteTeam(team.id);
+
+      onBack();
+    } finally {
+      setIsDeleting(false);
     }
   }
 
@@ -281,9 +307,9 @@ export function ManageTeamMode({
                   className="mt-3 h-11 w-full border border-neutral-200 bg-white px-4 text-sm text-neutral-900 outline-none transition placeholder:text-neutral-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-100"
                 />
 
-                {teamName.trim().length > 0 && teamName.trim().length < 3 && (
+                {teamName.length > 0 && teamName.trim().length < 1 && (
                   <p className="mt-2 text-xs text-red-600">
-                    El nombre debe tener al menos 3 caracteres.
+                    El nombre no puede estar vacío.
                   </p>
                 )}
               </div>
@@ -322,6 +348,7 @@ export function ManageTeamMode({
                 <h3 className="text-sm font-semibold text-neutral-950">
                   Miembros actuales
                 </h3>
+
                 <p className="mt-1 text-xs text-neutral-500">
                   Los cambios se aplicarán cuando guardes.
                 </p>
@@ -437,10 +464,22 @@ export function ManageTeamMode({
               isItemSelected={(member) =>
                 addedMemberIds.has(String(member.eId))
               }
-              renderItemStatus={(member, { isSelected }) => {
+              isItemDisabled={(member) =>
+                activeOriginalMemberIds.has(String(member.eId))
+              }
+              renderItemStatus={(member, { isSelected, isDisabled }) => {
+                if (isDisabled) {
+                  return (
+                    <span className="whitespace-nowrap border border-neutral-200 px-3 py-1 text-xs font-medium text-neutral-500">
+                      Ya es miembro
+                    </span>
+                  );
+                }
+
                 if (isSelected) {
                   return (
-                    <span className="whitespace-nowrap bg-purple-700 px-3 py-1 text-xs font-medium text-white">
+                    <span className="inline-flex items-center gap-1 whitespace-nowrap bg-purple-700 px-3 py-1 text-xs font-medium text-white">
+                      <Check size={13} />
                       Se agregará
                     </span>
                   );
@@ -513,6 +552,62 @@ export function ManageTeamMode({
                 </section>
               )}
             />
+
+            <section className="border border-red-200 bg-red-50 px-5 py-4">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <h3 className="text-sm font-semibold text-red-700">
+                    Zona de peligro
+                  </h3>
+
+                  <p className="mt-1 text-sm text-red-600">
+                    Eliminar este equipo es una acción permanente.
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setShowDeleteConfirm(true)}
+                  disabled={isDeleting || isSubmitting}
+                  className="inline-flex h-10 items-center justify-center gap-2 border border-red-300 bg-white px-4 text-sm font-medium text-red-700 transition hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  <Trash2 size={16} />
+                  Eliminar equipo
+                </button>
+              </div>
+
+              {showDeleteConfirm && (
+                <div className="mt-4 border border-red-200 bg-white p-4">
+                  <p className="text-sm font-semibold text-neutral-950">
+                    ¿Seguro que quieres eliminar “{team.name}”?
+                  </p>
+
+                  <p className="mt-1 text-sm text-neutral-500">
+                    Esta acción no se puede deshacer.
+                  </p>
+
+                  <div className="mt-4 flex justify-end gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setShowDeleteConfirm(false)}
+                      disabled={isDeleting}
+                      className="inline-flex h-9 items-center justify-center border border-neutral-300 bg-white px-4 text-sm font-medium text-neutral-700 transition hover:bg-neutral-50 disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      Cancelar
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={handleDeleteTeam}
+                      disabled={isDeleting}
+                      className="inline-flex h-9 items-center justify-center bg-red-600 px-4 text-sm font-medium text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:bg-red-300"
+                    >
+                      {isDeleting ? "Eliminando..." : "Sí, eliminar"}
+                    </button>
+                  </div>
+                </div>
+              )}
+            </section>
           </div>
         </div>
 
@@ -528,7 +623,8 @@ export function ManageTeamMode({
               <button
                 type="button"
                 onClick={onBack}
-                className="inline-flex h-11 min-w-32 items-center justify-center border border-neutral-300 bg-white px-5 text-sm font-medium text-neutral-700 transition hover:bg-neutral-50"
+                disabled={isSubmitting || isDeleting}
+                className="inline-flex h-11 min-w-32 items-center justify-center border border-neutral-300 bg-white px-5 text-sm font-medium text-neutral-700 transition hover:bg-neutral-50 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 Cancelar
               </button>

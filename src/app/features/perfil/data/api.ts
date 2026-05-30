@@ -70,6 +70,11 @@ export const perfilApi = {
       body: JSON.stringify(payload),
     }),
 
+  deleteTeam:(teamId: string) =>
+    authFetch<void>(`/teams/${teamId}`, {
+      method: "DELETE",
+    }),
+
   getTeamMembers: (teamId: string) =>
     authFetch<User[]>(`/teams/${teamId}/members`),
 

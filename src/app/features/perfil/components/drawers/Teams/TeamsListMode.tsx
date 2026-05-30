@@ -20,6 +20,8 @@ type TeamsListModeProps = {
   onClose: () => void;
   onToggleTeam: (teamId: string) => void;
   onManageTeam: (teamId: string) => void;
+  successMessage?: string | null;
+  onDismissSuccessMessage?: () => void;
   onCreateMode: () => void;
 };
 
@@ -33,6 +35,7 @@ export function TeamsListMode({
   onToggleTeam,
   onManageTeam,
   onCreateMode,
+  successMessage,
 }: TeamsListModeProps) {
   return (
     <>
@@ -71,6 +74,11 @@ export function TeamsListMode({
           />
         </div>
       </header>
+      {successMessage && (
+        <div className="mt-4 border border-green-200 bg-green-50 px-4 py-3 text-sm font-medium text-green-700">
+          {successMessage}
+        </div>
+      )}
 
       <div className="flex-1 overflow-y-auto">
         {teams.length > 0 ? (

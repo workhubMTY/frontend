@@ -111,6 +111,45 @@ export function useUpdateTeam() {
     },
   });
 }
+export function useDeleteTeam() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (teamId: string) => perfilApi.deleteTeam(teamId),
+
+    onMutate: async (teamId) => {
+      await queryClient.cancelQueries({ queryKey: ["teams"] });
+
+      const previousTeams = queryClient.getQueryData(["teams"]);
+
+      queryClient.setQueryData(["teams"], (currentTeams: unknown) => {
+        if (!Array.isArray(currentTeams)) return currentTeams;
+
+        return currentTeams.filter((team) => team.id !== teamId);
+      });
+
+      queryClient.removeQueries({
+        queryKey: ["team-members", teamId],
+      });
+
+      return { previousTeams };
+    },
+
+    onError: (_error, _teamId, context) => {
+      if (context?.previousTeams) {
+        queryClient.setQueryData(["teams"], context.previousTeams);
+      }
+    },
+
+    onSettled: (_data, _error, teamId) => {
+      queryClient.invalidateQueries({ queryKey: ["teams"] });
+
+      queryClient.removeQueries({
+        queryKey: ["team-members", teamId],
+      });
+    },
+  });
+}
 
 export function useUsers(query?: string, excludeId?: string) {
   return useQuery({

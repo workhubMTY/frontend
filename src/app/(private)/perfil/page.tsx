@@ -210,6 +210,7 @@ export default function UserProfilePage() {
         initialOpenTeamId={initialOpenTeamId}
         initialTeamDrawerMode={initialTeamDrawerMode}
         getUsers={handleSearchUserSuggestions}
+
       />
 
       <AchievementComparisonDrawer
