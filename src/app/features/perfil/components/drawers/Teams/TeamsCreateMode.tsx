@@ -1,12 +1,13 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { User } from "../../../types/profile";
-import { CreateTeamPayload } from "./types";
-import { ChevronLeft, X } from "lucide-react";
-import { Avatar } from "./TeamsDrawer";
+import { useEffect, useMemo, useState } from "react";
+import { Check, ChevronLeft, X } from "lucide-react";
+
 import { useAuth } from "@/app/shared/auth/useAuth";
-import { useDebouncedSearch } from "../../../hooks/useDebouncedSearch";
+
+import type { User } from "../../../types/profile";
+import type { CreateTeamPayload } from "./types";
+import { SearchSelectionBox } from "../../utils/SearchSelectionBox";
 
 type CreateTeamModeProps = {
   onGetCandidates: (query: string) => Promise<User[]>;
@@ -29,15 +30,50 @@ export function CreateTeamMode({
   const [selectedMembers, setSelectedMembers] = useState<User[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const {
-    results: candidates,
-    isSearching: isSearchingMembers,
-    hasSearched,
-    hasSearchTerm,
-  } = useDebouncedSearch<User>({
-    searchTerm: memberSearch,
-    searchFn: onGetCandidates,
-  });
+  const [candidates, setCandidates] = useState<User[]>([]);
+  const [isSearchingMembers, setIsSearchingMembers] = useState(false);
+  const [hasSearchedMembers, setHasSearchedMembers] = useState(false);
+
+  useEffect(() => {
+    const normalizedSearch = memberSearch.trim();
+
+    if (!normalizedSearch) {
+      setCandidates([]);
+      setIsSearchingMembers(false);
+      setHasSearchedMembers(false);
+      return;
+    }
+
+    let isActive = true;
+
+    const timeoutId = window.setTimeout(async () => {
+      try {
+        setIsSearchingMembers(true);
+        setHasSearchedMembers(true);
+
+        const incomingCandidates = await onGetCandidates(normalizedSearch);
+
+        if (isActive) {
+          setCandidates(incomingCandidates);
+        }
+      } catch (error) {
+        console.error("Error loading team member candidates:", error);
+
+        if (isActive) {
+          setCandidates([]);
+        }
+      } finally {
+        if (isActive) {
+          setIsSearchingMembers(false);
+        }
+      }
+    }, 350);
+
+    return () => {
+      isActive = false;
+      window.clearTimeout(timeoutId);
+    };
+  }, [memberSearch, onGetCandidates]);
 
   const filteredCandidates = useMemo(() => {
     return candidates.filter(
@@ -68,21 +104,21 @@ export function CreateTeamMode({
       setIsSubmitting(false);
     }
   }
-
-  function handleSelectMember(member: User) {
+  function handleToggleMember(member: User) {
     setSelectedMembers((current) => {
-      const alreadySelected = current.some(
+      const exists = current.some(
         (selectedMember) => String(selectedMember.eId) === String(member.eId),
       );
 
-      if (alreadySelected) return current;
+      if (exists) {
+        return current.filter(
+          (selectedMember) => String(selectedMember.eId) !== String(member.eId),
+        );
+      }
 
       return [...current, member];
     });
-
-    setMemberSearch("");
   }
-
   function handleRemoveMember(memberId: string) {
     setSelectedMembers((current) =>
       current.filter((member) => String(member.eId) !== String(memberId)),
@@ -106,6 +142,7 @@ export function CreateTeamMode({
             <h2 className="text-2xl font-semibold tracking-tight text-neutral-950">
               Crear nuevo equipo
             </h2>
+
             <p className="mt-1 text-sm text-neutral-500">
               Crea un equipo y agrega a tus miembros.
             </p>
@@ -173,89 +210,45 @@ export function CreateTeamMode({
                 </span>
               </div>
             </div>
-            <div>
-              <label
-                htmlFor="member-search"
-                className="text-sm font-semibold text-neutral-950"
-              >
-                Invitar miembros
-              </label>
 
-              <div className="relative mt-3">
-                <div className="flex min-h-12 w-full flex-wrap items-center gap-2 border border-neutral-200 bg-white px-3 py-2 focus-within:border-purple-500 focus-within:ring-2 focus-within:ring-purple-100">
-                  {selectedMembers.map((member) => (
-                    <span
-                      key={member.eId}
-                      className="inline-flex h-8 items-center gap-2 bg-neutral-100 px-3 text-sm text-neutral-700"
-                    >
-                      {member.name}
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveMember(member.eId)}
-                        className="text-neutral-500 transition hover:text-neutral-900"
-                        aria-label={`Quitar ${member.name}`}
-                      >
-                        <X size={14} />
-                      </button>
-                    </span>
-                  ))}
-
-                  <input
-                    id="member-search"
-                    value={memberSearch}
-                    onChange={(event) => setMemberSearch(event.target.value)}
-                    placeholder={
-                      selectedMembers.length > 0
-                        ? "Buscar personas..."
-                        : "Busca personas para invitar..."
-                    }
-                    className="h-8 min-w-[180px] flex-1 border-0 bg-transparent px-2 text-sm text-neutral-900 outline-none placeholder:text-neutral-400"
-                  />
-                </div>
-
-                {hasSearchTerm && (
-                  <div className="absolute left-0 right-0 top-full z-20 mt-2 max-h-56 overflow-y-auto border border-neutral-200 bg-white shadow-lg">
-                    {isSearchingMembers ? (
-                      <div className="px-4 py-4 text-sm text-neutral-500">
-                        Buscando personas...
-                      </div>
-                    ) : hasSearched && filteredCandidates.length > 0 ? (
-                      filteredCandidates.map((candidate) => (
-                        <button
-                          key={candidate.eId}
-                          type="button"
-                          onClick={() => handleSelectMember(candidate)}
-                          className="flex w-full items-center gap-3 border-b border-neutral-100 px-4 py-3 text-left transition last:border-b-0 hover:bg-neutral-50"
-                        >
-                          <Avatar
-                            name={candidate.name}
-                            src={candidate.avatarUrl}
-                            size="sm"
-                          />
-
-                          <div className="min-w-0">
-                            <p className="truncate text-sm font-medium text-neutral-950">
-                              {candidate.name}
-                            </p>
-                            <p className="truncate text-xs text-neutral-500">
-                              {candidate.role}
-                            </p>
-                          </div>
-                        </button>
-                      ))
-                    ) : (
-                      <div className="px-4 py-4 text-sm text-neutral-500">
-                        No hay resultados.
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-
-              <p className="mt-2 text-xs text-neutral-500">
-                Puedes invitar más miembros después.
-              </p>
-            </div>
+            <SearchSelectionBox<User>
+              id="member-search"
+              label="Invitar miembros"
+              searchValue={memberSearch}
+              onSearchChange={setMemberSearch}
+              selectedItems={selectedMembers}
+              results={candidates}
+              isSearching={isSearchingMembers}
+              hasSearched={hasSearchedMembers}
+              selectedLabel="Miembros seleccionados"
+              resultsLabel="Resultados"
+              placeholder="Buscar por nombre, correo o rol"
+              searchPlaceholderWhenSelected="Buscar personas..."
+              getItemId={(member) => String(member.eId)}
+              getItemName={(member) => member.name}
+              getItemAvatarUrl={(member) => member.avatarUrl}
+              getItemDescription={(member) => member.email}
+              onSelectItem={handleToggleMember}
+              onRemoveItem={handleRemoveMember}
+              isItemSelected={(member) =>
+                selectedMembers.some(
+                  (selectedMember) =>
+                    String(selectedMember.eId) === String(member.eId),
+                )
+              }
+              renderItemStatus={(_, { isSelected }) =>
+                isSelected ? (
+                  <span className="inline-flex items-center gap-1 whitespace-nowrap bg-purple-700 px-3 py-1 text-xs font-medium text-white">
+                    <Check size={13} />
+                    Seleccionado
+                  </span>
+                ) : (
+                  <span className="whitespace-nowrap border border-neutral-300 bg-white px-3 py-1 text-xs font-medium text-neutral-700">
+                    Seleccionar
+                  </span>
+                )
+              }
+            />
           </div>
         </div>
 
