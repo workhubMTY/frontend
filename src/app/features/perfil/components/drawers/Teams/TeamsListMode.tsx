@@ -155,7 +155,7 @@ export function TeamsListMode({
                                       {member.name}
                                     </p>
                                     <p className="truncate text-xs text-neutral-500">
-                                      {member.role}
+                                      {member.email}
                                     </p>
                                   </div>
                                 </div>
