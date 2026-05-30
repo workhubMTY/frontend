@@ -281,9 +281,9 @@ export default function CubiculoConfirmarPage() {
         )}
         <div className="flex-1 px-20 py-8  flex flex-col">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-3xl font-bold text-gray-900 tracking-tight m-0">
+            <h1 className="text-lg font-bold tracking-tight text-slate-950 sm:text-xl">
               Reserva completa
-            </h3>
+            </h1>
           </div>
 
           <div className="flex gap-6 flex-1 min-h-0">

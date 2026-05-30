@@ -134,10 +134,10 @@ export default function UserProfilePage() {
       <main className="min-h-full min-w-full bg-background-page px-8 py-8 text-neutral-950">
         <div className="mx-auto min-w-full max-w-screen-2xl">
           <header className="mb-6">
-            <h1 className="text-4xl font-semibold tracking-tight text-neutral-950">
+            <h1 className="text-lg font-semibold tracking-tight text-neutral-950">
               Perfil de usuario
             </h1>
-            <p className="mt-2 text-base text-neutral-500">
+            <p className="mt-2 text-xs text-neutral-500">
               Consulta tu información, amistades y progreso de logros.
             </p>
           </header>
