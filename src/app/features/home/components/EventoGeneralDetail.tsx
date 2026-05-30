@@ -37,10 +37,10 @@ export function EventoGeneralDetail({
     <section className="shrink-0 overflow-hidden border border-neutral-200 bg-white shadow-sm">
       <header className="flex items-center justify-between border-b border-neutral-100 px-7 py-3">
         <div className="flex items-center gap-3">
-          <CalendarDays size={22} className="text-neutral-700" />
+          <CalendarDays size={18} className="text-neutral-700" />
 
           <div>
-            <h2 className="text-xl font-semibold tracking-tight text-neutral-950">
+            <h2 className="text-base font-semibold tracking-tight text-neutral-950">
               Eventos & Festivos
             </h2>
 
@@ -98,7 +98,7 @@ export function EventoGeneralDetail({
               <button
                 type="button"
                 disabled
-                className="mt-4 inline-flex h-9 cursor-not-allowed items-center justify-center border border-neutral-200 bg-neutral-50 px-4 text-sm font-medium text-neutral-400"
+                className="mt-4 inline-flex h-9 cursor-not-allowed items-center justify-center border border-neutral-200 bg-neutral-50 px-4 text-xs font-medium text-neutral-400"
               >
                 Ver en agenda
               </button>
@@ -107,7 +107,7 @@ export function EventoGeneralDetail({
         </div>
       ) : (
         <article className="grid grid-cols-[auto_1fr_auto] items-center gap-4 border-l-4 border-purple-700 bg-purple-50/70 px-7 py-5 pl-6">
-          <div className="flex h-16 w-16 shrink-0 items-center justify-center bg-purple-100 text-2xl font-semibold text-purple-700">
+          <div className="flex h-14 w-14 shrink-0 items-center justify-center bg-purple-100 text-xl font-semibold text-purple-700">
             {evento.icono}
           </div>
 
@@ -127,23 +127,23 @@ export function EventoGeneralDetail({
               </span>
             </div>
 
-            <p className="mt-1 line-clamp-2 text-sm leading-6 text-neutral-600">
+            <p className="mt-1 line-clamp-2 text-xs leading-6 text-neutral-600">
               {evento.descripcion}
             </p>
 
-            <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-neutral-500">
+            <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-neutral-500">
               <span className="inline-flex items-center gap-1.5">
-                <CalendarDays size={15} className="text-neutral-400" />
+                <CalendarDays size={13} className="text-neutral-400" />
                 {getDayLabel(evento.day)}
               </span>
 
               <span className="inline-flex items-center gap-1.5">
-                <Clock size={15} className="text-neutral-400" />
+                <Clock size={13} className="text-neutral-400" />
                 {formatEventTime(evento.start, evento.end)}
               </span>
 
               <span className="inline-flex items-center gap-1.5">
-                <MapPin size={15} className="text-neutral-400" />
+                <MapPin size={13} className="text-neutral-400" />
                 Agenda general
               </span>
             </div>
@@ -153,7 +153,7 @@ export function EventoGeneralDetail({
             <button
               type="button"
               onClick={onOpenAgenda}
-              className="inline-flex h-10 items-center border border-neutral-300 bg-white px-4 text-sm font-medium text-neutral-700 transition hover:bg-neutral-50"
+              className="inline-flex h-10 items-center border border-neutral-300 bg-white px-4 text-xs font-medium text-neutral-700 transition hover:bg-neutral-50"
             >
               Ver en agenda
             </button>

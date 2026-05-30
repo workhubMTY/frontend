@@ -15,8 +15,8 @@ export function PanelRed({
     <section className="flex h-full min-h-0 flex-col">
       <header className="flex shrink-0 items-center justify-between border-b border-neutral-100 px-6 pb-3">
         <div className="flex items-center gap-3">
-          <Users size={22} className="text-neutral-700" />
-          <h2 className="text-xl font-semibold tracking-tight text-neutral-950">
+          <Users size={18} className="text-neutral-700" />
+          <h2 className="text-l font-semibold tracking-tight text-neutral-950">
             Red personal
           </h2>
         </div>
@@ -51,7 +51,7 @@ export function PanelRed({
                 ].join(" ")}
               >
                 <div
-                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-sm font-semibold"
+                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-semibold"
                   style={{
                     background: color.bg,
                     color: color.text,
