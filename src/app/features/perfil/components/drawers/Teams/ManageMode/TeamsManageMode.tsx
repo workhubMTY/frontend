@@ -5,12 +5,12 @@ import type { TeamMembersState, TeamSummary } from "../types";
 import type { UpdateTeamPayload } from "../../../../data/hooks";
 
 import { useManageTeamMode } from "./hooks/useManageTeam";
-import { ManageTeamHeader } from "./TeamsManageHeader";
+import { ManageTeamHeader } from "./layout/TeamsManageHeader";
 import { ManageTeamTabs } from "./tabs/Tabs";
 import { DetailsTab } from "./tabs/DetailsTab";
 import { MembersTab } from "./tabs/MembersTab";
 import { DangerTab } from "./tabs/DangerTab";
-import { ManageTeamFooter } from "./TeamsManageFooter";
+import { ManageTeamFooter } from "./layout/TeamsManageFooter";
 
 type ManageTeamModeProps = {
   team: TeamSummary;

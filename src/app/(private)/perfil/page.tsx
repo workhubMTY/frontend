@@ -102,18 +102,6 @@ export default function UserProfilePage() {
     [queryClient, user?.eId],
   );
 
-  // const handleSearchFriendSuggestions = useCallback(
-  //   async (query: string) => {
-  //     return queryClient.fetchQuery({
-
-  // const personalAchievementData = useMemo(() => {
-  //   if (!profile) return null;
-
-  //   return {
-  //     name: profile.name,
-  //     achievements: achievements,
-  //   };
-  // }, [profile, achievements]);
 
   if (authLoading || profileLoading) {
     return <ProfilePageSkeleton />;
