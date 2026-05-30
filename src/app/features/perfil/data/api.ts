@@ -69,7 +69,7 @@ export const perfilApi = {
   },
   getFriends: () => authFetch<Friend[]>("/users/me/friendships"),
 
-  getTeams: (userId: string) => authFetch<Team[]>("/users/me/teams"),
+  getTeams: () => authFetch<Team[]>("/users/teams/me"),
 
   createTeam: (payload: any) => authFetch<void>("/teams", {
     method: "POST",

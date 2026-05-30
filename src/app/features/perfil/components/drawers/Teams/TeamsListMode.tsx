@@ -93,7 +93,7 @@ export function TeamsListMode({
                       </h3>
 
                       <p className="mt-1 text-sm text-neutral-500">
-                        {team.membersCount} miembros
+                        {team.memberCount} miembros
                         {team.userRole ? ` · ${team.userRole}` : ""}
                       </p>
                     </div>

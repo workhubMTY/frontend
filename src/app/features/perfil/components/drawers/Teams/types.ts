@@ -3,7 +3,7 @@ import { User } from "../../../types/profile";
 export type TeamSummary = {
   id: string;
   name: string;
-  membersCount: number;
+  memberCount: number;
   userRole?: string;
 };
 

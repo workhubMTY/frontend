@@ -75,7 +75,6 @@ export default function UserProfilePage() {
     error: teamsError,
   } = useTeams();
 
-
   const {
     data: achievements = [],
     isLoading: achievementsLoading,
@@ -94,19 +93,21 @@ export default function UserProfilePage() {
   });
 
   const handleSearchUserSuggestions = useCallback(
-  async (query: string) => {
-    return queryClient.fetchQuery({
-      queryKey: ["users", query, user?.eId],
-      queryFn: () => perfilApi.getUsers(query, user?.eId),
-    });
-  },
-  [queryClient, user?.eId],);
+    async (query: string) => {
+      return queryClient.fetchQuery({
+        queryKey: ["users", query, user?.eId],
+        queryFn: () => perfilApi.getUsers(query, user?.eId),
+      });
+    },
+    [queryClient, user?.eId],
+  );
 
   const handleCreateTeam = useCallback(
     async (payload: CreateTeamPayload) => {
-      return queryClient.fetchQuery({
+      await perfilApi.createTeam(payload);
+
+      await queryClient.invalidateQueries({
         queryKey: ["teams"],
-        queryFn: () => perfilApi.createTeam(payload),
       });
     },
     [queryClient],
@@ -125,7 +126,6 @@ export default function UserProfilePage() {
   // const handleSearchFriendSuggestions = useCallback(
   //   async (query: string) => {
   //     return queryClient.fetchQuery({
-
 
   // const personalAchievementData = useMemo(() => {
   //   if (!profile) return null;

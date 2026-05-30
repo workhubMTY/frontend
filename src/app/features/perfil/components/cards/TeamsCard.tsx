@@ -64,7 +64,7 @@ export function TeamsCard({
                     {team.name}
                   </h3>
                   <p className="text-sm text-neutral-500">
-                    {team.membersCount} miembros
+                    {team.memberCount} miembros
                   </p>
                 </div>
               </div>

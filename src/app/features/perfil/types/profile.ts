@@ -15,7 +15,8 @@ export type FriendSuggestion = Friend & {
 export type Team = {
   id: string;
   name: string;
-  membersCount: number;
+  description: string;
+  memberCount: number;
 };
 export type DetailedTeam = Team & {
   members: User[];

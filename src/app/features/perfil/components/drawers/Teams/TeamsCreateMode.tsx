@@ -4,6 +4,7 @@ import { User } from "../../../types/profile";
 import { CreateTeamPayload } from "./types";
 import { ChevronLeft, X } from "lucide-react";
 import { Avatar } from "./TeamsDrawer";
+import { useAuth } from "@/app/shared/auth/useAuth";
 
 type CreateTeamModeProps = {
   onGetCandidates: (query: string) => Promise<User[]>;
@@ -18,6 +19,8 @@ export function CreateTeamMode({
   onClose,
   onCreateTeam,
 }: CreateTeamModeProps) {
+  const {user} = useAuth()
+
   const [teamName, setTeamName] = useState("");
   const [description, setDescription] = useState("");
   // const [privacy, setPrivacy] = useState<"private" | "public">("private");
@@ -81,7 +84,7 @@ export function CreateTeamMode({
       await onCreateTeam({
         name: teamName.trim(),
         description: description.trim(),
-        memberEIds: selectedMembers.map((member) => member.eId),
+        memberEIds: [...selectedMembers.map((member) => member.eId), user!.eId],
       });
     } finally {
       setIsSubmitting(false);

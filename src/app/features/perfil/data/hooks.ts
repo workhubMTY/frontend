@@ -43,17 +43,14 @@ type UseTeamsOptions = {
   enabled?: boolean;
 };
 
-export function useTeams(userId?: string | null, options?: UseTeamsOptions) {
+export function useTeams(options?: UseTeamsOptions) {
   return useQuery({
-    queryKey: ["teams", userId],
+    queryKey: ["teams"],
     queryFn: () => {
-      if (!userId) {
-        throw new Error("userId is required to fetch teams.");
-      }
 
-      return perfilApi.getTeams(userId);
+      return perfilApi.getTeams();
     },
-    enabled: Boolean(userId) && (options?.enabled ?? true),
+    enabled: (options?.enabled ?? true),
   });
 }
 
