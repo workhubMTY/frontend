@@ -3,13 +3,14 @@ import {
   ChevronUp,
   Loader2,
   Search,
+  Settings,
   UsersRound,
   X,
 } from "lucide-react";
 import { TeamMembersState, TeamSummary } from "./types";
 import { getInitials } from "../../../lib/formatting";
 import { Avatar } from "./TeamsDrawer";
-import { User } from "../../../types/profile";
+
 type TeamsListModeProps = {
   search: string;
   teams: TeamSummary[];
@@ -18,6 +19,7 @@ type TeamsListModeProps = {
   onSearchChange: (value: string) => void;
   onClose: () => void;
   onToggleTeam: (teamId: string) => void;
+  onManageTeam: (teamId: string) => void;
   onCreateMode: () => void;
 };
 
@@ -29,6 +31,7 @@ export function TeamsListMode({
   onSearchChange,
   onClose,
   onToggleTeam,
+  onManageTeam,
   onCreateMode,
 }: TeamsListModeProps) {
   return (
@@ -78,37 +81,60 @@ export function TeamsListMode({
 
               return (
                 <article key={team.id} className="px-8 py-6">
-                  <button
-                    type="button"
-                    onClick={() => onToggleTeam(team.id)}
-                    className="grid w-full grid-cols-[auto_1fr_auto] items-center gap-4 text-left"
-                  >
-                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-purple-100 text-sm font-semibold text-purple-700">
-                      {getInitials(team.name)}
-                    </div>
+                  <div className="grid w-full grid-cols-[auto_1fr_auto_auto] items-center gap-4">
+                    <button
+                      type="button"
+                      onClick={() => onToggleTeam(team.id)}
+                      className="contents text-left"
+                      aria-expanded={isOpen}
+                      aria-controls={`team-members-${team.id}`}
+                    >
+                      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-purple-100 text-sm font-semibold text-purple-700">
+                        {getInitials(team.name)}
+                      </div>
 
-                    <div className="min-w-0">
-                      <h3 className="truncate text-base font-semibold text-neutral-950">
-                        {team.name}
-                      </h3>
+                      <div className="min-w-0">
+                        <h3 className="truncate text-base font-semibold text-neutral-950">
+                          {team.name}
+                        </h3>
 
-                      <p className="mt-1 text-sm text-neutral-500">
-                        {team.memberCount} miembros
-                        {team.userRole ? ` · ${team.userRole}` : ""}
-                      </p>
-                    </div>
+                        <p className="mt-1 text-sm text-neutral-500">
+                          {team.memberCount} miembros
+                          {team.userRole ? ` · ${team.userRole}` : ""}
+                        </p>
+                      </div>
+                    </button>
 
-                    <div className="flex h-9 w-9 items-center justify-center text-neutral-500">
+                    <button
+                      type="button"
+                      onClick={() => onManageTeam(team.id)}
+                      className="inline-flex h-9 items-center gap-2 rounded-md border border-neutral-200 bg-white px-3 text-sm font-medium text-neutral-700 transition hover:border-neutral-300 hover:bg-neutral-50 hover:text-neutral-950"
+                    >
+                      <Settings size={15} />
+                      Administrar
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => onToggleTeam(team.id)}
+                      className="flex h-9 w-9 items-center justify-center rounded-md text-neutral-500 transition hover:bg-neutral-100 hover:text-neutral-900"
+                      aria-label={isOpen ? "Ocultar miembros" : "Ver miembros"}
+                      aria-expanded={isOpen}
+                      aria-controls={`team-members-${team.id}`}
+                    >
                       {isOpen ? (
                         <ChevronUp size={19} />
                       ) : (
                         <ChevronDown size={19} />
                       )}
-                    </div>
-                  </button>
+                    </button>
+                  </div>
 
                   {isOpen && (
-                    <div className="mt-5 border border-neutral-200 bg-white">
+                    <div
+                      id={`team-members-${team.id}`}
+                      className="mt-5 border border-neutral-200 bg-white"
+                    >
                       <div className="grid grid-cols-[1fr_auto] border-b border-neutral-100 px-5 py-3 text-xs font-medium uppercase tracking-wide text-neutral-500">
                         <span>Miembros</span>
                         <span>Miembro desde</span>

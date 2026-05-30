@@ -29,6 +29,19 @@ type SearchSelectionBoxProps<T> = {
   resultsLabel?: string;
   selectedCountLabel?: string;
 
+  selectedItemsPlacement?: "above-results" | "below-results" | "hidden";
+
+  renderSelectedItems?: (
+    selectedItems: T[],
+    helpers: {
+      getItemId: (item: T) => string;
+      getItemName: (item: T) => string;
+      getItemAvatarUrl?: (item: T) => string | undefined;
+      getItemDescription?: (item: T) => string | undefined;
+      onRemoveItem: (itemId: string) => void;
+    },
+  ) => ReactNode;
+
   placeholder?: string;
   searchPlaceholderWhenSelected?: string;
 
@@ -50,7 +63,6 @@ type SearchSelectionBoxProps<T> = {
 
   helperText?: string;
 };
-
 export function SearchSelectionBox<T>({
   id,
   label,
@@ -76,6 +88,9 @@ export function SearchSelectionBox<T>({
   resultsLabel = "Resultados",
   selectedCountLabel,
 
+  selectedItemsPlacement = "above-results",
+  renderSelectedItems,
+
   placeholder = "Buscar por nombre, correo o rol",
   searchPlaceholderWhenSelected = "Buscar personas...",
 
@@ -95,6 +110,54 @@ export function SearchSelectionBox<T>({
   helperText,
 }: SearchSelectionBoxProps<T>) {
   const hasSearchValue = searchValue.trim().length > 0;
+
+  function renderSelectedItemsSection() {
+  if (selectedItems.length === 0) return null;
+  if (selectedItemsPlacement === "hidden") return null;
+
+  if (renderSelectedItems) {
+    return renderSelectedItems(selectedItems, {
+      getItemId,
+      getItemName,
+      getItemAvatarUrl,
+      getItemDescription,
+      onRemoveItem,
+    });
+  }
+
+  return (
+    <div className="mt-6">
+      <p className="text-sm font-semibold text-neutral-950">
+        {selectedLabel}
+      </p>
+
+      <div className="mt-3 flex flex-wrap gap-2">
+        {selectedItems.map((item) => {
+          const itemId = getItemId(item);
+          const itemName = getItemName(item);
+
+          return (
+            <span
+              key={itemId}
+              className="inline-flex h-8 items-center gap-2 bg-neutral-100 px-3 text-sm text-neutral-700"
+            >
+              {itemName}
+
+              <button
+                type="button"
+                onClick={() => onRemoveItem(itemId)}
+                className="text-neutral-500 transition hover:text-neutral-900"
+                aria-label={`Quitar ${itemName}`}
+              >
+                <X size={14} />
+              </button>
+            </span>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
 
   function getSelectedState(item: T) {
     if (isItemSelected) return isItemSelected(item);
@@ -131,38 +194,7 @@ export function SearchSelectionBox<T>({
         </div>
       </div>
 
-      {selectedItems.length > 0 && (
-        <div className="mt-6">
-          <p className="text-sm font-semibold text-neutral-950">
-            {selectedLabel}
-          </p>
-
-          <div className="mt-3 flex flex-wrap gap-2">
-            {selectedItems.map((item) => {
-              const itemId = getItemId(item);
-              const itemName = getItemName(item);
-
-              return (
-                <span
-                  key={itemId}
-                  className="inline-flex h-8 items-center gap-2 bg-neutral-100 px-3 text-sm text-neutral-700"
-                >
-                  {itemName}
-
-                  <button
-                    type="button"
-                    onClick={() => onRemoveItem(itemId)}
-                    className="text-neutral-500 transition hover:text-neutral-900"
-                    aria-label={`Quitar ${itemName}`}
-                  >
-                    <X size={14} />
-                  </button>
-                </span>
-              );
-            })}
-          </div>
-        </div>
-      )}
+      {selectedItemsPlacement === "above-results" && renderSelectedItemsSection()}
 
       <div className="mt-6">
         <div className="mb-3 flex items-center justify-between">
@@ -241,7 +273,7 @@ export function SearchSelectionBox<T>({
           )}
         </div>
       </div>
-
+        {selectedItemsPlacement === "below-results" && renderSelectedItemsSection()}
       {helperText && <p className="mt-2 text-xs text-neutral-500">{helperText}</p>}
     </div>
   );

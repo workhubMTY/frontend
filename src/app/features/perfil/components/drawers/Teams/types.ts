@@ -3,6 +3,7 @@ import { User } from "../../../types/profile";
 export type TeamSummary = {
   id: string;
   name: string;
+  description?: string;
   memberCount: number;
   userRole?: string;
 };

@@ -8,6 +8,7 @@ import type {
   User,
   UserProfile,
 } from "@/app/features/perfil/types/profile";
+import { UpdateTeamPayload } from "./hooks";
 
 
 // export const parkingReservationsApi = {
@@ -52,21 +53,15 @@ import type {
 export const perfilApi = {
   getProfile: () => authFetch<UserProfile>("/users/profile/me"),
 
-  getUsers: (query?: string, excludeId?: string) => {
-    const params = new URLSearchParams();
+  getUsers: (query?: string, excludeId?: string, excludeTeamId?: string) => {
+  const params = new URLSearchParams();
 
-    if (query) {
-      params.set("query", query);
-    }
+  if (query) params.set("query", query);
+  if (excludeId) params.set("excludeId", excludeId);
+  if (excludeTeamId) params.set("excludeTeamId", excludeTeamId);
 
-    if (excludeId) {
-      params.set("excludeId", excludeId);
-    }
-
-    const queryString = params.toString();
-
-    return authFetch<User[]>(`/users${queryString ? `?${queryString}` : ""}`);
-  },
+  return authFetch<User[]>(`/users?${params.toString()}`);
+},
   getFriends: () => authFetch<Friend[]>("/users/me/friendships"),
 
   getTeams: () => authFetch<Team[]>("/users/teams/me"),
@@ -85,6 +80,12 @@ export const perfilApi = {
 
   getAchievementsByUser: (userId: string) =>
     authFetch<AchievementUserData>(`/achievements/user/${userId}`),
+
+  updateTeam: (teamId: string, payload: UpdateTeamPayload) =>
+  authFetch<Team>(`/teams/${teamId}`, {
+    method: "PATCH",
+    body: JSON.stringify(payload),
+  }),
 
   getSummary: (userId: string) => authFetch(`/achievements/${userId}/summary`),
 };

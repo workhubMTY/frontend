@@ -85,6 +85,34 @@ export function useCreateTeam() {
   });
 }
 
+export type UpdateTeamPayload = {
+  name?: string;
+  description?: string;
+  addMemberEIds?: Array<string | number>;
+  removeMemberEIds?: Array<string | number>;
+};
+
+export function useUpdateTeam() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      teamId,
+      payload,
+    }: {
+      teamId: string;
+      payload: UpdateTeamPayload;
+    }) => perfilApi.updateTeam(teamId, payload),
+
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["teams"] });
+      queryClient.invalidateQueries({
+        queryKey: ["team-members", variables.teamId],
+      });
+    },
+  });
+}
+
 export function useUsers(query?: string, excludeId?: string) {
   return useQuery({
     queryKey: ["users", query, excludeId],

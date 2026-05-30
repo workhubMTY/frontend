@@ -6,7 +6,9 @@ import type { User } from "../../../types/profile";
 import { CreateTeamPayload, TeamSummary } from "./types";
 import { TeamsListMode } from "./TeamsListMode";
 import { CreateTeamMode } from "./TeamsCreateMode";
-import { useCreateTeam, useTeamMembers } from "../../../data/hooks";
+import { ManageTeamMode } from "./TeamsManageMode";
+import { UpdateTeamPayload, useCreateTeam, useTeamMembers, useUpdateTeam } from "../../../data/hooks";
+import { perfilApi } from "../../../data/api";
 
 type TeamsDrawerProps = {
   open: boolean;
@@ -15,6 +17,13 @@ type TeamsDrawerProps = {
   initialTeamDrawerMode?: "list" | "create";
   getUsers: (query: string) => Promise<User[]>;
   onClose: () => void;
+
+  onUpdateTeam?: (
+    teamId: string,
+    payload: UpdateTeamPayload,
+  ) => Promise<void> | void;
+
+  onDeleteTeam?: (teamId: string) => Promise<void> | void;
 };
 
 type AvatarProps = {
@@ -23,7 +32,7 @@ type AvatarProps = {
   size?: "sm" | "md";
 };
 
-type DrawerMode = "list" | "create";
+type DrawerMode = "list" | "create" | "manage";
 
 export function Avatar({ name, src, size = "md" }: AvatarProps) {
   const [hasImageError, setHasImageError] = useState(false);
@@ -63,6 +72,8 @@ export function TeamsDrawer({
   getUsers,
   initialOpenTeamId,
   initialTeamDrawerMode = "list",
+  onUpdateTeam,
+  onDeleteTeam,
 }: TeamsDrawerProps) {
   const [drawerMode, setDrawerMode] = useState<DrawerMode>(
     initialTeamDrawerMode,
@@ -70,12 +81,24 @@ export function TeamsDrawer({
 
   const [search, setSearch] = useState("");
   const [openTeamId, setOpenTeamId] = useState<string | null>(null);
+  const [managedTeamId, setManagedTeamId] = useState<string | null>(null);
 
   const createTeamMutation = useCreateTeam();
+  const updateTeamMutation = useUpdateTeam();
 
   const teamMembersQuery = useTeamMembers(openTeamId, {
-    enabled: open,
+    enabled: open && drawerMode === "list" && Boolean(openTeamId),
   });
+
+  const managedTeamMembersQuery = useTeamMembers(managedTeamId, {
+    enabled: open && drawerMode === "manage" && Boolean(managedTeamId),
+  });
+
+  const managedTeam = useMemo(() => {
+    if (!managedTeamId) return null;
+
+    return teams.find((team) => team.id === managedTeamId) ?? null;
+  }, [teams, managedTeamId]);
 
   const filteredTeams = useMemo(() => {
     const normalizedSearch = search.trim().toLowerCase();
@@ -92,15 +115,27 @@ export function TeamsDrawer({
 
     setDrawerMode(initialTeamDrawerMode);
     setOpenTeamId(initialOpenTeamId ?? null);
+    setManagedTeamId(null);
   }, [open, initialOpenTeamId, initialTeamDrawerMode]);
 
   function handleToggleTeam(teamId: string) {
     setOpenTeamId((current) => (current === teamId ? null : teamId));
   }
 
+  function handleManageTeam(teamId: string) {
+    setManagedTeamId(teamId);
+    setDrawerMode("manage");
+  }
+
+  function handleBackToList() {
+    setDrawerMode("list");
+    setManagedTeamId(null);
+  }
+
   function handleClose() {
     setDrawerMode("list");
     setOpenTeamId(null);
+    setManagedTeamId(null);
     setSearch("");
     onClose();
   }
@@ -117,7 +152,7 @@ export function TeamsDrawer({
       />
 
       <aside className="absolute right-0 top-0 flex h-full w-full max-w-[720px] flex-col border-l border-neutral-200 bg-white shadow-2xl">
-        {drawerMode === "list" ? (
+        {drawerMode === "list" && (
           <TeamsListMode
             search={search}
             teams={filteredTeams}
@@ -132,9 +167,12 @@ export function TeamsDrawer({
             onSearchChange={setSearch}
             onClose={handleClose}
             onToggleTeam={handleToggleTeam}
+            onManageTeam={handleManageTeam}
             onCreateMode={() => setDrawerMode("create")}
           />
-        ) : (
+        )}
+
+        {drawerMode === "create" && (
           <CreateTeamMode
             onGetCandidates={getUsers}
             onBack={() => setDrawerMode("list")}
@@ -145,6 +183,29 @@ export function TeamsDrawer({
             }}
           />
         )}
+
+        {drawerMode === "manage" && managedTeam && (
+  <ManageTeamMode
+    team={managedTeam}
+    membersState={{
+      loading: managedTeamMembersQuery.isLoading,
+      error: managedTeamMembersQuery.isError
+        ? "No se pudieron cargar los miembros."
+        : undefined,
+      members: managedTeamMembersQuery.data ?? [],
+    }}
+    onGetCandidates={(query) =>
+      perfilApi.getUsers(query, undefined, managedTeam.id)
+    }
+    onBack={handleBackToList}
+    onClose={handleClose}
+    onUpdateTeam={async (teamId, payload) => {
+      await updateTeamMutation.mutateAsync({ teamId, payload });
+      setDrawerMode("list");
+      setManagedTeamId(null);
+    }}
+  />
+)}
       </aside>
     </div>
   );
