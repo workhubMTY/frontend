@@ -8,8 +8,7 @@ import type {
   User,
   UserProfile,
 } from "@/app/features/perfil/types/profile";
-import { UpdateTeamPayload } from "./hooks";
-
+import type { UpdateTeamPayload } from "@/app/features/perfil/data/hooks/useTeams";
 // export const parkingReservationsApi = {
 //   create: (payload: CreateParkingReservation) =>
 //     authFetch<ParkingReservation>(`${BASE}/reservations`, {
@@ -61,6 +60,11 @@ export const perfilApi = {
     return authFetch<User[]>(`/users?${params.toString()}`);
   },
   getFriends: () => authFetch<Friend[]>("/users/me/friendships"),
+  getPotentialFriends: (query?: string) => {
+    const params = new URLSearchParams();
+    if (query) params.set("query", query);
+    return authFetch<User[]>(`/users/me/potential-friends?${params.toString()}`);
+  },
 
   getTeams: () => authFetch<Team[]>("/teams/me"),
 

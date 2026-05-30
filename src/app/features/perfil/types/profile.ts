@@ -1,7 +1,7 @@
 export type User = {
   eId: string;
   name: string;
-  role: string;
+  role?: string;
   email: string;
   avatarUrl?: string;
 };

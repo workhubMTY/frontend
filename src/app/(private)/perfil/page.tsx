@@ -1,7 +1,5 @@
 "use client";
 
-import { useCallback, useMemo } from "react";
-
 import { ProfileHeaderCard } from "@/app/features/perfil/components/cards/ProfileHeaderCard";
 import { ProgressSummaryCard } from "@/app/features/perfil/components/cards/ProgressSumaryCard";
 import { FriendsCard } from "@/app/features/perfil/components/cards/FriendsCard";
@@ -12,25 +10,20 @@ import { FriendsDrawer } from "@/app/features/perfil/components/drawers/Friends/
 import { TeamsDrawer } from "@/app/features/perfil/components/drawers/Teams/TeamsDrawer";
 import { AchievementComparisonDrawer } from "@/app/features/perfil/components/drawers/Achievements/AchievementComparisonDrawer";
 
-import {
-  useProfile,
-  useFriends,
-  useAchievements,
-  useTeams,
-  useSelectedFriendAchievements,
-} from "@/app/features/perfil/data/hooks";
-
 import { useAuth } from "@/app/shared/auth/useAuth";
 import { useProfilePageController } from "@/app/features/perfil/hooks/useProfilePageController";
 import { ProfilePageSkeleton } from "@/app/features/perfil/components/feedback/ProfileSkeleton";
 import { ProfilePageMessage } from "@/app/features/perfil/components/feedback/ProfilePageMessage";
-import { useQueryClient } from "@tanstack/react-query";
-import { perfilApi } from "@/app/features/perfil/data/api";
-import { CreateTeamPayload } from "@/app/features/perfil/components/drawers/Teams/types";
+
+import { useProfile } from "@/app/features/perfil/data/hooks/useProfile";
+import { useFriends } from "@/app/shared/data/friendships/hooks";
+import { useTeams } from "@/app/features/perfil/data/hooks/useTeams";
+import { useUserSearchSuggestions } from "@/app/features/perfil/data/hooks/useUsers";
+import { usePotentialFriendsSearchSuggestions } from "@/app/features/perfil/data/hooks/useFriends";
+import { useAchievements, useSelectedFriendAchievements } from "@/app/features/perfil/data/hooks/useAchievements";
 
 export default function UserProfilePage() {
   const { user, isLoading: authLoading } = useAuth();
-  const queryClient = useQueryClient();
 
   const {
     selectedFriendId,
@@ -92,16 +85,8 @@ export default function UserProfilePage() {
     friends,
   });
 
-  const handleSearchUserSuggestions = useCallback(
-    async (query: string) => {
-      return queryClient.fetchQuery({
-        queryKey: ["users", query, user?.eId],
-        queryFn: () => perfilApi.getUsers(query, user?.eId),
-      });
-    },
-    [queryClient, user?.eId],
-  );
-
+  const handleSearchUserSuggestions = useUserSearchSuggestions(user?.eId);
+  const handleSearchPotentialFriends = usePotentialFriendsSearchSuggestions();
 
   if (authLoading || profileLoading) {
     return <ProfilePageSkeleton />;
@@ -182,7 +167,7 @@ export default function UserProfilePage() {
         friends={friends}
         selectedFriendId={selectedFriendId}
         initialMode={initialFriendDrawerMode}
-        onSearchSuggestions={handleSearchUserSuggestions}
+        onSearchSuggestions={handleSearchPotentialFriends}
         onCompareFriend={handleCompareFriend}
         onClearComparison={handleClearComparison}
         onClose={handleCloseFriendDrawer}
