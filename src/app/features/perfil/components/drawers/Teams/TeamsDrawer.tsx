@@ -3,17 +3,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { getInitials } from "../../../lib/formatting";
 import type { User } from "../../../types/profile";
-import { CreateTeamPayload, TeamSummary } from "./types";
+import { CreateTeamPayload, TeamSummary, UpdateTeamPayload } from "./types";
 import { TeamsListMode } from "./ListMode/TeamsListMode";
 import { CreateTeamMode } from "./CreateMode/TeamsCreateMode";
 import { ManageTeamMode } from "./ManageMode/TeamsManageMode";
-import {
-  UpdateTeamPayload,
-  useCreateTeam,
-  useDeleteTeam,
-  useTeamMembers,
-  useUpdateTeam,
-} from "../../../data/hooks";
+import { useCreateTeam, useDeleteTeam, useTeamMembers, useUpdateTeam } from "../../../data/hooks/useTeams";
 
 type TeamsDrawerProps = {
   open: boolean;
