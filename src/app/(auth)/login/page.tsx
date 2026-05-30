@@ -411,15 +411,6 @@ export default function Login() {
               Iniciar sesión
             </button>
           </form>
-          <p
-            className="acc-rft mt-5 text-center text-[.74rem]"
-            style={{ color: t.textSub, transition: "color .4s" }}
-          >
-            ¿Problemas para acceder?{" "}
-            <a href="#" className="text-[#a100ff] hover:underline">
-              Contacta a IT Support
-            </a>
-          </p>
           <div className="absolute bottom-5 right-5 flex items-center gap-1.5 opacity-25">
             <div className="h-1.5 w-1.5 rounded-full bg-[#a100ff]" />
             <span

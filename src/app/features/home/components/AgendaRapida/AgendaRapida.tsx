@@ -5,7 +5,7 @@ import { ChevronLeft, ChevronRight, CalendarDays } from "lucide-react";
 import { CalEvent } from "../../types/types";
 import { ExternalEvent } from "../../types/Agenda";
 
-const HOURS = [6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17];
+const HOURS = [6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18];
 const DAYS_SHORT = ["Lu", "Ma", "Mi", "Ju", "Vi"];
 const START_H = HOURS[0];
 const TOTAL_H = HOURS.length;
@@ -100,9 +100,6 @@ export default function AgendaRapida({
     <div className="flex h-full flex-col shadow-sm border border-gray-100 overflow-hidden">
       <div className="flex shrink-0 items-center justify-between border-b border-gray-100 px-3 py-2.5 gap-2">
         <div className="flex items-center gap-2 shrink-0">
-          {/* <div className="flex h-[22px] w-[22px] items-center justify-center rounded-md bg-violet-700">
-            <CalendarDays size={12} className="text-white" />
-          </div> */}
           <span className="text-xl font-semibold text-gray-900 hidden sm:block">
             Agenda rápida
           </span>

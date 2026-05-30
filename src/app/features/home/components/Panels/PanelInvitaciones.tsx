@@ -14,8 +14,8 @@ export function PanelInvitaciones({
     <section className="flex h-full min-h-0 flex-col">
       <header className="flex shrink-0 items-center justify-between border-b border-neutral-100 px-6 pb-3">
         <div className="flex items-center gap-3">
-          <Calendar size={22} className="text-neutral-700" />
-          <h2 className="text-xl font-semibold tracking-tight text-neutral-950">
+          <Calendar size={18} className="text-neutral-700" />
+          <h2 className="text-lg font-semibold tracking-tight text-neutral-950">
             Invitaciones
           </h2>
         </div>
@@ -24,7 +24,7 @@ export function PanelInvitaciones({
       <div className="flex min-h-0 flex-1 flex-col gap-3 p-4">
         {selInv !== null && (
           <div className="border-l-4 border-purple-700 bg-purple-50/70 px-4 py-3">
-            <p className="text-sm text-purple-900">
+            <p className="text-xs text-purple-900">
               Invitación marcada en la agenda
             </p>
           </div>
@@ -33,7 +33,7 @@ export function PanelInvitaciones({
         <div className="min-h-0 flex-1 overflow-y-auto">
           {invitaciones.map((sec, si) => (
             <div key={si} className="pb-2">
-              <p className="px-3 pb-2 pt-1 text-xs font-semibold uppercase tracking-wide text-neutral-400">
+              <p className="px-3 pb-2 pt-1 text-xs uppercase tracking-wide text-neutral-400">
                 {sec.dia}
               </p>
 
@@ -54,17 +54,17 @@ export function PanelInvitaciones({
                           : "border-transparent hover:bg-neutral-50",
                       ].join(" ")}
                     >
-                      <p className="font-semibold text-neutral-950">
+                      <p className="font-semibold text-neutral-950 text-sm">
                         {item.nombre}
                       </p>
 
-                      <div className="mt-2 flex items-center gap-2 text-sm text-neutral-500">
-                        <MapPin size={14} className="shrink-0" />
+                      <div className="mt-2 flex items-center gap-2 text-xs text-neutral-500">
+                        <MapPin size={12} className="shrink-0" />
                         <span className="truncate">{item.sala}</span>
                       </div>
 
-                      <div className="mt-1 flex items-center gap-2 text-sm text-neutral-500">
-                        <Clock size={14} className="shrink-0" />
+                      <div className="mt-1 flex items-center gap-2 text-xs text-neutral-500">
+                        <Clock size={12} className="shrink-0" />
                         <span>{item.hora}</span>
                       </div>
                     </button>
