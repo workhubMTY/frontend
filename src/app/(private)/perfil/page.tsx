@@ -10,7 +10,7 @@ import { AchievementComparisonCard } from "@/app/features/perfil/components/card
 
 import { FriendsDrawer } from "@/app/features/perfil/components/drawers/Friends/FriendsDrawer";
 import { TeamsDrawer } from "@/app/features/perfil/components/drawers/Teams/TeamsDrawer";
-import { AchievementComparisonDrawer } from "@/app/features/perfil/components/drawers/AchievementComparisonDrawer";
+import { AchievementComparisonDrawer } from "@/app/features/perfil/components/drawers/Achievements/AchievementComparisonDrawer";
 
 import {
   useProfile,
