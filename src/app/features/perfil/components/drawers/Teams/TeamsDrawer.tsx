@@ -4,9 +4,9 @@ import { useEffect, useMemo, useState } from "react";
 import { getInitials } from "../../../lib/formatting";
 import type { User } from "../../../types/profile";
 import { CreateTeamPayload, TeamSummary } from "./types";
-import { TeamsListMode } from "./TeamsListMode";
-import { CreateTeamMode } from "./TeamsCreateMode";
-import { ManageTeamMode } from "./TeamsManageMode";
+import { TeamsListMode } from "./ListMode/TeamsListMode";
+import { CreateTeamMode } from "./CreateMode/TeamsCreateMode";
+import { ManageTeamMode } from "./ManageMode/TeamsManageMode";
 import {
   UpdateTeamPayload,
   useCreateTeam,
@@ -170,11 +170,6 @@ export function TeamsDrawer({
   async function handleDeleteTeam(teamId: string) {
     const deletedTeamName = managedTeam?.name ?? "el equipo";
 
-    /**
-     * Lo movemos a lista antes del mutate porque tu hook probablemente hace
-     * optimistic update. Si el cache borra el equipo inmediatamente, managedTeam
-     * se vuelve null y la vista manage podría quedarse en blanco.
-     */
     setDrawerMode("list");
     setManagedTeamId(null);
     setOpenTeamId(null);
