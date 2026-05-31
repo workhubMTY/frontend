@@ -7,6 +7,7 @@ import type { Friend } from "@/app/features/perfil/types/profile";
 
 import {
   useCancelFriendRequest,
+  useRemoveFriend,
   useSentFriendRequests,
 } from "../../../../data/hooks/useFriends";
 
@@ -46,7 +47,15 @@ export function FriendsListMode({
   } = useSentFriendRequests();
 
   const cancelFriendRequestMutation = useCancelFriendRequest();
+  const removeFriendMutation = useRemoveFriend();
 
+  async function handleRemoveFriend(friendId: string) {
+    await removeFriendMutation.mutateAsync(friendId);
+
+    if (selectedFriendId === friendId) {
+      onClearComparison();
+    }
+  }
   const normalizedSearch = searchTerm.trim().toLowerCase();
 
   const filteredFriends = useMemo(() => {
@@ -168,8 +177,11 @@ export function FriendsListMode({
           <FriendsListTab
             friends={filteredFriends}
             selectedFriendId={selectedFriendId}
+            removingFriendId={removeFriendMutation.variables ?? null}
+            isRemovingFriend={removeFriendMutation.isPending}
             onCompareFriend={onCompareFriend}
             onClearComparison={onClearComparison}
+            onRemoveFriend={handleRemoveFriend}
           />
         )}
 

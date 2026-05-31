@@ -4,19 +4,26 @@ import type { Friend } from "@/app/features/perfil/types/profile";
 
 import { Avatar } from "../../../../utils/Avatar";
 import { EmptyState } from "../EmptyState";
+import { CancelButton } from "../../utils/CancelButton";
 
 type FriendsListTabProps = {
   friends: Friend[];
   selectedFriendId?: string | null;
+  removingFriendId?: string | null;
+  isRemovingFriend?: boolean;
   onCompareFriend: (id: string) => void;
   onClearComparison: () => void;
+  onRemoveFriend: (friendId: string) => void | Promise<void>;
 };
 
 export function FriendsListTab({
   friends,
   selectedFriendId,
+  removingFriendId,
+  isRemovingFriend = false,
   onCompareFriend,
   onClearComparison,
+  onRemoveFriend,
 }: FriendsListTabProps) {
   if (friends.length === 0) {
     return (
@@ -31,6 +38,7 @@ export function FriendsListTab({
     <ul className="divide-y divide-neutral-100">
       {friends.map((friend) => {
         const isSelected = friend.eId === selectedFriendId;
+        const isRemoving = isRemovingFriend && removingFriendId === friend.eId;
 
         return (
           <article
@@ -59,16 +67,17 @@ export function FriendsListTab({
               </div>
             </div>
 
-            <div className="flex flex-wrap gap-3">
+            <div className="flex flex-wrap items-center gap-3 md:justify-end">
               <button
                 type="button"
+                disabled={isRemoving}
                 onClick={() =>
                   isSelected
                     ? onClearComparison()
                     : onCompareFriend(friend.eId)
                 }
                 className={[
-                  "inline-flex h-10 items-center gap-2 border px-4 text-sm font-medium transition",
+                  "inline-flex h-10 items-center gap-2 border px-4 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-60",
                   isSelected
                     ? "border-purple-700 bg-purple-700 text-white hover:bg-purple-800"
                     : "border-neutral-300 bg-white text-neutral-700 hover:bg-neutral-50",
@@ -77,6 +86,12 @@ export function FriendsListTab({
                 {isSelected ? <Check size={17} /> : <Trophy size={17} />}
                 {isSelected ? "Comparando" : "Comparar"}
               </button>
+
+              <CancelButton
+                itemId={friend.eId}
+                isLoading={isRemoving}
+                onAction={(id) => onRemoveFriend(id)}
+              />
             </div>
           </article>
         );

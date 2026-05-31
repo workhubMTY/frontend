@@ -70,3 +70,16 @@ export function useCancelFriendRequest() {
     },
   });
 }
+
+export function useRemoveFriend() {
+  const queryClient = useQueryClient();
+
+  return useMutation ({
+    mutationFn: (friendId: string) => {
+      return perfilApi.removeFriend(friendId);
+    }, 
+    onSuccess: () => {
+      queryClient.invalidateQueries({queryKey: ["friendships"]})
+    }
+  })
+}

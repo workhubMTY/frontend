@@ -63,7 +63,9 @@ export const perfilApi = {
 
     return authFetch<User[]>(`/users?${params.toString()}`);
   },
+
   getFriends: () => authFetch<Friend[]>("/users/me/friendships"),
+
   getPotentialFriends: (query?: string) => {
     const params = new URLSearchParams();
     if (query) params.set("query", query);
@@ -71,13 +73,18 @@ export const perfilApi = {
       `/users/me/potential-friends?${params.toString()}`,
     );
   },
+
   getSentRequests: () =>
     authFetch<SentFriendRequest[]>(`/friendships/requests/sent`),
-  deleteFriendRequest: (userId: string) => {
-    const params = new URLSearchParams();
-    params.set("userId", userId);
 
+  deleteFriendRequest: (userId: string) => {
     return authFetch(`/friendships/requests/sent/${userId}`, {
+      method: "DELETE",
+    });
+  },
+
+  removeFriend: (friendId: string) => {
+    return authFetch(`/friendships/${friendId}`, {
       method: "DELETE",
     });
   },

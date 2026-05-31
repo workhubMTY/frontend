@@ -53,7 +53,7 @@ export function SentRequestsTab({
     <ul className="divide-y divide-neutral-100">
       {requests.map((request) => {
         const isCancelling =
-          isCancellingRequest && cancellingRequestId === request.id;
+          isCancellingRequest && cancellingRequestId === request.eId;
 
         return (
           <article
