@@ -8,7 +8,7 @@ import { ReservationFooter } from "@/app/features/reservaciones/components/Reser
 import { SelectionModeCalendarCard } from "@/app/features/reservaciones/components/Calendar/DaysSelection/SelectionModeCalendarCard";
 
 import { AvailabilityIntervalCard } from "@/app/features/estacionamientos/components/AvailabilityIntervalCard";
-import { ParkingCapacityTimelineCard } from "@/app/features/estacionamientos/components/ParkingCapacityTimelineCard";
+import { ParkingCapacityTimelineCard } from "@/app/features/estacionamientos/components/Timeline/ParkingCapacityTimelineCard";
 
 import { getParkingAvailability } from "@/app/features/estacionamientos/lib/parkingAvailability";
 import { useParkingReservationSchedulerPage } from "@/app/features/estacionamientos/hooks/useParkingReservationSchedulerPage";
@@ -31,6 +31,7 @@ export default function ParkingReservationSchedulerPage() {
     parkingName,
     calendarCells,
     scheduler,
+    parkingBuckets,
     parkingReservationsForActiveDay,
   } = useParkingReservationSchedulerPage({
     parkingId,
@@ -93,8 +94,9 @@ export default function ParkingReservationSchedulerPage() {
       <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_350px]">
         <section className="space-y-5">
           <ParkingCapacityTimelineCard
-            capacity={parkingCapacity}
+            capacity={parkingLot?.capacity ?? 0}
             blocks={scheduler.proposedBlocksForActiveDay}
+            buckets={parkingBuckets}
           />
 
           <ProposedSchedulesCard

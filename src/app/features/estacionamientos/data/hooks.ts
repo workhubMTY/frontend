@@ -311,8 +311,12 @@ export function useParkingReservationDetail(id: number) {
 
   return { ...query, cancelReservation, patchAttendance };
 }
-
-export function useParkingBuckets(query: ReservationBucketsQuery) {
+export function useParkingBuckets(
+  query?: ReservationBucketsQuery,
+  options?: {
+    enabled?: boolean;
+  },
+) {
   const queryClient = useQueryClient();
   const socket = useSocket();
 
@@ -320,19 +324,25 @@ export function useParkingBuckets(query: ReservationBucketsQuery) {
 
   const queryResult = useQuery({
     queryKey: parkingKeys.buckets(query),
-    queryFn: () => parkingReservationsApi.getBuckets(query),
-    enabled: !!query.start_time && !!query.end_time,
+    queryFn: () => parkingReservationsApi.getBuckets(query!),
+    enabled:
+      Boolean(query?.start_time && query?.end_time) &&
+      (options?.enabled ?? true),
     staleTime: 1000 * 15,
   });
 
   useEffect(() => {
+    if (!query) return;
+
     function onParkingUpdate(msg: ParkingUpdateMessage) {
       if (
         msg.type === "reservation.created" ||
         msg.type === "reservation.canceled" ||
         msg.type === "reservation.no_show"
       ) {
-        queryClient.invalidateQueries({ queryKey: parkingKeys.buckets(query) });
+        queryClient.invalidateQueries({
+          queryKey: parkingKeys.buckets(query),
+        });
       }
     }
 

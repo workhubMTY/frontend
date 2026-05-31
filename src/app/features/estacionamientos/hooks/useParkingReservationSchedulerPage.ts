@@ -2,7 +2,11 @@
 
 import { useMemo } from "react";
 
-import { useParkingLotDetail, useParkingReservations } from "@/app/features/estacionamientos/data/hooks";
+import {
+  useParkingBuckets,
+  useParkingLotDetail,
+  useParkingReservations,
+} from "@/app/features/estacionamientos/data/hooks";
 
 import { createCalendarCells } from "@/app/features/reservaciones/lib/dates";
 import {
@@ -16,6 +20,7 @@ import type { TimelineEvent } from "@/app/features/reservaciones/types/reservaci
 import type {
   ListReservationsQuery,
   ParkingReservation,
+  ReservationBucketsQuery,
 } from "@/app/features/estacionamientos/data/types";
 
 function toDateId(value: Date | string) {
@@ -39,6 +44,11 @@ function toParkingTimelineEvent(
     row: "reserved",
   };
 }
+function getNextDateId(dateId: string) {
+  const date = new Date(`${dateId}T00:00:00.000Z`);
+  date.setUTCDate(date.getUTCDate() + 1);
+  return date.toISOString().slice(0, 10);
+}
 
 type UseParkingReservationSchedulerPageParams = {
   parkingId: number | null;
@@ -56,18 +66,17 @@ export function useParkingReservationSchedulerPage({
 
   const parkingLotQuery = useParkingLotDetail(parkingId ?? 0);
 
-  const reservationsQueryParams = useMemo<ListReservationsQuery | undefined>(
-    () => {
-      if (!parkingId || !visibleRange) return undefined;
+  const reservationsQueryParams = useMemo<
+    ListReservationsQuery | undefined
+  >(() => {
+    if (!parkingId || !visibleRange) return undefined;
 
-      return {
-        parking_lot_id: parkingId,
-        start_time: new Date(`${visibleRange.firstDateId}T00:00:00.000Z`),
-        end_time: new Date(`${visibleRange.lastDateId}T23:59:59.999Z`),
-      };
-    },
-    [parkingId, visibleRange],
-  );
+    return {
+      parking_lot_id: parkingId,
+      start_time: new Date(`${visibleRange.firstDateId}T00:00:00.000Z`),
+      end_time: new Date(`${visibleRange.lastDateId}T23:59:59.999Z`),
+    };
+  }, [parkingId, visibleRange]);
 
   const reservationsQuery = useParkingReservations(reservationsQueryParams, {
     enabled: Boolean(parkingId && visibleRange),
@@ -90,7 +99,23 @@ export function useParkingReservationSchedulerPage({
     calendarCells,
     spaceReservationsByDate: parkingReservationsByDate,
   });
+  const bucketsQueryParams = useMemo<
+    ReservationBucketsQuery | undefined
+  >(() => {
+    if (!scheduler.activeDayId) return undefined;
 
+    const nextDateId = getNextDateId(scheduler.activeDayId);
+
+    return {
+      start_time: new Date(`${scheduler.activeDayId}T00:00:00.000Z`),
+      end_time: new Date(`${nextDateId}T00:00:00.000Z`),
+      step_minutes: "15",
+    };
+  }, [scheduler.activeDayId]);
+
+  const bucketsQuery = useParkingBuckets(bucketsQueryParams, {
+    enabled: Boolean(scheduler.activeDayId),
+  });
   const parkingReservationsForActiveDay = useMemo(
     () => parkingReservationsByDate[scheduler.activeDayId] ?? [],
     [parkingReservationsByDate, scheduler.activeDayId],
@@ -106,8 +131,21 @@ export function useParkingReservationSchedulerPage({
     parkingReservationsByDate,
     parkingReservationsForActiveDay,
 
-    isLoading: parkingLotQuery.isLoading || reservationsQuery.isLoading,
-    isFetching: parkingLotQuery.isFetching || reservationsQuery.isFetching,
-    error: parkingLotQuery.error ?? reservationsQuery.error,
+    isLoading:
+      parkingLotQuery.isLoading ||
+      reservationsQuery.isLoading ||
+      bucketsQuery.isLoading,
+
+    isFetching:
+      parkingLotQuery.isFetching ||
+      reservationsQuery.isFetching ||
+      bucketsQuery.isFetching,
+
+    error:
+      parkingLotQuery.error ?? reservationsQuery.error ?? bucketsQuery.error,
+
+    parkingBuckets: bucketsQuery.data?.buckets ?? [],
+    isBucketsLoading: bucketsQuery.isLoading,
+    isBucketsFetching: bucketsQuery.isFetching,
   };
 }
