@@ -3,6 +3,7 @@ import { Clock, Loader2, X } from "lucide-react";
 import { Avatar } from "../../../../utils/Avatar";
 import type { SentFriendRequest } from "../../types";
 import { EmptyState } from "../EmptyState";
+import { CancelButton } from "../../utils/CancelButton";
 
 type SentRequestsTabProps = {
   requests: SentFriendRequest[];
@@ -85,18 +86,11 @@ export function SentRequestsTab({
                 Pendiente
               </span>
 
-              <button
-                type="button"
-                disabled={isCancelling}
-                onClick={() => onCancelRequest(request.eId)}
-                className="inline-flex h-9 items-center gap-2 border border-red-200 bg-white px-3 text-sm font-medium text-red-600 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                {isCancelling ? (
-                  <Loader2 size={16} className="animate-spin" />
-                ) : (
-                  <X size={16} />
-                )}
-              </button>
+              <CancelButton
+                onAction={(id) => onCancelRequest(id)}
+                itemId={request.eId}
+                isLoading={isCancelling}
+              />
             </div>
           </article>
         );
