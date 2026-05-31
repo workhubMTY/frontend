@@ -14,10 +14,10 @@ import type { FriendsTabMode, SentFriendRequest, SortOption } from "../types";
 import { FriendsListTab, } from "./tabs/FriendsListTab";
 import { SentRequestsTab } from "./tabs/SentRequestsTab";
 import { FriendsTabs } from "./tabs/Tabs";
+import { useSentFriendRequests } from "@/app/shared/data/friendships/hooks";
 
 type FriendsListModeProps = {
   friends: Friend[];
-  sentRequests: SentFriendRequest[];
   selectedFriendId?: string | null;
   onClose: () => void;
   onCompareFriend: (id: string) => void;
@@ -27,7 +27,6 @@ type FriendsListModeProps = {
 
 export function FriendsListMode({
   friends,
-  sentRequests,
   selectedFriendId,
   onClose,
   onCompareFriend,
@@ -39,7 +38,13 @@ export function FriendsListMode({
   const [sortOption, setSortOption] = useState<SortOption>("name-asc");
 
   const normalizedSearch = searchTerm.trim().toLowerCase();
+      const {
+        data: sentRequests = [],
+        isLoading: friendRequestsLoading,
+        error: friendRequestsError,
+      } = useSentFriendRequests();
 
+      
   const filteredFriends = useMemo(() => {
     const matchingFriends = friends.filter((friend) => {
       if (!normalizedSearch) return true;

@@ -18,7 +18,7 @@ import { ProfilePageMessage } from "@/app/features/perfil/components/feedback/Pr
 import { useProfile } from "@/app/features/perfil/data/hooks/useProfile";
 import { useTeams } from "@/app/features/perfil/data/hooks/useTeams";
 import { useUserSearchSuggestions } from "@/app/features/perfil/data/hooks/useUsers";
-import { usePotentialFriendsSearchSuggestions, useFriends, useSentFriendRequests } from "@/app/features/perfil/data/hooks/useFriends";
+import { usePotentialFriendsSearchSuggestions, useFriends } from "@/app/features/perfil/data/hooks/useFriends";
 import { useAchievements, useSelectedFriendAchievements } from "@/app/features/perfil/data/hooks/useAchievements";
 
 export default function UserProfilePage() {
@@ -60,12 +60,6 @@ export default function UserProfilePage() {
     isLoading: friendsLoading,
     error: friendsError,
   } = useFriends();
-
-  const {
-    data: friendRequests = [],
-    isLoading: friendRequestsLoading,
-    error: friendRequestsError,
-  } = useSentFriendRequests();
 
   const {
     data: teams = [],
@@ -171,7 +165,6 @@ export default function UserProfilePage() {
       <FriendsDrawer
         isOpen={isFriendDrawerOpen}
         friends={friends}
-        sentRequests={friendRequests}
         selectedFriendId={selectedFriendId}
         initialMode={initialFriendDrawerMode}
         onSearchSuggestions={handleSearchPotentialFriends}

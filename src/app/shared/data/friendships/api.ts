@@ -1,5 +1,6 @@
 import { authFetch } from "@/app/shared/data/api";
 import type { Friendship, FriendRequest, CreateFriendRequestDto, AcceptFriendRequestDto, RemoveRelationDto } from "./types";
+import { SentFriendRequest } from "@/app/features/perfil/components/drawers/Friends/types";
 
 export const friendshipsApi = {
   getAll: () => authFetch<Friendship[]>("/friendships"),
@@ -20,7 +21,7 @@ export const friendshipsApi = {
     authFetch<FriendRequest[]>("/friendships/requests/received"),
 
   getSentRequests: () =>
-    authFetch<FriendRequest[]>("/friendships/requests/sent"),
+    authFetch<SentFriendRequest[]>("/friendships/requests/sent"),
 
   createRequest: (payload: CreateFriendRequestDto) =>
     authFetch<FriendRequest>("/friendships/requests", {

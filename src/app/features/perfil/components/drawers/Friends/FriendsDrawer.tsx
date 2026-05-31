@@ -14,7 +14,6 @@ import { useSendFriendRequest } from "../../../data/hooks/useFriends";
 type FriendsDrawerProps = {
   isOpen: boolean;
   friends: Friend[];
-  sentRequests: SentFriendRequest[];
   selectedFriendId?: string | null;
   initialMode?: DrawerMode;
   onSearchSuggestions: (query: string) => Promise<FriendSuggestion[]>;
@@ -26,7 +25,6 @@ type FriendsDrawerProps = {
 export function FriendsDrawer({
   isOpen,
   friends,
-  sentRequests,
   selectedFriendId,
   initialMode = "list",
   onSearchSuggestions,
@@ -68,7 +66,6 @@ export function FriendsDrawer({
         {drawerMode === "list" ? (
           <FriendsListMode
             friends={friends}
-            sentRequests={sentRequests}
             selectedFriendId={selectedFriendId}
             onClose={handleClose}
             onCompareFriend={onCompareFriend}
