@@ -1,7 +1,4 @@
 "use client";
-
-import { CalendarDays } from "lucide-react";
-
 import { cn } from "@/app/features/reservaciones/lib/cn";
 import type { TimeBlock } from "@/app/features/reservaciones/types/reservaciones";
 
@@ -64,16 +61,12 @@ export function ParkingCapacityTimelineCard({
   },
 }: ParkingCapacityTimelineCardProps) {
   return (
-    <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+    <section className=" border border-slate-200 bg-white p-5 shadow-sm">
       <header className="mb-5 flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
         <div>
           <h2 className="text-lg font-semibold tracking-tight text-slate-950">
-            Capacidad del estacionamiento y tu selección
+            Cajones ocupados a lo largo del día
           </h2>
-
-          <p className="mt-3 text-sm text-slate-500">
-            Capacidad máxima: {capacity} cajones
-          </p>
         </div>
 
         <ParkingCapacityLegend />
