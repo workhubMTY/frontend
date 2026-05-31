@@ -9,14 +9,14 @@ import { useAuth } from "../../auth/useAuth";
 
 const baseRoutes = [
   { name: "Inicio", href: "/home" },
-  { name: "Tablero", href: "/tablero" },
   { name: "Cubículos", href: "/cubiculos" },
   { name: "Calendario", href: "/calendario" },
   { name: "Estacionamientos", href: "/estacionamientos" },
 ];
 
 const adminRoutes = [
-  {name: "Estadísticas", href: "/estadisticas"}
+  {name: "Estadísticas", href: "/estadisticas"},
+  { name: "Tablero", href: "/tablero" },
 ]
 
 export default function Navbar() {
