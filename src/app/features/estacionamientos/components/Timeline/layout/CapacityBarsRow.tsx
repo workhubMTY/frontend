@@ -11,9 +11,9 @@ export function CapacityBarsRow({ capacity, bars }: CapacityBarsRowProps) {
   return (
     <div className="grid grid-cols-[120px_minmax(0,1fr)] border-b border-slate-200">
       <div className="flex items-center border-r border-slate-200 bg-white px-3 text-sm font-semibold leading-5 text-slate-800">
-        Capacidad
+        Cajones
         <br />
-        disponible
+        ocupados
       </div>
 
       <div className="relative h-[76px] bg-white">
