@@ -1,5 +1,6 @@
 import {
   BriefcaseBusiness,
+  Clock,
   Flame,
   Pencil,
   Star,
@@ -15,15 +16,7 @@ type ProfileHeaderCardProps = {
 
 export function ProfileHeaderCard({ profile }: ProfileHeaderCardProps) {
   // QUITAR ESTO CUANDO YA ESTEN SINCRONIZADOS LOS SCHEMAS
-  if (!profile.stats) {
-    profile.stats = {
-      hoursInOffice: 200,
-      streakDays: 12,
-      friendsCount: 8,
-      levelsPassed: 5,
-      points: 200,
-    };
-  }
+
   return (
     <section className="h-full border border-neutral-1 bg-white shadow-sm">
       <div className="grid h-full grid-cols-1 gap-8 p-7 lg:grid-cols-12">
@@ -67,7 +60,7 @@ export function ProfileHeaderCard({ profile }: ProfileHeaderCardProps) {
 
         <div className="grid grid-cols-2 lg:col-span-7 lg:grid-cols-4 divide-x">
           <ProfileStat
-            icon={<Star size={21} />}
+            icon={<Clock size={21} />}
             label="Horas en oficina"
             value={profile.stats.hoursInOffice.toLocaleString("es-MX")}
           />
@@ -75,13 +68,13 @@ export function ProfileHeaderCard({ profile }: ProfileHeaderCardProps) {
           <ProfileStat
             icon={<Flame size={21} />}
             label="Racha actual"
-            value={`${profile.stats.streakDays} días`}
+            value={`${profile.stats.streak} días`}
           />
 
           <ProfileStat
             icon={<UserRound size={21} />}
             label="Amigos"
-            value={profile.stats.friendsCount}
+            value={profile.stats.friendCount}
           />
 
           <ProfileStat

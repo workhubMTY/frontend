@@ -54,8 +54,8 @@ export type UserProfile = {
   avatarUrl?: string;
   stats: {
     hoursInOffice: number;
-    streakDays: number;
-    friendsCount: number;
+    streak: number;
+    friendCount: number;
     levelsPassed: number;
     points:number
   };
