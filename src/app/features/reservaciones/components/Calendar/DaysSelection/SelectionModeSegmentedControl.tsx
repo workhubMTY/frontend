@@ -51,7 +51,7 @@ export function SelectionModeSegmentedControl({
             type="button"
             onClick={() => onChange(option.value)}
             className={cn(
-              "h-10 text-sm font-medium transition",
+              "h-10 text-xs font-medium transition",
               isActive
                 ? "bg-primary-2 text-on-primary shadow-sm"
                 : "text-neutral-700 hover:bg-white",

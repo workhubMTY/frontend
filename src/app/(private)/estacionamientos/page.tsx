@@ -90,7 +90,7 @@ export default function ParkingReservationSchedulerPage() {
         </div>
       </header> */}
 
-      <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_390px]">
+      <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_350px]">
         <section className="space-y-5">
           <ParkingCapacityTimelineCard
             capacity={parkingCapacity}

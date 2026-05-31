@@ -94,7 +94,7 @@ function CalendarLegend() {
           label="Seleccionado"
         />
 
-        <CalendarLegendItem className="bg-violet-600" label="Con horarios" />
+        {/* <CalendarLegendItem className="bg-violet-600" label="Con horarios" /> */}
 
         <CalendarLegendItem
           className="bg-red-500 ring-2 ring-red-100"
