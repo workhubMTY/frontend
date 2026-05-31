@@ -171,9 +171,6 @@ export default function UserProfilePage() {
         onCompareFriend={handleCompareFriend}
         onClearComparison={handleClearComparison}
         onClose={handleCloseFriendDrawer}
-        onSendFriendRequests={async (payload) => {
-          console.log("Solicitudes enviadas:", payload);
-        }}
       />
 
       <TeamsDrawer
