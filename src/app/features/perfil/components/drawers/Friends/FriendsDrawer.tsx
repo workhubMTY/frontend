@@ -1,8 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
+
 import type { Friend, FriendSuggestion } from "../../../types/profile";
+
 import { DrawerMode, SendFriendRequestsPayload } from "./types";
+import type { SentFriendRequest } from "./types";
+
 import { FriendsListMode } from "./FriendsListMode";
 import { InviteFriendsMode } from "./FriendsCreateMode";
 import { useSendFriendRequest } from "../../../data/hooks/useFriends";
@@ -10,18 +14,19 @@ import { useSendFriendRequest } from "../../../data/hooks/useFriends";
 type FriendsDrawerProps = {
   isOpen: boolean;
   friends: Friend[];
+  sentRequests: SentFriendRequest[];
   selectedFriendId?: string | null;
   initialMode?: DrawerMode;
   onSearchSuggestions: (query: string) => Promise<FriendSuggestion[]>;
   onClose: () => void;
   onCompareFriend: (id: string) => void;
   onClearComparison: () => void;
-
 };
 
 export function FriendsDrawer({
   isOpen,
   friends,
+  sentRequests,
   selectedFriendId,
   initialMode = "list",
   onSearchSuggestions,
@@ -36,6 +41,7 @@ export function FriendsDrawer({
     await sendFriendRequestMutation.mutateAsync(payload);
     setDrawerMode("list");
   }
+
   useEffect(() => {
     if (!isOpen) return;
 
@@ -62,6 +68,7 @@ export function FriendsDrawer({
         {drawerMode === "list" ? (
           <FriendsListMode
             friends={friends}
+            sentRequests={sentRequests}
             selectedFriendId={selectedFriendId}
             onClose={handleClose}
             onCompareFriend={onCompareFriend}

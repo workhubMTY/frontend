@@ -30,7 +30,6 @@ export function useFriends() {
   });
 }
 
-
 export function useSendFriendRequest() {
   const queryClient = useQueryClient();
 
@@ -41,7 +40,17 @@ export function useSendFriendRequest() {
 
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["friendships"] });
-      queryClient.invalidateQueries({ queryKey: ["users", "potential-friends"] });
+      queryClient.invalidateQueries({
+        queryKey: ["users", "potential-friends"],
+      });
+      queryClient.invalidateQueries({ queryKey: ["friendships-sent"] });
     },
+  }); 
+} 
+
+export function useSentFriendRequests() {
+  return useQuery({
+    queryKey: ["friendships-sent"],
+    queryFn: () => perfilApi.getSentRequests(),
   });
 }

@@ -22,3 +22,13 @@ export type Achievement = AchievementFromApi & {
   icon: React.ElementType;
   tone: AchievementTone;
 };
+
+export type SentFriendRequestSchema = {
+    id: number,
+    eId: string,
+    name: string,
+    email: string,
+    status: "PENDING" | "ACCEPTED" | "REJECTED" | "CANCELLED",
+    createdAt:  string,
+    resolvedAt:  string,
+}
