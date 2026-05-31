@@ -41,8 +41,7 @@ export function FriendsListMode({
 
       return (
         friend.name.toLowerCase().includes(normalizedSearch) ||
-        friend.email.toLowerCase().includes(normalizedSearch) ||
-        friend.role.toLowerCase().includes(normalizedSearch)
+        friend.email.toLowerCase().includes(normalizedSearch)
       );
     });
 
@@ -135,9 +134,12 @@ export function FriendsListMode({
                     <Avatar name={friend.name} avatarUrl={friend.avatarUrl} />
 
                     <div className="min-w-0">
-                      <h3 className="truncate font-semibold text-neutral-950">
+                      <h3 className="truncate text-md font-semibold text-neutral-950">
                         {friend.name}
                       </h3>
+                      <h4 className="truncate text-sm font-light text-neutral-500">
+                        {friend.email}
+                      </h4>
 
                       <p className="text-sm text-neutral-500">{friend.role}</p>
                     </div>

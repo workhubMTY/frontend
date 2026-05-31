@@ -100,6 +100,7 @@ export function InviteFriendsMode({
 
     try {
       setIsSubmitting(true);
+      console.log(message);
 
       await onSendFriendRequests({
         toUserIds: selectedUsers.map((user) => user.eId),
