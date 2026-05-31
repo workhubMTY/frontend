@@ -106,10 +106,10 @@ export function FriendsCard({
         <button
           type="button"
           onClick={onDisplayAll}
-          disabled={isLoading || Boolean(error) || !hasFriends}
+          disabled={isLoading || Boolean(error) }
           className="text-sm font-medium text-purple-700 transition hover:text-purple-900 disabled:cursor-not-allowed disabled:text-neutral-300"
         >
-          Ver todos
+          Ver más
         </button>
       </header>
 
