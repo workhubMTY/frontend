@@ -2,14 +2,17 @@
 
 import { useEffect, useState } from "react";
 
-import type { Friend, FriendSuggestion } from "../../../types/profile";
+import type {
+  Friend,
+  FriendSuggestion,
+} from "@/app/features/perfil/types/profile";
 
-import { DrawerMode, SendFriendRequestsPayload } from "./types";
-import type { SentFriendRequest } from "./types";
+import { useSendFriendRequest } from "../../../data/hooks/useFriends";
 
 import { FriendsListMode } from "./ListMode/FriendsListMode";
 import { InviteFriendsMode } from "./FriendsCreateMode";
-import { useSendFriendRequest } from "../../../data/hooks/useFriends";
+
+import type { DrawerMode, SendFriendRequestsPayload } from "./types";
 
 type FriendsDrawerProps = {
   isOpen: boolean;

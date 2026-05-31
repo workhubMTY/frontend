@@ -9,7 +9,10 @@ import type {
   UserProfile,
 } from "@/app/features/perfil/types/profile";
 import type { UpdateTeamPayload } from "@/app/features/perfil/data/hooks/useTeams";
-import { SendFriendRequestsPayload, SentFriendRequest } from "../components/drawers/Friends/types";
+import {
+  SendFriendRequestsPayload,
+  SentFriendRequest,
+} from "../components/drawers/Friends/types";
 // export const parkingReservationsApi = {
 //   create: (payload: CreateParkingReservation) =>
 //     authFetch<ParkingReservation>(`${BASE}/reservations`, {
@@ -64,16 +67,26 @@ export const perfilApi = {
   getPotentialFriends: (query?: string) => {
     const params = new URLSearchParams();
     if (query) params.set("query", query);
-    return authFetch<User[]>(`/users/me/potential-friends?${params.toString()}`);
+    return authFetch<User[]>(
+      `/users/me/potential-friends?${params.toString()}`,
+    );
   },
-  getSentRequests:() => authFetch<SentFriendRequest[]>(`/friendships/requests/sent/`),
+  getSentRequests: () =>
+    authFetch<SentFriendRequest[]>(`/friendships/requests/sent`),
+  deleteFriendRequest: (userId: string) => {
+    const params = new URLSearchParams();
+    params.set("userId", userId);
+
+    return authFetch(`/friendships/requests/sent/${userId}`, {
+      method: "DELETE",
+    });
+  },
 
   sendFriendRequest: (payload: SendFriendRequestsPayload) =>
     authFetch(`/friendships/requests`, {
       method: "POST",
       body: JSON.stringify(payload),
     }),
-
 
   getTeams: () => authFetch<Team[]>("/teams/me"),
 
@@ -83,7 +96,7 @@ export const perfilApi = {
       body: JSON.stringify(payload),
     }),
 
-  deleteTeam:(teamId: string) =>
+  deleteTeam: (teamId: string) =>
     authFetch<void>(`/teams/${teamId}`, {
       method: "DELETE",
     }),

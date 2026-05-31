@@ -1,7 +1,9 @@
-import { Friend } from "@/app/features/perfil/types/profile";
-import { EmptyState } from "../EmptyState";
-import { Avatar } from "../../../../utils/Avatar";
 import { Check, Trophy } from "lucide-react";
+
+import type { Friend } from "@/app/features/perfil/types/profile";
+
+import { Avatar } from "../../../../utils/Avatar";
+import { EmptyState } from "../EmptyState";
 
 type FriendsListTabProps = {
   friends: Friend[];

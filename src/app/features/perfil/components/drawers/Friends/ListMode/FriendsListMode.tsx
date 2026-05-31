@@ -1,20 +1,22 @@
 "use client";
 
-import {
-  Search,
-  SlidersHorizontal,
-  UserPlus,
-  X,
-} from "lucide-react";
+import { Search, SlidersHorizontal, UserPlus, X } from "lucide-react";
 import { useMemo, useState } from "react";
 
-import type { Friend } from "../../../../types/profile";
-import type { FriendsTabMode, SentFriendRequest, SortOption } from "../types";
+import type { Friend } from "@/app/features/perfil/types/profile";
 
-import { FriendsListTab, } from "./tabs/FriendsListTab";
+import {
+  useCancelFriendRequest,
+  useSentFriendRequests,
+} from "../../../../data/hooks/useFriends";
+
+import { FriendsTabs } from "./tabs/FriendsTabs";
+import { FriendsListTab } from "./tabs/FriendsListTab";
 import { SentRequestsTab } from "./tabs/SentRequestsTab";
-import { FriendsTabs } from "./tabs/Tabs";
-import { useSentFriendRequests } from "@/app/shared/data/friendships/hooks";
+
+import type { FriendsListTabId } from "../types";
+
+type SortOption = "name-asc" | "name-desc";
 
 type FriendsListModeProps = {
   friends: Friend[];
@@ -33,18 +35,20 @@ export function FriendsListMode({
   onClearComparison,
   onInviteMode,
 }: FriendsListModeProps) {
-  const [activeTab, setActiveTab] = useState<FriendsTabMode>("friends");
+  const [activeTab, setActiveTab] = useState<FriendsListTabId>("friends");
   const [searchTerm, setSearchTerm] = useState("");
   const [sortOption, setSortOption] = useState<SortOption>("name-asc");
 
-  const normalizedSearch = searchTerm.trim().toLowerCase();
-      const {
-        data: sentRequests = [],
-        isLoading: friendRequestsLoading,
-        error: friendRequestsError,
-      } = useSentFriendRequests();
+  const {
+    data: sentRequests = [],
+    isLoading: isLoadingSentRequests,
+    isError: hasSentRequestsError,
+  } = useSentFriendRequests();
 
-      
+  const cancelFriendRequestMutation = useCancelFriendRequest();
+
+  const normalizedSearch = searchTerm.trim().toLowerCase();
+
   const filteredFriends = useMemo(() => {
     const matchingFriends = friends.filter((friend) => {
       if (!normalizedSearch) return true;
@@ -83,13 +87,17 @@ export function FriendsListMode({
     });
   }, [sentRequests, normalizedSearch, sortOption]);
 
+  async function handleCancelFriendRequest(userId: string) {
+    await cancelFriendRequestMutation.mutateAsync(userId);
+  }
+
   const isFriendsTab = activeTab === "friends";
 
   return (
     <>
       <header className="border-b border-neutral-100 px-8 py-6">
-        <div className="flex items-center justify-between">
-          <div>
+        <div className="flex items-center justify-between gap-4">
+          <div className="min-w-0">
             <h2 className="text-xl font-semibold tracking-tight text-neutral-950">
               Amistades
             </h2>
@@ -102,14 +110,14 @@ export function FriendsListMode({
           <button
             type="button"
             onClick={onClose}
-            className="grid size-9 place-items-center text-neutral-500 transition hover:bg-neutral-100 hover:text-neutral-900"
+            className="grid size-9 shrink-0 place-items-center text-neutral-500 transition hover:bg-neutral-100 hover:text-neutral-900"
             aria-label="Cerrar"
           >
             <X size={20} />
           </button>
         </div>
 
-        <FriendsTabs  
+        <FriendsTabs
           activeTab={activeTab}
           friendsCount={friends.length}
           sentRequestsCount={sentRequests.length}
@@ -166,7 +174,14 @@ export function FriendsListMode({
         )}
 
         {activeTab === "sent-requests" && (
-          <SentRequestsTab requests={filteredSentRequests} />
+          <SentRequestsTab
+            requests={filteredSentRequests}
+            isLoading={isLoadingSentRequests}
+            isError={hasSentRequestsError}
+            cancellingRequestId={cancelFriendRequestMutation.variables ?? null}
+            isCancellingRequest={cancelFriendRequestMutation.isPending}
+            onCancelRequest={handleCancelFriendRequest}
+          />
         )}
       </div>
 

@@ -1,7 +1,8 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+
 import { perfilApi } from "../api";
-import { SendFriendRequestsPayload } from "../../components/drawers/Friends/types";
+import type { SendFriendRequestsPayload } from "../../components/drawers/Friends/types";
 
 export function usePotentialFriendsSearchSuggestions() {
   const queryClient = useQueryClient();
@@ -30,6 +31,13 @@ export function useFriends() {
   });
 }
 
+export function useSentFriendRequests() {
+  return useQuery({
+    queryKey: ["friend-requests"],
+    queryFn: () => perfilApi.getSentRequests(),
+  });
+}
+
 export function useSendFriendRequest() {
   const queryClient = useQueryClient();
 
@@ -37,20 +45,28 @@ export function useSendFriendRequest() {
     mutationFn: (payload: SendFriendRequestsPayload) => {
       return perfilApi.sendFriendRequest(payload);
     },
-
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["friendships"] });
+      queryClient.invalidateQueries({ queryKey: ["friend-requests"] });
       queryClient.invalidateQueries({
         queryKey: ["users", "potential-friends"],
       });
-      queryClient.invalidateQueries({ queryKey: ["friendships-sent"] });
     },
-  }); 
-} 
+  });
+}
 
-export function useSentFriendRequests() {
-  return useQuery({
-    queryKey: ["friendships-sent"],
-    queryFn: () => perfilApi.getSentRequests(),
+export function useCancelFriendRequest() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (userId: string) => {
+      return perfilApi.deleteFriendRequest(userId);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["friend-requests"] });
+      queryClient.invalidateQueries({
+        queryKey: ["users", "potential-friends"],
+      });
+    },
   });
 }
