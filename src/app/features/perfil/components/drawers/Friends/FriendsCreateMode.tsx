@@ -93,7 +93,7 @@ export function InviteFriendsMode({
     });
   }
 
-  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: React.SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
 
     if (!canSend) return;
@@ -102,7 +102,7 @@ export function InviteFriendsMode({
       setIsSubmitting(true);
 
       await onSendFriendRequests({
-        userIds: selectedUsers.map((user) => user.eId),
+        toUserIds: selectedUsers.map((user) => user.eId),
         message: message.trim() || undefined,
       });
 

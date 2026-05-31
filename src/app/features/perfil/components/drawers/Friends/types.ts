@@ -1,5 +1,5 @@
 export type SendFriendRequestsPayload = {
-  userIds: string[];
+  toUserIds: string[];
   message?: string;
 };
 

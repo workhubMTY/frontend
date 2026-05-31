@@ -1,6 +1,7 @@
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback } from "react";
 import { perfilApi } from "../api";
+import { SendFriendRequestsPayload } from "../../components/drawers/Friends/types";
 
 export function usePotentialFriendsSearchSuggestions() {
   const queryClient = useQueryClient();
@@ -26,5 +27,21 @@ export function useFriends() {
   return useQuery({
     queryKey: ["friendships"],
     queryFn: () => perfilApi.getFriends(),
+  });
+}
+
+
+export function useSendFriendRequest() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload: SendFriendRequestsPayload) => {
+      return perfilApi.sendFriendRequest(payload);
+    },
+
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["friendships"] });
+      queryClient.invalidateQueries({ queryKey: ["users", "potential-friends"] });
+    },
   });
 }

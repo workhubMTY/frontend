@@ -5,6 +5,7 @@ import type { Friend, FriendSuggestion } from "../../../types/profile";
 import { DrawerMode, SendFriendRequestsPayload } from "./types";
 import { FriendsListMode } from "./FriendsListMode";
 import { InviteFriendsMode } from "./FriendsCreateMode";
+import { useSendFriendRequest } from "../../../data/hooks/useFriends";
 
 type FriendsDrawerProps = {
   isOpen: boolean;
@@ -15,9 +16,7 @@ type FriendsDrawerProps = {
   onClose: () => void;
   onCompareFriend: (id: string) => void;
   onClearComparison: () => void;
-  onSendFriendRequests?: (
-    payload: SendFriendRequestsPayload,
-  ) => Promise<void> | void;
+
 };
 
 export function FriendsDrawer({
@@ -29,10 +28,14 @@ export function FriendsDrawer({
   onClose,
   onCompareFriend,
   onClearComparison,
-  onSendFriendRequests,
 }: FriendsDrawerProps) {
   const [drawerMode, setDrawerMode] = useState<DrawerMode>(initialMode);
+  const sendFriendRequestMutation = useSendFriendRequest();
 
+  async function handleSendFriendRequests(payload: SendFriendRequestsPayload) {
+    await sendFriendRequestMutation.mutateAsync(payload);
+    setDrawerMode("list");
+  }
   useEffect(() => {
     if (!isOpen) return;
 
@@ -70,10 +73,7 @@ export function FriendsDrawer({
             onBack={() => setDrawerMode("list")}
             onClose={handleClose}
             onSearchSuggestions={onSearchSuggestions}
-            onSendFriendRequests={async (payload) => {
-              await onSendFriendRequests?.(payload);
-              setDrawerMode("list");
-            }}
+            onSendFriendRequests={handleSendFriendRequests}
           />
         )}
       </aside>

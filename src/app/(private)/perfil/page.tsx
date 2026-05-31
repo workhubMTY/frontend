@@ -16,10 +16,9 @@ import { ProfilePageSkeleton } from "@/app/features/perfil/components/feedback/P
 import { ProfilePageMessage } from "@/app/features/perfil/components/feedback/ProfilePageMessage";
 
 import { useProfile } from "@/app/features/perfil/data/hooks/useProfile";
-import { useFriends } from "@/app/shared/data/friendships/hooks";
 import { useTeams } from "@/app/features/perfil/data/hooks/useTeams";
 import { useUserSearchSuggestions } from "@/app/features/perfil/data/hooks/useUsers";
-import { usePotentialFriendsSearchSuggestions } from "@/app/features/perfil/data/hooks/useFriends";
+import { usePotentialFriendsSearchSuggestions, useFriends } from "@/app/features/perfil/data/hooks/useFriends";
 import { useAchievements, useSelectedFriendAchievements } from "@/app/features/perfil/data/hooks/useAchievements";
 
 export default function UserProfilePage() {
@@ -87,6 +86,7 @@ export default function UserProfilePage() {
 
   const handleSearchUserSuggestions = useUserSearchSuggestions(user?.eId);
   const handleSearchPotentialFriends = usePotentialFriendsSearchSuggestions();
+
 
   if (authLoading || profileLoading) {
     return <ProfilePageSkeleton />;

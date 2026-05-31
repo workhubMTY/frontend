@@ -9,6 +9,7 @@ import type {
   UserProfile,
 } from "@/app/features/perfil/types/profile";
 import type { UpdateTeamPayload } from "@/app/features/perfil/data/hooks/useTeams";
+import { SendFriendRequestsPayload } from "../components/drawers/Friends/types";
 // export const parkingReservationsApi = {
 //   create: (payload: CreateParkingReservation) =>
 //     authFetch<ParkingReservation>(`${BASE}/reservations`, {
@@ -65,6 +66,13 @@ export const perfilApi = {
     if (query) params.set("query", query);
     return authFetch<User[]>(`/users/me/potential-friends?${params.toString()}`);
   },
+
+  sendFriendRequest: (payload: SendFriendRequestsPayload) =>
+    authFetch(`/friendships/requests`, {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }),
+
 
   getTeams: () => authFetch<Team[]>("/teams/me"),
 
