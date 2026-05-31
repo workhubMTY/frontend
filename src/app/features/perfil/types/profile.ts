@@ -53,12 +53,11 @@ export type UserProfile = {
   title:string;
   avatarUrl?: string;
   stats: {
-    points: number;
+    hoursInOffice: number;
     streakDays: number;
     friendsCount: number;
-    completedAchievements: number;
-    inProgressAchievements: number;
-    pendingAchievements: number;
+    levelsPassed: number;
+    points:number
   };
 };
 

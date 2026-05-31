@@ -17,12 +17,11 @@ export function ProfileHeaderCard({ profile }: ProfileHeaderCardProps) {
   // QUITAR ESTO CUANDO YA ESTEN SINCRONIZADOS LOS SCHEMAS
   if (!profile.stats) {
     profile.stats = {
-      points: 2450,
+      hoursInOffice: 200,
       streakDays: 12,
       friendsCount: 8,
-      completedAchievements: 5,
-      inProgressAchievements: 3,
-      pendingAchievements: 2,
+      levelsPassed: 5,
+      points: 200,
     };
   }
   return (
@@ -69,8 +68,8 @@ export function ProfileHeaderCard({ profile }: ProfileHeaderCardProps) {
         <div className="grid grid-cols-2 lg:col-span-7 lg:grid-cols-4 divide-x">
           <ProfileStat
             icon={<Star size={21} />}
-            label="Puntos"
-            value={profile.stats.points.toLocaleString("es-MX")}
+            label="Horas en oficina"
+            value={profile.stats.hoursInOffice.toLocaleString("es-MX")}
           />
 
           <ProfileStat
@@ -87,8 +86,8 @@ export function ProfileHeaderCard({ profile }: ProfileHeaderCardProps) {
 
           <ProfileStat
             icon={<Trophy size={21} />}
-            label="Logros completados"
-            value={profile.stats.completedAchievements}
+            label="Niveles completados"
+            value={profile.stats.levelsPassed}
           />
         </div>
       </div>
