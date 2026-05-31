@@ -95,10 +95,10 @@ export function FriendsCard({
 
   return (
     <section className="flex h-full flex-col border border-neutral-200 bg-white shadow-sm">
-      <header className="flex items-center justify-between border-b border-neutral-100 px-7 py-5">
+      <header className="flex items-center justify-between border-b border-neutral-100 px-7 py-4">
         <div className="flex items-center gap-3">
-          <UsersRound size={22} className="text-neutral-700" />
-          <h2 className="text-xl font-semibold tracking-tight text-neutral-950">
+          <UsersRound size={20} className="text-neutral-700" />
+          <h2 className="text-md font-semibold tracking-tight text-neutral-950">
             Amistades
           </h2>
         </div>
@@ -142,9 +142,9 @@ export function FriendsCard({
           type="button"
           onClick={onInviteFriendsShortcut}
           disabled={isLoading}
-          className="inline-flex items-center gap-3 text-sm font-medium text-purple-700 transition hover:text-purple-900 disabled:cursor-not-allowed disabled:text-neutral-300"
+          className="inline-flex items-center gap-3 text-xs font-medium text-purple-700 transition hover:text-purple-900 disabled:cursor-not-allowed disabled:text-neutral-300"
         >
-          <UsersRound size={20} />
+          <UsersRound size={16} />
           Invitar a más amigos
         </button>
       </footer>
@@ -208,14 +208,14 @@ function FriendsCardEmpty({
             <h3 className="text-sm font-semibold text-neutral-950">
               Todavía no tienes amistades
             </h3>
-            <p className="mt-1 text-sm text-neutral-500">
+            <p className="mt-1 text-xs text-neutral-500">
               Invita amigos para comparar logros y seguir su progreso.
             </p>
 
             <button
               type="button"
               onClick={onInviteFriendsShortcut}
-              className="mt-4 text-sm font-medium text-purple-700 transition hover:text-purple-900"
+              className="mt-4 text-xs font-medium text-purple-700 transition hover:text-purple-900"
             >
               Invitar primer amigo
             </button>

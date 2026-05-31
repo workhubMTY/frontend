@@ -104,16 +104,16 @@ export default function UserProfilePage() {
 
   return (
     <>
-      <main className="min-h-full min-w-full bg-background-page px-8 py-8 text-neutral-950">
+      <main className="min-h-full min-w-full bg-background-page px-8 pt-8 pb-2 text-neutral-950">
         <div className="mx-auto min-w-full max-w-screen-2xl">
-          <header className="mb-6">
-            <h1 className="text-lg font-semibold tracking-tight text-neutral-950">
-              Perfil de usuario
+          {/* <header className="mb-4">
+            <h1 className="text-2xl font-semibold tracking-tight text-neutral-950">
+              Perfil
             </h1>
-            <p className="mt-2 text-xs text-neutral-500">
+            <p className="mt-2 text-lg text-neutral-500">
               Consulta tu información, amistades y progreso de logros.
             </p>
-          </header>
+          </header> */}
 
           <section className="grid grid-cols-1 gap-6 lg:grid-cols-12">
             <div className="min-w-0 lg:col-span-9">

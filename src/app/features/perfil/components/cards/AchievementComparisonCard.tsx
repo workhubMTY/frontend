@@ -18,10 +18,10 @@ export function AchievementComparisonCard({
 
   return (
     <section className="flex h-full flex-col border border-neutral-200 bg-white shadow-sm">
-      <header className="flex justify-between border-b border-neutral-100 px-7 py-5">
+      <header className="flex justify-between border-b border-neutral-100 px-7 py-4">
         <div className="flex items-center gap-3">
-          <Trophy size={22} className="text-neutral-700" />
-          <h2 className="text-xl font-semibold tracking-tight text-neutral-950">
+          <Trophy size={20} className="text-neutral-700" />
+          <h2 className="text-md font-semibold tracking-tight text-neutral-950">
             Logros
           </h2>
         </div>
@@ -74,15 +74,15 @@ type AchievementRowProps = {
 
 function AchievementRow({ achievement, userProgress }: AchievementRowProps) {
   return (
-    <article className="grid grid-cols-[1fr_120px] gap-5 px-7 py-5">
+    <article className="grid grid-cols-[1fr_120px] gap-5 px-7 py-3 items-center">
       <div className="flex min-w-0 gap-4">
         <AchievementIcon icon={achievement.icon} />
 
         <div className="min-w-0">
-          <h3 className="font-semibold text-neutral-950">
+          <h3 className="text-sm font-semibold text-neutral-950">
             {achievement.title}
           </h3>
-          <p className="mt-1 line-clamp-2 text-sm leading-5 text-neutral-500">
+          <p className="mt-1 line-clamp-2 text-xs leading-5 text-neutral-500">
             {achievement.description}
           </p>
         </div>
@@ -108,9 +108,9 @@ function AchievementIcon({ icon }: AchievementIconProps) {
 
   return (
     <div
-      className={`flex h-12 w-12 shrink-0 items-center justify-center ${iconClass}`}
+      className={`flex h-10 w-10 shrink-0 items-center justify-center ${iconClass}`}
     >
-      <Icon size={22} />
+      <Icon size={16} />
     </div>
   );
 }
@@ -129,9 +129,18 @@ function ProgressCell({ progress }: ProgressCellProps) {
 
   return (
     <div>
-      <p className="text-sm font-semibold text-neutral-950">
-        {progress.current} / {progress.target}
-      </p>
+      <div className="flex justify-between items-center">
+        <p className="text-sm font-semibold text-neutral-950">
+          {progress.current} / {progress.target}
+        </p>
+        <p className={[
+            "text-xs font-semibold",
+            isCompleted ? "text-emerald-600" : "text-purple-700",
+          ].join(" ")}
+        >
+          {isCompleted ? "Completado" : `${percentage}%`}
+        </p>
+      </div>
 
       <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-neutral-200">
         <div
@@ -142,15 +151,6 @@ function ProgressCell({ progress }: ProgressCellProps) {
           style={{ width: `${percentage}%` }}
         />
       </div>
-
-      <p
-        className={[
-          "mt-2 text-xs font-semibold",
-          isCompleted ? "text-emerald-600" : "text-purple-700",
-        ].join(" ")}
-      >
-        {isCompleted ? "Completado" : `${percentage}%`}
-      </p>
     </div>
   );
 }

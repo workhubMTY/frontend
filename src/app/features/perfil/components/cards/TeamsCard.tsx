@@ -23,10 +23,10 @@ export function TeamsCard({
 
   return (
     <section className="flex h-full flex-col border border-neutral-200 bg-white shadow-sm">
-      <header className="flex items-center justify-between border-b border-neutral-100 px-7 py-5">
+      <header className="flex items-center justify-between border-b border-neutral-100 px-7 py-4">
         <div className="flex items-center gap-3">
-          <UsersRound size={22} className="text-neutral-700" />
-          <h2 className="text-xl font-semibold tracking-tight text-neutral-950">
+          <UsersRound size={20} className="text-neutral-700" />
+          <h2 className="text-md font-semibold tracking-tight text-neutral-950">
             Equipos
           </h2>
         </div>
@@ -59,11 +59,11 @@ export function TeamsCard({
                   {getInitials(team.name)}
                 </div>
 
-                <div className="min-w-0">
-                  <h3 className="truncate font-semibold text-neutral-950">
+                <div className="min-w-0 flex flex-col gap-1">
+                  <h3 className="truncate text-sm font-semibold text-neutral-950">
                     {team.name}
                   </h3>
-                  <p className="text-sm text-neutral-500">
+                  <p className="text-xs text-neutral-500">
                     {team.memberCount} miembros
                   </p>
                 </div>
@@ -72,10 +72,10 @@ export function TeamsCard({
               <button
                 type="button"
                 onClick={() => onDisplayMembers(team.id)}
-                className="inline-flex items-center gap-2 justify-self-start text-sm font-medium text-purple-700 transition hover:text-purple-900 sm:justify-self-end"
+                className="inline-flex items-center gap-2 justify-self-start text-xs font-medium text-purple-700 transition hover:text-purple-900 sm:justify-self-end"
               >
                 Ver miembros
-                <ChevronRight size={17} />
+                <ChevronRight size={16} />
               </button>
             </article>
           ))
@@ -87,9 +87,9 @@ export function TeamsCard({
           type="button"
           onClick={onCreateTeamShortcut}
           disabled={isLoading}
-          className="inline-flex items-center gap-3 text-sm font-medium text-purple-700 transition hover:text-purple-900 disabled:cursor-not-allowed disabled:text-neutral-300"
+          className="inline-flex items-center gap-3 text-xs font-medium text-purple-700 transition hover:text-purple-900 disabled:cursor-not-allowed disabled:text-neutral-300"
         >
-          <UsersRound size={20} />
+          <UsersRound size={16} />
           Crear equipo
         </button>
       </footer>
