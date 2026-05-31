@@ -10,7 +10,7 @@ export type User = {
 export type Friend = User;
 
 export type FriendSuggestion = Friend & {
-  status?: "available" | "pending" | "already-friend";
+  friendshipStatus?: null | "PENDING_SENT" | "PENDING_RECEIVED" ;
 };
 
 export type Team = {
