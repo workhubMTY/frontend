@@ -61,7 +61,7 @@ export function ProfileHeaderCard({ profile }: ProfileHeaderCardProps) {
 
             <div className="mt-6 flex items-center gap-3 text-neutral-600">
               <BriefcaseBusiness size={21} />
-              <span className="text-sm">{profile.role}</span>
+              <span className="text-sm">{profile.title}</span>
             </div>
           </div>
         </div>

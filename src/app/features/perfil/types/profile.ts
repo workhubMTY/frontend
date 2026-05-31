@@ -2,6 +2,7 @@ export type User = {
   eId: string;
   name: string;
   role?: string;
+  title:string;
   email: string;
   avatarUrl?: string;
 };
@@ -49,6 +50,7 @@ export type UserProfile = {
   name: string;
   email: string;
   role: string;
+  title:string;
   avatarUrl?: string;
   stats: {
     points: number;
