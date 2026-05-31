@@ -5,7 +5,7 @@ export type SendFriendRequestsPayload = {
 
 export type DrawerMode = "list" | "invite";
 
-export type FriendsListTab = "friends" | "sent-requests";
+export type FriendsTabMode = "friends" | "sent-requests";
 
 export type SortOption = "name-asc" | "name-desc";
 

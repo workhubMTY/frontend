@@ -7,7 +7,7 @@ import type { Friend, FriendSuggestion } from "../../../types/profile";
 import { DrawerMode, SendFriendRequestsPayload } from "./types";
 import type { SentFriendRequest } from "./types";
 
-import { FriendsListMode } from "./FriendsListMode";
+import { FriendsListMode } from "./ListMode/FriendsListMode";
 import { InviteFriendsMode } from "./FriendsCreateMode";
 import { useSendFriendRequest } from "../../../data/hooks/useFriends";
 

@@ -1,10 +1,10 @@
-import type { FriendsListTab } from "./types";
+import type { FriendsTabMode} from "../../types";
 
 type FriendsTabsProps = {
-  activeTab: FriendsListTab;
+  activeTab: FriendsTabMode;
   friendsCount: number;
   sentRequestsCount: number;
-  onChange: (tab: FriendsListTab) => void;
+  onChange: (tab: FriendsTabMode) => void;
 };
 
 export function FriendsTabs({
@@ -14,7 +14,7 @@ export function FriendsTabs({
   onChange,
 }: FriendsTabsProps) {
   const tabs: Array<{
-    id: FriendsListTab;
+    id: FriendsTabMode;
     label: string;
     helper?: string;
   }> = [
