@@ -2,7 +2,7 @@
 
 import type { User } from "../../../../types/profile";
 import type { TeamMembersState, TeamSummary } from "../types";
-import type { UpdateTeamPayload } from "../../../../data/hooks";
+import type { UpdateTeamPayload } from "../../../../data/hooks/useTeams";
 
 import { useManageTeamMode } from "./hooks/useManageTeam";
 import { ManageTeamHeader } from "./layout/TeamsManageHeader";
