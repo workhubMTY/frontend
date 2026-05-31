@@ -33,6 +33,7 @@ export default function ParkingReservationSchedulerPage() {
     scheduler,
     parkingBuckets,
     parkingReservationsForActiveDay,
+    createParkingReservation,
   } = useParkingReservationSchedulerPage({
     parkingId,
   });
@@ -61,19 +62,21 @@ export default function ParkingReservationSchedulerPage() {
     ],
   );
 
-  function handleContinue() {
-    if (!parkingId) return;
+  async function handleContinue() {
+    const schedules = scheduler.createReservationSchedules();
 
-    const selectedParking = {
-      id: String(parkingId),
-      name: parkingName,
-    };
+    if (!schedules) return;
 
-    const draft = scheduler.createReservationDraft(selectedParking);
+    await Promise.all(
+      schedules.map((schedule) =>
+        createParkingReservation.mutateAsync({
+          start_time: new Date(schedule.start_time),
+          end_time: new Date(schedule.end_time),
+        }),
+      ),
+    );
 
-    if (!draft) return;
-
-    router.push("/estacionamientos/reservacion/confirmar");
+    router.push("/estacionamientos");
   }
 
   return (
@@ -107,12 +110,13 @@ export default function ParkingReservationSchedulerPage() {
             onDeleteBlock={scheduler.deleteProposedBlock}
             onUpdateBlock={scheduler.updateProposedBlock}
           />
-
           <ReservationFooter
             selectedCount={scheduler.selectableSelectedDateIds.length}
             proposedBlocksCount={scheduler.proposedBlocks.length}
             hasBlockingConflict={scheduler.hasBlockingConflict}
-            canContinue={scheduler.canContinue}
+            canContinue={
+              scheduler.canContinue && !createParkingReservation.isPending
+            }
             onCancel={() => router.push("/estacionamientos")}
             onContinue={handleContinue}
           />

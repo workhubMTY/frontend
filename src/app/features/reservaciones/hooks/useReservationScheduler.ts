@@ -266,22 +266,25 @@ export function useReservationScheduler({
     selectableSelectedDateIds.length > 0 &&
     proposedBlocks.length > 0 &&
     !hasBlockingConflict;
-
-  function createReservationDraft(selectedSpace: SelectedSpace) {
+  function createReservationSchedules() {
     if (!canContinue) return null;
 
-    const schedules: ReservationDraftSchedule[] =
-      selectableSelectedDateIds.flatMap((dateId) =>
-        proposedBlocks.map((block) => {
-          const start = to24Hour(block.start);
-          const end = to24Hour(block.end);
+    return selectableSelectedDateIds.flatMap((dateId) =>
+      proposedBlocks.map((block) => {
+        const start = to24Hour(block.start);
+        const end = to24Hour(block.end);
 
-          return {
-            start_time: new Date(`${dateId}T${start}:00`).toISOString(),
-            end_time: new Date(`${dateId}T${end}:00`).toISOString(),
-          };
-        }),
-      );
+        return {
+          start_time: new Date(`${dateId}T${start}:00`).toISOString(),
+          end_time: new Date(`${dateId}T${end}:00`).toISOString(),
+        };
+      }),
+    );
+  }
+  function createReservationDraft(selectedSpace: SelectedSpace) {
+    const schedules = createReservationSchedules();
+
+    if (!schedules) return null;
 
     const draft = {
       reservableId: selectedSpace.id,
@@ -296,7 +299,6 @@ export function useReservationScheduler({
 
     return draft;
   }
-
   return {
     selectionMode,
     selectedDateIds,
@@ -320,6 +322,7 @@ export function useReservationScheduler({
     updateProposedBlock,
     deleteProposedBlock,
 
+    createReservationSchedules,
     createReservationDraft,
   };
 }

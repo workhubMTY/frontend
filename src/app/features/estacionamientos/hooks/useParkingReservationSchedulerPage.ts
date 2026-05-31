@@ -22,15 +22,19 @@ import type {
   ParkingReservation,
   ReservationBucketsQuery,
 } from "@/app/features/estacionamientos/data/types";
+import { getLocalDayRange } from "../lib/parkingAvailability";
 
 function toDateId(value: Date | string) {
   return new Date(value).toISOString().slice(0, 10);
 }
 
 function toTime(value: Date | string) {
-  return new Date(value).toTimeString().slice(0, 5);
+  return new Date(value).toLocaleTimeString("es-MX", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  });
 }
-
 function toParkingTimelineEvent(
   reservation: ParkingReservation,
 ): TimelineEvent {
@@ -104,11 +108,11 @@ export function useParkingReservationSchedulerPage({
   >(() => {
     if (!scheduler.activeDayId) return undefined;
 
-    const nextDateId = getNextDateId(scheduler.activeDayId);
+    const { start, end } = getLocalDayRange(scheduler.activeDayId);
 
     return {
-      start_time: new Date(`${scheduler.activeDayId}T00:00:00.000Z`),
-      end_time: new Date(`${nextDateId}T00:00:00.000Z`),
+      start_time: start,
+      end_time: end,
       step_minutes: "15",
     };
   }, [scheduler.activeDayId]);
@@ -120,7 +124,6 @@ export function useParkingReservationSchedulerPage({
     () => parkingReservationsByDate[scheduler.activeDayId] ?? [],
     [parkingReservationsByDate, scheduler.activeDayId],
   );
-
   return {
     calendarCells,
     scheduler,
@@ -130,6 +133,9 @@ export function useParkingReservationSchedulerPage({
 
     parkingReservationsByDate,
     parkingReservationsForActiveDay,
+    parkingBuckets: bucketsQuery.data?.buckets ?? [],
+
+    createParkingReservation: reservationsQuery.createReservation,
 
     isLoading:
       parkingLotQuery.isLoading ||
@@ -143,9 +149,5 @@ export function useParkingReservationSchedulerPage({
 
     error:
       parkingLotQuery.error ?? reservationsQuery.error ?? bucketsQuery.error,
-
-    parkingBuckets: bucketsQuery.data?.buckets ?? [],
-    isBucketsLoading: bucketsQuery.isLoading,
-    isBucketsFetching: bucketsQuery.isFetching,
   };
 }

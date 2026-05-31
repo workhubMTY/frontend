@@ -113,3 +113,13 @@ function getMinutesFromTimeLabel(value: string) {
 
   return hours * 60 + minutes;
 }
+
+
+export function getLocalDayRange(dateId: string) {
+  const start = new Date(`${dateId}T00:00:00`);
+
+  const end = new Date(start);
+  end.setDate(end.getDate() + 1);
+
+  return { start, end };
+}

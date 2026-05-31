@@ -65,7 +65,7 @@ export type PatchAttendance = {
 };
 
 export type ReservationBucket = {
-  timestamp: Date;
+  timestamp: string;
   reservation_count: number;
 };
 
