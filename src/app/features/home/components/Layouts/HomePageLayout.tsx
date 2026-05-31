@@ -98,11 +98,11 @@ export function HomePageLayout({
       <section className="flex h-full w-full flex-col overflow-hidden bg-background-page">
         <div className="home-outer px-6 pt-4 pb-0 sm:px-6 sm:pb-6 lg:px-12">
           <header className="space-y-1 py-4">
-            <h1 className="text-2xl font-semibold tracking-tight text-slate-950 md:text-4xl">
+            <h1 className="text-2xl font-semibold tracking-tight text-slate-950">
               Hola{name ? `, ${name}` : ""}
             </h1>
 
-            <p className="text-sm text-slate-500 md:text-base">
+            <p className="text-xs text-slate-500 md:text-base">
               Visualiza tus contactos, invitaciones y eventos
             </p>
           </header>

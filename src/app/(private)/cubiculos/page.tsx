@@ -40,7 +40,7 @@ export default function ReservableSpacesSearchPage() {
   return (
     <main className="min-h-screen bg-background-page px-4 py-6 text-neutral-700 sm:px-6 lg:px-12">
       <div className="mx-auto flex flex-col gap-5">
-        <ReservationSearchHeader />
+        {/* <ReservationSearchHeader /> */}
 
         <ReservationFilters
           value={filters}
