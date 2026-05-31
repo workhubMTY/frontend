@@ -104,8 +104,8 @@ export default function UserProfilePage() {
 
   return (
     <>
-      <main className="min-h-full min-w-full bg-background-page px-8 pt-8 pb-2 text-neutral-950">
-        <div className="mx-auto min-w-full max-w-screen-2xl">
+      <div className="flex flex-1 min-h-full min-w-full flex-1 bg-background-page px-8 pt-8 pb-2 text-neutral-950">
+        <div className="mx-auto flex flex-col min-w-full max-w-screen-2xl">
           {/* <header className="mb-4">
             <h1 className="text-2xl font-semibold tracking-tight text-neutral-950">
               Perfil
@@ -125,7 +125,7 @@ export default function UserProfilePage() {
             </div>
           </section>
 
-          <section className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-12">
+          <section className="mt-6 pb-8 h-full grid grid-cols-1 gap-6 lg:grid-cols-12">
             <div id="friends-section" className="min-w-0 lg:col-span-4">
               <FriendsCard
                 friends={friends}
@@ -160,7 +160,7 @@ export default function UserProfilePage() {
             </div>
           </section>
         </div>
-      </main>
+      </div>
 
       <FriendsDrawer
         isOpen={isFriendDrawerOpen}
