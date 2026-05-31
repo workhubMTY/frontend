@@ -57,7 +57,7 @@ export function AchievementComparisonCard({
       </div>
 
       <footer className="mt-auto flex items-center justify-between border-t border-neutral-100 bg-neutral-50 px-7 py-4">
-        <div className="flex items-center gap-2 text-sm text-neutral-500">
+        <div className="flex items-center gap-2 text-xs text-neutral-500">
           <Info size={16} />
           ¡Compara con tus amigos!
         </div>
