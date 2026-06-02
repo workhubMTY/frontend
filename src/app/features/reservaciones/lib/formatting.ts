@@ -49,3 +49,35 @@ export function formatDateRanges(ids: string[]) {
     })
     .join(", ");
 }
+
+export function normalizeTimeInput(value: string): string | null {
+  const trimmed = value.trim().toLowerCase();
+
+  const match = trimmed.match(/^(\d{1,2})(?::(\d{2}))?\s*(am|pm)?$/);
+
+  if (!match) return null;
+
+  const [, hourText, minuteText = "00", period] = match;
+
+  let hour = Number(hourText);
+  const minute = Number(minuteText);
+
+  if (Number.isNaN(hour) || Number.isNaN(minute)) return null;
+  if (minute < 0 || minute > 59) return null;
+
+  if (period) {
+    if (hour < 1 || hour > 12) return null;
+
+    if (period === "am") {
+      hour = hour === 12 ? 0 : hour;
+    }
+
+    if (period === "pm") {
+      hour = hour === 12 ? 12 : hour + 12;
+    }
+  } else {
+    if (hour < 0 || hour > 23) return null;
+  }
+
+  return `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`;
+}

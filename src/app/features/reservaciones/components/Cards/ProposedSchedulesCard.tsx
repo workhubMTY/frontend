@@ -6,6 +6,7 @@ import type { TimeBlock } from "../../types/reservaciones";
 import { blockHasConflict } from "../../lib/conflicts";
 import { cn } from "../../lib/cn";
 import { Card } from "../../../../shared/components/Card";
+import { normalizeTimeInput } from "../../lib/formatting";
 
 type ProposedSchedulesCardProps = {
   proposedBlocks: TimeBlock[];
@@ -114,9 +115,20 @@ export function ProposedSchedulesCard({
               <label className="relative">
                 <input
                   value={block.start}
+                  placeholder="7am / 7:00"
+                  inputMode="text"
                   onChange={(event) =>
                     onUpdateBlock(block.id, "start", event.target.value)
                   }
+                  onBlur={(event) => {
+                    const normalizedTime = normalizeTimeInput(
+                      event.target.value,
+                    );
+
+                    if (normalizedTime) {
+                      onUpdateBlock(block.id, "start", normalizedTime);
+                    }
+                  }}
                   className={cn(
                     "h-10 w-full rounded-lg border bg-white px-3 pr-9 text-sm font-medium outline-none transition focus:border-violet-500 focus:ring-4 focus:ring-violet-100",
                     blockConflict
@@ -132,9 +144,20 @@ export function ProposedSchedulesCard({
               <label className="relative">
                 <input
                   value={block.end}
+                  placeholder="7:25pm / 17:00"
+                  inputMode="text"
                   onChange={(event) =>
                     onUpdateBlock(block.id, "end", event.target.value)
                   }
+                  onBlur={(event) => {
+                    const normalizedTime = normalizeTimeInput(
+                      event.target.value,
+                    );
+
+                    if (normalizedTime) {
+                      onUpdateBlock(block.id, "end", normalizedTime);
+                    }
+                  }}
                   className={cn(
                     "h-10 w-full rounded-lg border bg-white px-3 pr-9 text-sm font-medium outline-none transition focus:border-violet-500 focus:ring-4 focus:ring-violet-100",
                     blockConflict

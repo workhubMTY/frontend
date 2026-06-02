@@ -188,8 +188,8 @@ function handleCalendarSelect(action: CalendarSelectionAction) {
       {
         id: `p-${Date.now()}`,
         label: `Horario ${nextNumber}`,
-        start: "08:00 PM",
-        end: "09:00 PM",
+        start: "",
+        end: "",
       },
     ]);
   }
