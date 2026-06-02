@@ -70,6 +70,7 @@ export type ReservationBucket = {
 };
 
 export type ReservationBucketsResponse = {
+  capacity: number;
   buckets: ReservationBucket[];
 };
 

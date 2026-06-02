@@ -9,18 +9,29 @@ import type {
 import { getRangeIds } from "@/app/features/reservaciones/lib/dates";
 
 type UseCalendarDragSelectionParams = {
+  activeDayId: string;
+  selectedDateIds: string[];
   calendarCells: CalendarCell[];
   selectionMode: SelectionMode;
   onSelect: (action: CalendarSelectionAction) => void;
+  onActivateDay: (dayId: string) => void;
 };
 
 export function useCalendarDragSelection({
+  activeDayId,
+  selectedDateIds,
   calendarCells,
   selectionMode,
   onSelect,
+  onActivateDay,
 }: UseCalendarDragSelectionParams) {
   const [dragStartId, setDragStartId] = useState<string | null>(null);
   const [dragPreviewIds, setDragPreviewIds] = useState<string[]>([]);
+
+  const selectedDatesSet = useMemo(
+    () => new Set(selectedDateIds),
+    [selectedDateIds],
+  );
 
   const dragPreviewDatesSet = useMemo(
     () => new Set(dragPreviewIds),
@@ -33,10 +44,22 @@ export function useCalendarDragSelection({
     return calendarCells.find((cell) => cell.id === dayId)?.isWeekend ?? false;
   }
 
+  function shouldOnlyActivateDay(dayId: string) {
+    const isSelected = selectedDatesSet.has(dayId);
+    const isActive = activeDayId === dayId;
+
+    return isSelected && !isActive;
+  }
+
   function handlePointerDown(dayId: string) {
     if (isBlockedDate(dayId)) return;
 
     if (!canDragSelect) {
+      if (shouldOnlyActivateDay(dayId)) {
+        onActivateDay(dayId);
+        return;
+      }
+
       onSelect({
         type: "day",
         dayId,
@@ -45,6 +68,10 @@ export function useCalendarDragSelection({
       return;
     }
 
+    /**
+     * En multiple siempre iniciamos posible drag.
+     * Todavía no sabemos si será click simple o rango.
+     */
     setDragStartId(dayId);
     setDragPreviewIds([dayId]);
   }
@@ -60,17 +87,26 @@ export function useCalendarDragSelection({
   function finishDrag() {
     if (dragStartId === null) return;
 
-    if (dragPreviewIds.length <= 1) {
-      onSelect({
-        type: "day",
-        dayId: dragStartId,
-      });
-    } else {
-      onSelect({
-        type: "range",
-        dateIds: dragPreviewIds,
-      });
+    const isSingleDayClick = dragPreviewIds.length <= 1;
+
+    if (isSingleDayClick) {
+      if (shouldOnlyActivateDay(dragStartId)) {
+        onActivateDay(dragStartId);
+      } else {
+        onSelect({
+          type: "day",
+          dayId: dragStartId,
+        });
+      }
+
+      resetDragSelection();
+      return;
     }
+
+    onSelect({
+      type: "range",
+      dateIds: dragPreviewIds,
+    });
 
     resetDragSelection();
   }

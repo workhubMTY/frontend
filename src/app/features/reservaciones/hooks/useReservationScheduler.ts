@@ -80,91 +80,87 @@ export function useReservationScheduler({
 
     return proposedBlocks;
   }, [activeDayIsSelected, proposedBlocks]);
+function mergeOrRemoveRange(
+  previousDateIds: string[],
+  draggedDateIds: string[],
+) {
+  const previousDateIdsSet = new Set(previousDateIds);
 
-  function mergeOrRemoveRange(
-    previousDateIds: string[],
-    rangeDateIds: string[],
-  ) {
-    const previousDateIdsSet = new Set(previousDateIds);
+  const isEntireRangeAlreadySelected = draggedDateIds.every((dateId) =>
+    previousDateIdsSet.has(dateId),
+  );
 
-    const fullRangeAlreadySelected = rangeDateIds.every((dateId) =>
-      previousDateIdsSet.has(dateId),
+  if (isEntireRangeAlreadySelected) {
+    return uniqueSortedIds(
+      previousDateIds.filter((dateId) => !draggedDateIds.includes(dateId)),
     );
-
-    if (fullRangeAlreadySelected) {
-      return uniqueSortedIds(
-        previousDateIds.filter((dateId) => !rangeDateIds.includes(dateId)),
-      );
-    }
-
-    return uniqueSortedIds([...previousDateIds, ...rangeDateIds]);
   }
 
-  function handleCalendarSelect(action: CalendarSelectionAction) {
-    if (action.type === "day") {
-      const dayId = action.dayId;
+  return uniqueSortedIds([...previousDateIds, ...draggedDateIds]);
+}
+function handleCalendarSelect(action: CalendarSelectionAction) {
+  if (action.type === "day") {
+    const dayId = action.dayId;
 
-      if (isWeekendDateId(dayId)) return;
+    if (isWeekendDateId(dayId)) return;
 
-      if (selectionMode === "single") {
-        setSelectedDateIds([dayId]);
-        setActiveDayId(dayId);
-        return;
-      }
+    setActiveDayId(dayId);
 
-      if (selectionMode === "repeat") {
-        const selectedCell = calendarCells.find((cell) => cell.id === dayId);
-        if (!selectedCell) return;
-
-        const repeatedDateIds = calendarCells
-          .filter(
-            (cell) =>
-              !cell.isWeekend &&
-              cell.date >= selectedCell.date &&
-              cell.date.getDay() === selectedCell.date.getDay(),
-          )
-          .map((cell) => cell.id);
-
-        setSelectedDateIds(uniqueSortedIds(repeatedDateIds));
-        setActiveDayId(dayId);
-        return;
-      }
-
-      if (selectionMode === "multiple") {
-        setSelectedDateIds((previousDateIds) => {
-          const alreadySelected = previousDateIds.includes(dayId);
-
-          if (!alreadySelected) {
-            return uniqueSortedIds([...previousDateIds, dayId]);
-          }
-
-          return uniqueSortedIds(
-            previousDateIds.filter((selectedDayId) => selectedDayId !== dayId),
-          );
-        });
-
-        setActiveDayId(dayId);
-      }
-
+    if (selectionMode === "single") {
+      setSelectedDateIds([dayId]);
       return;
     }
 
-    if (action.type === "range") {
-      if (selectionMode !== "multiple") return;
+    if (selectionMode === "repeat") {
+      const selectedCell = calendarCells.find((cell) => cell.id === dayId);
+      if (!selectedCell) return;
 
-      const draggedDateIds = uniqueSortedIds(
-        action.dateIds.filter((dateId) => !isWeekendDateId(dateId)),
-      );
+      const repeatedDateIds = calendarCells
+        .filter(
+          (cell) =>
+            !cell.isWeekend &&
+            cell.date >= selectedCell.date &&
+            cell.date.getDay() === selectedCell.date.getDay(),
+        )
+        .map((cell) => cell.id);
 
-      if (draggedDateIds.length === 0) return;
+      setSelectedDateIds(uniqueSortedIds(repeatedDateIds));
+      return;
+    }
 
-      setSelectedDateIds((previousDateIds) =>
-        mergeOrRemoveRange(previousDateIds, draggedDateIds),
-      );
+    if (selectionMode === "multiple") {
+      setSelectedDateIds((previousDateIds) => {
+        const alreadySelected = previousDateIds.includes(dayId);
 
-      setActiveDayId(draggedDateIds[0] ?? activeDayId);
+        if (alreadySelected) {
+          return uniqueSortedIds(
+            previousDateIds.filter((selectedDayId) => selectedDayId !== dayId),
+          );
+        }
+
+        return uniqueSortedIds([...previousDateIds, dayId]);
+      });
+
+      return;
     }
   }
+
+  if (action.type === "range") {
+    if (selectionMode !== "multiple") return;
+
+    const draggedDateIds = uniqueSortedIds(
+      action.dateIds.filter((dateId) => !isWeekendDateId(dateId)),
+    );
+
+    if (draggedDateIds.length === 0) return;
+
+    setSelectedDateIds((previousDateIds) =>
+      mergeOrRemoveRange(previousDateIds, draggedDateIds),
+    );
+
+    setActiveDayId(draggedDateIds[0]);
+  }
+}
 
   function handleModeChange(mode: SelectionMode) {
     setSelectionMode(mode);

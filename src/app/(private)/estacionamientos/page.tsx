@@ -28,7 +28,6 @@ export default function ParkingReservationSchedulerPage() {
 
   const {
     parkingLot,
-    parkingName,
     calendarCells,
     scheduler,
     parkingBuckets,
@@ -97,7 +96,7 @@ export default function ParkingReservationSchedulerPage() {
       <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_350px]">
         <section className="space-y-5">
           <ParkingCapacityTimelineCard
-            capacity={parkingLot?.capacity ?? 0}
+            capacity={parkingLot?.capacity ?? FALLBACK_PARKING_CAPACITY}
             blocks={scheduler.proposedBlocksForActiveDay}
             buckets={parkingBuckets}
           />
@@ -132,6 +131,7 @@ export default function ParkingReservationSchedulerPage() {
             onModeChange={scheduler.handleModeChange}
             onSelect={scheduler.handleCalendarSelect}
             onClearSelection={scheduler.clearSelection}
+            onActivateDay={scheduler.setActiveDayId}
           />
 
           <AvailabilityIntervalCard

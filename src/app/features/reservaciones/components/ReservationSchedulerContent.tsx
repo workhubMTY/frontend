@@ -96,6 +96,7 @@ export function ReservationSchedulerContent() {
             onModeChange={scheduler.handleModeChange}
             onSelect={scheduler.handleCalendarSelect}
             onClearSelection={scheduler.clearSelection}
+            onActivateDay={scheduler.setActiveDayId}
           />
           <EventsAndConflictsCard
             events={activeDayExternalEvents}

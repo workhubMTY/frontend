@@ -19,6 +19,7 @@ type MonthCalendarProps = {
   calendarCells: CalendarCell[];
   variant?: "default" | "compact";
   onSelect: (action: CalendarSelectionAction) => void;
+  onActivateDay: (dayId: string) => void;
 };
 
 const WEEKDAY_LABELS = ["D", "L", "M", "M", "J", "V", "S"];
@@ -31,6 +32,7 @@ export function MonthCalendar({
   calendarCells,
   variant = "default",
   onSelect,
+  onActivateDay,
 }: MonthCalendarProps) {
   const selectedDatesSet = useMemo(
     () => new Set(selectedDateIds),
@@ -41,17 +43,19 @@ export function MonthCalendar({
     () => new Set(conflictDateIds),
     [conflictDateIds],
   );
-
-  const {
-    dragPreviewDatesSet,
-    handlePointerDown,
-    handlePointerEnter,
-    finishDrag,
-  } = useCalendarDragSelection({
-    calendarCells,
-    selectionMode,
-    onSelect,
-  });
+const {
+  dragPreviewDatesSet,
+  handlePointerDown,
+  handlePointerEnter,
+  finishDrag,
+} = useCalendarDragSelection({
+  activeDayId,
+  selectedDateIds,
+  calendarCells,
+  selectionMode,
+  onSelect,
+  onActivateDay,
+});
 
   const firstWeekdayOffset = calendarCells[0]?.date.getDay() ?? 0;
 
