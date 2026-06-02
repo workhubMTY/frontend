@@ -14,10 +14,7 @@ export function ParkingCapacityTimelineCard({
   blocks,
   buckets = [],
   highOccupationThreshold = 0.75,
-  conflictRange = {
-    startHour: 10.5,
-    endHour: 12,
-  },
+  conflictRanges = [],
 }: ParkingCapacityTimelineCardProps) {
   const capacityBars = useMemo(
     () =>
@@ -50,7 +47,7 @@ export function ParkingCapacityTimelineCard({
 
             <SelectedBlocksRow
               blocks={blocks}
-              conflictRange={conflictRange}
+              conflictRanges={conflictRanges}
             />
           </div>
         </div>

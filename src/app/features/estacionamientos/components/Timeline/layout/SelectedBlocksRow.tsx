@@ -5,12 +5,12 @@ import { formatBlockLabel, getHourFromTimeLabel } from "../utils";
 
 type SelectedBlocksRowProps = {
   blocks: TimeBlock[];
-  conflictRange: ConflictRange;
+  conflictRanges: ConflictRange[];
 };
 
 export function SelectedBlocksRow({
   blocks,
-  conflictRange,
+  conflictRanges,
 }: SelectedBlocksRowProps) {
   return (
     <div className="grid grid-cols-[120px_minmax(0,1fr)]">
@@ -27,7 +27,7 @@ export function SelectedBlocksRow({
           <SelectedParkingBlock
             key={block.id}
             block={block}
-            conflictRange={conflictRange}
+            conflictRanges={conflictRanges}
           />
         ))}
       </div>
@@ -37,12 +37,12 @@ export function SelectedBlocksRow({
 
 type SelectedParkingBlockProps = {
   block: TimeBlock;
-  conflictRange: ConflictRange;
+  conflictRanges: ConflictRange[];
 };
 
 function SelectedParkingBlock({
   block,
-  conflictRange,
+  conflictRanges,
 }: SelectedParkingBlockProps) {
   const startHour = getHourFromTimeLabel(block.start);
   const endHour = getHourFromTimeLabel(block.end);
@@ -51,19 +51,24 @@ function SelectedParkingBlock({
   const left = (startHour / 24) * 100;
   const width = (duration / 24) * 100;
 
-  const hasConflict =
-    startHour < conflictRange.endHour && endHour > conflictRange.startHour;
+  const overlappingSegments = conflictRanges
+    .map((range) => {
+      const hasConflict =
+        startHour < range.endHour && endHour > range.startHour;
 
-  const conflictStart = Math.max(conflictRange.startHour, startHour);
-  const conflictEnd = Math.min(conflictRange.endHour, endHour);
+      if (!hasConflict) return null;
 
-  const conflictLeft = hasConflict
-    ? ((conflictStart - startHour) / duration) * 100
-    : 0;
+      const conflictStart = Math.max(range.startHour, startHour);
+      const conflictEnd = Math.min(range.endHour, endHour);
 
-  const conflictWidth = hasConflict
-    ? ((conflictEnd - conflictStart) / duration) * 100
-    : 0;
+      return {
+        left: ((conflictStart - startHour) / duration) * 100,
+        width: ((conflictEnd - conflictStart) / duration) * 100,
+      };
+    })
+    .filter(Boolean) as Array<{ left: number; width: number }>;
+
+  const hasConflict = overlappingSegments.length > 0;
 
   return (
     <div
@@ -74,18 +79,21 @@ function SelectedParkingBlock({
       }}
     >
       <div className="relative flex h-full items-center justify-center px-3">
-        {hasConflict ? (
+        {overlappingSegments.map((segment, index) => (
           <div
+            key={index}
             className="absolute inset-y-0 bg-[repeating-linear-gradient(135deg,#f97316_0px,#f97316_4px,transparent_4px,transparent_8px)]"
             style={{
-              left: `${conflictLeft}%`,
-              width: `${conflictWidth}%`,
+              left: `${segment.left}%`,
+              width: `${segment.width}%`,
             }}
           />
-        ) : null}
+        ))}
 
         <span className="relative z-10 truncate text-sm font-semibold text-white">
-          {formatBlockLabel(block.start, block.end)}
+          {hasConflict
+            ? `Empalme · ${formatBlockLabel(block.start, block.end)}`
+            : formatBlockLabel(block.start, block.end)}
         </span>
       </div>
     </div>

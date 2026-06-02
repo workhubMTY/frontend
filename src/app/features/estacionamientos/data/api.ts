@@ -11,11 +11,10 @@ import type {
   ReservationBucketsResponse,
   ReservationDetailResponse,
   PatchAttendance,
+  ParkingReservationListItem,
 } from "./types";
 
-function toSearchParams(
-  params: Record<string, unknown>
-): URLSearchParams {
+function toSearchParams(params: Record<string, unknown>): URLSearchParams {
   const sp = new URLSearchParams();
 
   for (const [key, value] of Object.entries(params)) {
@@ -72,15 +71,23 @@ export const parkingReservationsApi = {
     const qs = query
       ? `?${toSearchParams(query as Record<string, unknown>)}`
       : "";
-    return authFetch<ListReservationsResponse>(
-      `${BASE}/reservations/${qs}`
-    );
+    return authFetch<ListReservationsResponse>(`${BASE}/reservations/${qs}`);
   },
 
   getBuckets: (query: ReservationBucketsQuery) => {
     const qs = toSearchParams(query as Record<string, unknown>);
     return authFetch<ReservationBucketsResponse>(
-      `${BASE}/reservations/buckets?${qs}`
+      `${BASE}/reservations/buckets?${qs}`,
+    );
+  },
+
+  getMyReservations: (query?: ListReservationsQuery) => {
+    const qs = query
+      ? `?${toSearchParams(query as Record<string, unknown>)}`
+      : "";
+
+    return authFetch<ParkingReservationListItem[]>(
+      `${BASE}/reservations/me${qs}`,
     );
   },
 

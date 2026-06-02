@@ -107,3 +107,12 @@ export type ParkingUpdateMessage =
   | { type: "lot.created"; payload: ParkingLot }
   | { type: "lot.updated"; payload: ParkingLot }
   | { type: "lot.deleted"; payload: { id: number } };
+
+  export type ParkingReservationListItem = {
+  reservation: ParkingReservation;
+  projection: {
+    parking_lot: ParkingLot | null;
+    slot_index: number | null;
+    fifo_position: number;
+  } | null;
+};

@@ -19,16 +19,21 @@ import type {
   ListReservationsResponse,
   ReservationDetailResponse,
 } from "./types";
-
 export const parkingKeys = {
   all: () => ["parking"] as const,
   lots: () => ["parking", "lots"] as const,
   lotDetail: (id: number) => ["parking", "lots", id] as const,
+
   reservations: () => ["parking", "reservations"] as const,
   reservationsList: (q?: ListReservationsQuery) =>
     ["parking", "reservations", "list", q ?? {}] as const,
+
+  myReservations: (q?: ListReservationsQuery) =>
+    ["parking", "reservations", "me", q ?? {}] as const,
+
   reservationDetail: (id: number) =>
     ["parking", "reservations", "detail", id] as const,
+
   buckets: (q?: ReservationBucketsQuery) =>
     ["parking", "buckets", q ?? {}] as const,
 } as const;
@@ -353,4 +358,14 @@ export function useParkingBuckets(
   }, [socket, queryClient, query]);
 
   return queryResult;
+}
+export function useMyParkingReservations(
+  query?: ListReservationsQuery,
+  options?: { enabled?: boolean },
+) {
+  return useQuery({
+    queryKey: ["parking-reservations", "me", query],
+    queryFn: () => parkingReservationsApi.getMyReservations(query),
+    enabled: Boolean(query) && (options?.enabled ?? true),
+  });
 }

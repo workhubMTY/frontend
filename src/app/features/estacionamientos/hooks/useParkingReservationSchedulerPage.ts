@@ -3,6 +3,7 @@
 import { useMemo } from "react";
 
 import {
+  useMyParkingReservations,
   useParkingBuckets,
   useParkingLotDetail,
   useParkingReservations,
@@ -22,10 +23,11 @@ import type {
   ParkingReservation,
   ReservationBucketsQuery,
 } from "@/app/features/estacionamientos/data/types";
+
 import { getLocalDayRange } from "../lib/parkingAvailability";
 
 function toDateId(value: Date | string) {
-  return new Date(value).toISOString().slice(0, 10);
+  return new Date(value).toLocaleDateString("en-CA");
 }
 
 function toTime(value: Date | string) {
@@ -35,6 +37,7 @@ function toTime(value: Date | string) {
     hour12: false,
   });
 }
+
 function toParkingTimelineEvent(
   reservation: ParkingReservation,
 ): TimelineEvent {
@@ -47,11 +50,6 @@ function toParkingTimelineEvent(
     label: `${toTime(reservation.start_time)} - ${toTime(reservation.end_time)}`,
     row: "reserved",
   };
-}
-function getNextDateId(dateId: string) {
-  const date = new Date(`${dateId}T00:00:00.000Z`);
-  date.setUTCDate(date.getUTCDate() + 1);
-  return date.toISOString().slice(0, 10);
 }
 
 type UseParkingReservationSchedulerPageParams = {
@@ -77,14 +75,32 @@ export function useParkingReservationSchedulerPage({
 
     return {
       parking_lot_id: parkingId,
-      start_time: new Date(`${visibleRange.firstDateId}T00:00:00.000Z`),
-      end_time: new Date(`${visibleRange.lastDateId}T23:59:59.999Z`),
+      start_time: new Date(`${visibleRange.firstDateId}T00:00:00.000`),
+      end_time: new Date(`${visibleRange.lastDateId}T23:59:59.999`),
     };
   }, [parkingId, visibleRange]);
+
+  const myReservationsQueryParams = useMemo<
+    ListReservationsQuery | undefined
+  >(() => {
+    if (!visibleRange) return undefined;
+
+    return {
+      start_time: new Date(`${visibleRange.firstDateId}T00:00:00.000`),
+      end_time: new Date(`${visibleRange.lastDateId}T23:59:59.999`),
+    };
+  }, [visibleRange]);
 
   const reservationsQuery = useParkingReservations(reservationsQueryParams, {
     enabled: Boolean(parkingId && visibleRange),
   });
+
+  const myReservationsQuery = useMyParkingReservations(
+    myReservationsQueryParams,
+    {
+      enabled: Boolean(visibleRange),
+    },
+  );
 
   const parkingTimelineEvents = useMemo(
     () =>
@@ -93,16 +109,41 @@ export function useParkingReservationSchedulerPage({
       ),
     [reservationsQuery.data?.items],
   );
+const myParkingReservations = useMemo(
+  () =>
+    (myReservationsQuery.data ?? [])
+      .filter((item) => item.reservation.lifecycle_status === "ACTIVE")
+      .map((item) => item.reservation),
+  [myReservationsQuery.data],
+);
+
+const myParkingTimelineEvents = useMemo(
+  () =>
+    myParkingReservations.map((reservation) =>
+      toParkingTimelineEvent(reservation),
+    ),
+  [myParkingReservations],
+);
 
   const parkingReservationsByDate = useMemo(
     () => groupTimelineEventsByDate(parkingTimelineEvents),
     [parkingTimelineEvents],
   );
 
+  const myParkingReservationsByDate = useMemo(
+    () => groupTimelineEventsByDate(myParkingTimelineEvents),
+    [myParkingTimelineEvents],
+  );
+
   const scheduler = useReservationScheduler({
     calendarCells,
-    spaceReservationsByDate: parkingReservationsByDate,
+
+    // Importante:
+    // Para estacionamientos, los conflictos bloqueantes son TUS reservaciones,
+    // no todas las reservaciones del estacionamiento.
+    spaceReservationsByDate: myParkingReservationsByDate,
   });
+
   const bucketsQueryParams = useMemo<
     ReservationBucketsQuery | undefined
   >(() => {
@@ -120,10 +161,17 @@ export function useParkingReservationSchedulerPage({
   const bucketsQuery = useParkingBuckets(bucketsQueryParams, {
     enabled: Boolean(scheduler.activeDayId),
   });
+
   const parkingReservationsForActiveDay = useMemo(
     () => parkingReservationsByDate[scheduler.activeDayId] ?? [],
     [parkingReservationsByDate, scheduler.activeDayId],
   );
+
+  const myParkingReservationsForActiveDay = useMemo(
+    () => myParkingReservationsByDate[scheduler.activeDayId] ?? [],
+    [myParkingReservationsByDate, scheduler.activeDayId],
+  );
+
   return {
     calendarCells,
     scheduler,
@@ -133,6 +181,10 @@ export function useParkingReservationSchedulerPage({
 
     parkingReservationsByDate,
     parkingReservationsForActiveDay,
+
+    myParkingReservationsByDate,
+    myParkingReservationsForActiveDay,
+
     parkingBuckets: bucketsQuery.data?.buckets ?? [],
 
     createParkingReservation: reservationsQuery.createReservation,
@@ -140,14 +192,19 @@ export function useParkingReservationSchedulerPage({
     isLoading:
       parkingLotQuery.isLoading ||
       reservationsQuery.isLoading ||
+      myReservationsQuery.isLoading ||
       bucketsQuery.isLoading,
 
     isFetching:
       parkingLotQuery.isFetching ||
       reservationsQuery.isFetching ||
+      myReservationsQuery.isFetching ||
       bucketsQuery.isFetching,
 
     error:
-      parkingLotQuery.error ?? reservationsQuery.error ?? bucketsQuery.error,
+      parkingLotQuery.error ??
+      reservationsQuery.error ??
+      myReservationsQuery.error ??
+      bucketsQuery.error,
   };
 }

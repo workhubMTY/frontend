@@ -12,6 +12,7 @@ import { ParkingCapacityTimelineCard } from "@/app/features/estacionamientos/com
 
 import { getParkingAvailability } from "@/app/features/estacionamientos/lib/parkingAvailability";
 import { useParkingReservationSchedulerPage } from "@/app/features/estacionamientos/hooks/useParkingReservationSchedulerPage";
+import { getHourFromTimeLabel } from "@/app/features/estacionamientos/components/Timeline/utils";
 
 const FALLBACK_PARKING_CAPACITY = 40;
 const BASE_OCCUPIED_SPOTS = 0;
@@ -25,13 +26,13 @@ export default function ParkingReservationSchedulerPage() {
     searchParams.get("parkingId") ?? searchParams.get("spaceId");
 
   const parkingId = parkingIdParam ? Number(parkingIdParam) : null;
-
   const {
     parkingLot,
     calendarCells,
     scheduler,
     parkingBuckets,
     parkingReservationsForActiveDay,
+    myParkingReservationsForActiveDay,
     createParkingReservation,
   } = useParkingReservationSchedulerPage({
     parkingId,
@@ -41,6 +42,14 @@ export default function ParkingReservationSchedulerPage() {
 
   const highOccupationThreshold = Math.floor(
     parkingCapacity * HIGH_OCCUPATION_THRESHOLD_PERCENTAGE,
+  );
+  const myReservationConflictRanges = useMemo(
+    () =>
+      myParkingReservationsForActiveDay.map((reservation) => ({
+        startHour: getHourFromTimeLabel(reservation.start),
+        endHour: getHourFromTimeLabel(reservation.end),
+      })),
+    [myParkingReservationsForActiveDay],
   );
 
   const parkingAvailability = useMemo(
@@ -99,6 +108,7 @@ export default function ParkingReservationSchedulerPage() {
             capacity={parkingLot?.capacity ?? FALLBACK_PARKING_CAPACITY}
             blocks={scheduler.proposedBlocksForActiveDay}
             buckets={parkingBuckets}
+            conflictRanges={myReservationConflictRanges}
           />
 
           <ProposedSchedulesCard

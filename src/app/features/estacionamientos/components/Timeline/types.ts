@@ -20,5 +20,5 @@ export type ParkingCapacityTimelineCardProps = {
   blocks: TimeBlock[];
   buckets?: ReservationBucket[];
   highOccupationThreshold?: number;
-  conflictRange?: ConflictRange;
+  conflictRanges?: ConflictRange[];
 };
