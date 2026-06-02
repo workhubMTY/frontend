@@ -84,7 +84,7 @@ export default function ParkingReservationSchedulerPage() {
       ),
     );
 
-    router.push("/estacionamientos");
+    // router.push("/home");
   }
 
   return (
@@ -126,7 +126,7 @@ export default function ParkingReservationSchedulerPage() {
             canContinue={
               scheduler.canContinue && !createParkingReservation.isPending
             }
-            onCancel={() => router.push("/estacionamientos")}
+            onCancel={() => router.push("/home")}
             onContinue={handleContinue}
           />
         </section>
