@@ -13,7 +13,12 @@ import type {
 import { getFirstAvailableDateId } from "@/app/features/reservaciones/lib/dates";
 import { hasOverlappingBlocks } from "@/app/features/reservaciones/lib/conflicts";
 import { uniqueSortedIds } from "@/app/features/reservaciones/lib/formatting";
-import { to24Hour } from "@/app/features/reservaciones/lib/time";
+import {
+  isValidTimeRange,
+  normalizeTimeInput,
+  parseTimeToMinutes,
+  to24Hour,
+} from "@/app/features/reservaciones/lib/time";
 
 type SelectedSpace = {
   id: string;
@@ -36,16 +41,24 @@ type UseReservationSchedulerParams = {
    */
   spaceReservationsByDate?: SpaceReservationsByDate;
 };
-
 function blockOverlapsReservation(
   block: TimeBlock,
   reservation: TimelineEvent,
 ) {
-  const blockStart = to24Hour(block.start);
-  const blockEnd = to24Hour(block.end);
+  const blockStart = parseTimeToMinutes(block.start);
+  const blockEnd = parseTimeToMinutes(block.end);
 
-  const reservationStart = to24Hour(reservation.start);
-  const reservationEnd = to24Hour(reservation.end);
+  const reservationStart = parseTimeToMinutes(reservation.start);
+  const reservationEnd = parseTimeToMinutes(reservation.end);
+
+  if (
+    blockStart === null ||
+    blockEnd === null ||
+    reservationStart === null ||
+    reservationEnd === null
+  ) {
+    return false;
+  }
 
   return blockStart < reservationEnd && blockEnd > reservationStart;
 }
@@ -80,87 +93,89 @@ export function useReservationScheduler({
 
     return proposedBlocks;
   }, [activeDayIsSelected, proposedBlocks]);
-function mergeOrRemoveRange(
-  previousDateIds: string[],
-  draggedDateIds: string[],
-) {
-  const previousDateIdsSet = new Set(previousDateIds);
+  function mergeOrRemoveRange(
+    previousDateIds: string[],
+    draggedDateIds: string[],
+  ) {
+    const previousDateIdsSet = new Set(previousDateIds);
 
-  const isEntireRangeAlreadySelected = draggedDateIds.every((dateId) =>
-    previousDateIdsSet.has(dateId),
-  );
-
-  if (isEntireRangeAlreadySelected) {
-    return uniqueSortedIds(
-      previousDateIds.filter((dateId) => !draggedDateIds.includes(dateId)),
-    );
-  }
-
-  return uniqueSortedIds([...previousDateIds, ...draggedDateIds]);
-}
-function handleCalendarSelect(action: CalendarSelectionAction) {
-  if (action.type === "day") {
-    const dayId = action.dayId;
-
-    if (isWeekendDateId(dayId)) return;
-
-    setActiveDayId(dayId);
-
-    if (selectionMode === "single") {
-      setSelectedDateIds([dayId]);
-      return;
-    }
-
-    if (selectionMode === "repeat") {
-      const selectedCell = calendarCells.find((cell) => cell.id === dayId);
-      if (!selectedCell) return;
-
-      const repeatedDateIds = calendarCells
-        .filter(
-          (cell) =>
-            !cell.isWeekend &&
-            cell.date >= selectedCell.date &&
-            cell.date.getDay() === selectedCell.date.getDay(),
-        )
-        .map((cell) => cell.id);
-
-      setSelectedDateIds(uniqueSortedIds(repeatedDateIds));
-      return;
-    }
-
-    if (selectionMode === "multiple") {
-      setSelectedDateIds((previousDateIds) => {
-        const alreadySelected = previousDateIds.includes(dayId);
-
-        if (alreadySelected) {
-          return uniqueSortedIds(
-            previousDateIds.filter((selectedDayId) => selectedDayId !== dayId),
-          );
-        }
-
-        return uniqueSortedIds([...previousDateIds, dayId]);
-      });
-
-      return;
-    }
-  }
-
-  if (action.type === "range") {
-    if (selectionMode !== "multiple") return;
-
-    const draggedDateIds = uniqueSortedIds(
-      action.dateIds.filter((dateId) => !isWeekendDateId(dateId)),
+    const isEntireRangeAlreadySelected = draggedDateIds.every((dateId) =>
+      previousDateIdsSet.has(dateId),
     );
 
-    if (draggedDateIds.length === 0) return;
+    if (isEntireRangeAlreadySelected) {
+      return uniqueSortedIds(
+        previousDateIds.filter((dateId) => !draggedDateIds.includes(dateId)),
+      );
+    }
 
-    setSelectedDateIds((previousDateIds) =>
-      mergeOrRemoveRange(previousDateIds, draggedDateIds),
-    );
-
-    setActiveDayId(draggedDateIds[0]);
+    return uniqueSortedIds([...previousDateIds, ...draggedDateIds]);
   }
-}
+  function handleCalendarSelect(action: CalendarSelectionAction) {
+    if (action.type === "day") {
+      const dayId = action.dayId;
+
+      if (isWeekendDateId(dayId)) return;
+
+      setActiveDayId(dayId);
+
+      if (selectionMode === "single") {
+        setSelectedDateIds([dayId]);
+        return;
+      }
+
+      if (selectionMode === "repeat") {
+        const selectedCell = calendarCells.find((cell) => cell.id === dayId);
+        if (!selectedCell) return;
+
+        const repeatedDateIds = calendarCells
+          .filter(
+            (cell) =>
+              !cell.isWeekend &&
+              cell.date >= selectedCell.date &&
+              cell.date.getDay() === selectedCell.date.getDay(),
+          )
+          .map((cell) => cell.id);
+
+        setSelectedDateIds(uniqueSortedIds(repeatedDateIds));
+        return;
+      }
+
+      if (selectionMode === "multiple") {
+        setSelectedDateIds((previousDateIds) => {
+          const alreadySelected = previousDateIds.includes(dayId);
+
+          if (alreadySelected) {
+            return uniqueSortedIds(
+              previousDateIds.filter(
+                (selectedDayId) => selectedDayId !== dayId,
+              ),
+            );
+          }
+
+          return uniqueSortedIds([...previousDateIds, dayId]);
+        });
+
+        return;
+      }
+    }
+
+    if (action.type === "range") {
+      if (selectionMode !== "multiple") return;
+
+      const draggedDateIds = uniqueSortedIds(
+        action.dateIds.filter((dateId) => !isWeekendDateId(dateId)),
+      );
+
+      if (draggedDateIds.length === 0) return;
+
+      setSelectedDateIds((previousDateIds) =>
+        mergeOrRemoveRange(previousDateIds, draggedDateIds),
+      );
+
+      setActiveDayId(draggedDateIds[0]);
+    }
+  }
 
   function handleModeChange(mode: SelectionMode) {
     setSelectionMode(mode);
@@ -257,18 +272,26 @@ function handleCalendarSelect(action: CalendarSelectionAction) {
 
   const hasBlockingConflict =
     proposedBlocksHaveInternalConflict || proposedBlocksHaveSpaceConflict;
+  const proposedBlocksHaveValidTimes = proposedBlocks.every((block) =>
+    isValidTimeRange(block.start, block.end),
+  );
 
   const canContinue =
     selectableSelectedDateIds.length > 0 &&
     proposedBlocks.length > 0 &&
+    proposedBlocksHaveValidTimes &&
     !hasBlockingConflict;
   function createReservationSchedules() {
     if (!canContinue) return null;
 
     return selectableSelectedDateIds.flatMap((dateId) =>
       proposedBlocks.map((block) => {
-        const start = to24Hour(block.start);
-        const end = to24Hour(block.end);
+        const start = normalizeTimeInput(block.start);
+        const end = normalizeTimeInput(block.end);
+
+        if (!start || !end) {
+          throw new Error("Invalid proposed block time");
+        }
 
         return {
           start_time: new Date(`${dateId}T${start}:00`).toISOString(),
@@ -300,24 +323,22 @@ function handleCalendarSelect(action: CalendarSelectionAction) {
     selectedDateIds,
     selectableSelectedDateIds,
     activeDayId,
-
+    activeDayIsSelected,
     proposedBlocks,
     proposedBlocksForActiveDay,
-
-    activeDayIsSelected,
     conflictDateIds,
+    proposedBlocksHaveInternalConflict,
+    proposedBlocksHaveSpaceConflict,
+    proposedBlocksHaveValidTimes,
     hasBlockingConflict,
     canContinue,
-
     setActiveDayId,
-    handleModeChange,
     handleCalendarSelect,
+    handleModeChange,
     clearSelection,
-
     addProposedBlock,
     updateProposedBlock,
     deleteProposedBlock,
-
     createReservationSchedules,
     createReservationDraft,
   };
