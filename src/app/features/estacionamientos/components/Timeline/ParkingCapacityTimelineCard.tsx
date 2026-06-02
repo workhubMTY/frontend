@@ -27,7 +27,7 @@ export function ParkingCapacityTimelineCard({
   );
 
   return (
-    <section className="border border-slate-200 bg-white p-5 shadow-sm">
+    <section className="border border-grid-lines bg-white p-5">
       <header className="mb-5 flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
         <div>
           <h2 className="text-lg font-semibold tracking-tight text-slate-950">

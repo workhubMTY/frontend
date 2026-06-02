@@ -29,7 +29,7 @@ export function ReservationFooter({
         : "Tu reservación está lista para revisar.";
 
   return (
-    <section className="rounded-xl border border-slate-200 bg-white p-4">
+    <section className="border border-grid-lines bg-white p-4">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div>
           <p className="text-sm font-semibold text-slate-900">
