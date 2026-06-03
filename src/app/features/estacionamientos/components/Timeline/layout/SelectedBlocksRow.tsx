@@ -74,7 +74,7 @@ function ExistingMyReservationRange({ range }: ExistingMyReservationRangeProps) 
 
   return (
     <div
-      className="absolute top-1/2 z-20 h-10 -translate-y-1/2 overflow-hidden bg-slate-200 border border-grid-lines"
+      className="absolute top-1/2 z-20 h-10 -translate-y-1/2 overflow-hidden bg-slate-200 rounded-xl border border-grid-lines"
       style={{
         left: `${left}%`,
         width: `${width}%`,
@@ -124,7 +124,7 @@ function SelectedParkingBlock({
 
   return (
     <div
-      className="absolute inset-y-0 z-30 bg-purple-50/80"
+      className="absolute inset-y-0 z-30 my-2 border-y border-dashed border-primary-2 bg-purple-50/80"
       style={{
         left: `${left}%`,
         width: `${width}%`,

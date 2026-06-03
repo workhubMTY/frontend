@@ -61,7 +61,6 @@ export function SelectionModeCalendarCard({
           onClearSelection={onClearSelection}
         />
 
-        <CalendarLegend />
       </div>
     </Card>
   );
@@ -88,36 +87,8 @@ function CalendarActions({ disabled, onClearSelection }: CalendarActionsProps) {
   );
 }
 
-function CalendarLegend() {
-  return (
-    <div className="border-slate-200 pt-4 text-sm">
-      <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500">
-        <CalendarLegendItem
-          className="border border-violet-200 bg-violet-50"
-          label="Seleccionado"
-        />
-
-        {/* <CalendarLegendItem className="bg-violet-600" label="Con horarios" /> */}
-
-        <CalendarLegendItem
-          className="bg-red-500 ring-2 ring-red-100"
-          label="Empalme"
-        />
-      </div>
-    </div>
-  );
-}
-
 type CalendarLegendItemProps = {
   label: string;
   className: string;
 };
 
-function CalendarLegendItem({ label, className }: CalendarLegendItemProps) {
-  return (
-    <span className="flex items-center gap-2">
-      <span className={cn("h-5 w-5 rounded-full", className)} />
-      {label}
-    </span>
-  );
-}
