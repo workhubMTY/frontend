@@ -43,15 +43,11 @@ export function ParkingCapacityTimelineCard({
           <TimelineHeader />
 
           <div className="overflow-hidden rounded-xl border border-slate-200">
-<CapacityBarsRow
-  capacity={capacity}
-  bars={capacityBars}
-  myReservationRanges={conflictRanges}
-/>
+            <CapacityBarsRow capacity={capacity} bars={capacityBars} />
 
             <SelectedBlocksRow
               blocks={blocks}
-              conflictRanges={conflictRanges}
+              myReservationRanges={conflictRanges}
             />
           </div>
         </div>
