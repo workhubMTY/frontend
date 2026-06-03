@@ -5,6 +5,7 @@ import type { DashboardView } from "../hooks/useDashboard";
 const OPTIONS: { value: DashboardView; label: string }[] = [
   { value: "users", label: "Usuarios" },
   { value: "reservations", label: "Reservaciones" },
+  { value: "stats", label: "Estadisticas"},
 ];
 
 type Props = {

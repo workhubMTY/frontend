@@ -9,7 +9,7 @@ import type {
   Friendships,
 } from "../data/types";
 
-export type DashboardView = "users" | "reservations" | "friends";
+export type DashboardView = "users" | "reservations" | "stats";
 
 export function useDashboard() {
   const [activeView, setActiveView] = useState<DashboardView>("users");
@@ -31,9 +31,7 @@ export function useDashboard() {
   const [friendshipsLoading, setFriendshipsLoading] = useState(false);
 
   // Friends view
-  const [friends, setFriends] = useState<Friendships[]>([]);
-  const [friendsLoading, setFriendsLoading] = useState(false);
-  const [friendsError, setFriendsError] = useState<string | null>(null);
+  
 
   const handleSetActiveView = (view: DashboardView) => {
     setSearch("");
@@ -104,8 +102,5 @@ export function useDashboard() {
     friendshipsLoading,
     openUserModal,
     closeUserModal,
-    friends,
-    friendsLoading,
-    friendsError,
   };
 }
