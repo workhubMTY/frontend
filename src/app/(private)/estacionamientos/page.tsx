@@ -1,22 +1,45 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 import { ProposedSchedulesCard } from "@/app/features/reservaciones/components/Cards/ProposedSchedulesCard";
 import { ReservationFooter } from "@/app/features/reservaciones/components/ReservationFooter";
 import { SelectionModeCalendarCard } from "@/app/features/reservaciones/components/Calendar/DaysSelection/SelectionModeCalendarCard";
 
-import { AvailabilityIntervalCard } from "@/app/features/estacionamientos/components/AvailabilityIntervalCard";
+import { AvailabilityIntervalCard } from "@/app/features/estacionamientos/components/Cards/AvailabilityIntervalCard";
 import { ParkingCapacityTimelineCard } from "@/app/features/estacionamientos/components/Timeline/ParkingCapacityTimelineCard";
 
 import { getParkingAvailability } from "@/app/features/estacionamientos/lib/parkingAvailability";
 import { useParkingReservationSchedulerPage } from "@/app/features/estacionamientos/hooks/useParkingReservationSchedulerPage";
 import { getHourFromTimeLabel } from "@/app/features/estacionamientos/components/Timeline/utils";
 
+import type { TimeBlock } from "@/app/features/reservaciones/types/reservaciones";
+import type { CreateParkingReservation } from "@/app/features/estacionamientos/data/types";
+import { ParkingReservationConfirmModal } from "@/app/features/estacionamientos/components/ParkingReservationsConfirmModals";
+
 const FALLBACK_PARKING_CAPACITY = 40;
 const BASE_OCCUPIED_SPOTS = 0;
 const HIGH_OCCUPATION_THRESHOLD_PERCENTAGE = 0.9;
+
+function buildLocalDateTime(dateId: string, time: string) {
+  return new Date(`${dateId}T${time}:00`);
+}
+
+function buildParkingReservationPayloads({
+  selectedDateIds,
+  blocks,
+}: {
+  selectedDateIds: string[];
+  blocks: TimeBlock[];
+}): CreateParkingReservation[] {
+  return selectedDateIds.flatMap((dateId) =>
+    blocks.map((block) => ({
+      start_time: buildLocalDateTime(dateId, block.start),
+      end_time: buildLocalDateTime(dateId, block.end),
+    })),
+  );
+}
 
 export default function ParkingReservationSchedulerPage() {
   const router = useRouter();
@@ -37,6 +60,8 @@ export default function ParkingReservationSchedulerPage() {
   } = useParkingReservationSchedulerPage({
     parkingId,
   });
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [isSubmittingReservation, setIsSubmittingReservation] = useState(false);
 
   const parkingCapacity = parkingLot?.capacity ?? FALLBACK_PARKING_CAPACITY;
 
@@ -51,6 +76,38 @@ export default function ParkingReservationSchedulerPage() {
       })),
     [myParkingReservationsForActiveDay],
   );
+  const handleOpenConfirmModal = () => {
+    if (scheduler.hasBlockingConflict) return;
+    if (scheduler.selectedDateIds.length === 0) return;
+    if (scheduler.proposedBlocks.length === 0) return;
+
+    setIsConfirmModalOpen(true);
+  };
+  const handleConfirmParkingReservation = async () => {
+    if (scheduler.hasBlockingConflict) return;
+
+    const payloads = buildParkingReservationPayloads({
+      selectedDateIds: scheduler.selectedDateIds,
+      blocks: scheduler.proposedBlocks,
+    });
+
+    if (payloads.length === 0) return;
+
+    try {
+      setIsSubmittingReservation(true);
+
+      await Promise.all(
+        payloads.map((payload) =>
+          createParkingReservation.mutateAsync(payload),
+        ),
+      );
+
+      setIsConfirmModalOpen(false);
+    } finally {
+      setIsSubmittingReservation(false);
+      router.push("/home");
+    }
+  };
 
   const parkingAvailability = useMemo(
     () =>
@@ -127,7 +184,7 @@ export default function ParkingReservationSchedulerPage() {
               scheduler.canContinue && !createParkingReservation.isPending
             }
             onCancel={() => router.push("/home")}
-            onContinue={handleContinue}
+            onContinue={handleOpenConfirmModal}
           />
         </section>
 
@@ -147,11 +204,21 @@ export default function ParkingReservationSchedulerPage() {
           <AvailabilityIntervalCard
             {...parkingAvailability}
             onViewCapacityDetail={() => {
-              // Por ahora no haces nada aquí.
             }}
           />
         </aside>
       </div>
+      <ParkingReservationConfirmModal
+        open={isConfirmModalOpen}
+        selectedDateIds={scheduler.selectedDateIds}
+        blocks={scheduler.proposedBlocks}
+        hasConflict={scheduler.hasBlockingConflict}
+        isSubmitting={isSubmittingReservation}
+        onClose={() => {
+          setIsConfirmModalOpen(false);
+        }}
+        onConfirm={handleConfirmParkingReservation}
+      />
     </main>
   );
 }
