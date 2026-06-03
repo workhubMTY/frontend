@@ -16,7 +16,8 @@ const baseRoutes = [
 
 const adminRoutes = [
   {name: "Estadísticas", href: "/estadisticas"},
-  { name: "Tablero", href: "/tablero" },
+  {name: "Tablero", href: "/tablero" },
+  {name: "Oficinas", href: "/oficinas"}
 ]
 
 export default function Navbar() {
@@ -104,10 +105,7 @@ export default function Navbar() {
               Pide al chatbot
             </button>
           </label>
-
-          {/* 🔔 Notifications panel — replaces the static label */}
           <NotificationsPanel />
-
           <Link
             href="/perfil"
             className="bg-background-page self-center select-none rounded-full text-on-background-2 font-semibold"
