@@ -41,7 +41,7 @@ export function ReservationSchedulerContent() {
 
   return (
     <main className="min-h-screen bg-background-page p-4 text-slate-950 sm:p-6 lg:p-8">
-      <header className="mb-5 flex items-center justify-between rounded-2xl px-5">
+      {/* <header className="mb-5 flex items-center justify-between rounded-2xl px-5">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl">
             Ajusta tu reservación · {spaceName}
@@ -52,7 +52,7 @@ export function ReservationSchedulerContent() {
             reservación.
           </p>
         </div>
-      </header>
+      </header> */}
 
       <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_390px]">
         <section className="space-y-5">
