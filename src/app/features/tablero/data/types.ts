@@ -34,14 +34,15 @@ export type GetParkingReservationsParams = {
   cursor?: string;
 };
 
+export type Office = Parking;
 
-export type Office = {
+export type OfficeReservations = ParkingReservations;
 
-};
+// export type Office = {
+// };
 
-export type OfficeReservations = {
-
-};
+// export type OfficeReservations = {
+// };
 
 export type Users = {
     eId: string;
@@ -51,4 +52,4 @@ export type Users = {
     status: string;
 };
 
-export type Friendships = Users
+export type Friendships = Users;

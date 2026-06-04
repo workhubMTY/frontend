@@ -1,13 +1,15 @@
 "use client";
 
-import type { ParkingReservations } from "../data/types";
+import type { ParkingReservations, OfficeReservations } from "../data/types";
 
 type Props = {
   parkingReservations: ParkingReservations[];
+  officeReservations: OfficeReservations[];
   loading: boolean;
   error: string | null;
   search: string;
 };
+
 
 const STATUS_STYLES: Record<string, string> = {
   ACTIVE: "bg-emerald-50 text-emerald-600 border border-emerald-200",
@@ -19,7 +21,7 @@ const STATUS_STYLES: Record<string, string> = {
 };
 
 function StatusBadge({ status }: { status?: string }) {
-  const key   = (status ?? "UNKNOWN").toUpperCase();
+  const key = (status ?? "UNKNOWN").toUpperCase();
   const style = STATUS_STYLES[key] ?? STATUS_STYLES.UNKNOWN;
   return (
     <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-semibold tracking-wide ${style}`}>
@@ -67,6 +69,37 @@ function ParkingCard({ r }: { r: ParkingReservations }) {
   );
 }
 
+/*
+function OfficeCard({ o }: { o: OfficeReservations }) {
+  return (
+    <div className="bg-white border border-slate-200 rounded-xl p-4 hover:border-slate-300 hover:shadow-sm transition-all">
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-2">
+          <span className="text-slate-400 font-mono text-xs">#{o.id}</span>
+          <span className="text-slate-300 text-xs">·</span>
+          <span className="text-slate-600 text-sm font-medium">{o.user_id}</span>
+        </div>
+        <StatusBadge status={r.lifecycle_status} />
+      </div>
+      <div className="grid grid-cols-2 gap-3 mb-3">
+        <div>
+          <p className="text-slate-400 uppercase text-[10px] tracking-wider mb-0.5">Inicio</p>
+          <p className="text-slate-700 text-sm">{formatDate(o.start_time)}</p>
+        </div>
+        <div>
+          <p className="text-slate-400 uppercase text-[10px] tracking-wider mb-0.5">Fin</p>
+          <p className="text-slate-700 text-sm">{formatDate(o.end_time)}</p>
+        </div>
+      </div>
+      <div className="flex gap-2 flex-wrap">
+        <StatusBadge status={o.attendance_status} />
+        <StatusBadge status={o.allocation_state} />
+      </div>
+    </div>
+  );
+}
+*/
+
 function OfficeColumn() {
   return (
     <div className="flex flex-col items-center justify-center py-16 text-slate-300">
@@ -75,12 +108,19 @@ function OfficeColumn() {
   );
 }
 
-export function ReservationsList({ parkingReservations, loading, error, search }: Props) {
-  const filtered = parkingReservations.filter(
+export function ReservationsList({ parkingReservations, officeReservations, loading, error, search }: Props) {
+  const filteredParking = parkingReservations.filter(
     (r) =>
       r.user_id.toLowerCase().includes(search.toLowerCase()) ||
       String(r.id).includes(search) ||
       r.lifecycle_status?.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const filteredOffice = officeReservations.filter(
+    (o) => 
+      o.user_id.toLowerCase().includes(search.toLowerCase()) ||
+      String(o.id).includes(search) ||
+      o.lifecycle_status?.toLowerCase().includes(search.toLowerCase())
   );
 
   if (loading) {
@@ -110,15 +150,15 @@ export function ReservationsList({ parkingReservations, loading, error, search }
       <div>
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-slate-700 font-semibold text-sm">Estacionamientos</h3>
-          <span className="text-slate-400 text-xs">{filtered.length} reservaciones</span>
+          <span className="text-slate-400 text-xs">{filteredParking.length} reservaciones</span>
         </div>
-        {filtered.length === 0 ? (
+        {filteredParking.length === 0 ? (
           <div className="flex flex-col items-center py-12 text-slate-300">
             <p className="text-sm">Sin resultados</p>
           </div>
         ) : (
           <div className="flex flex-col gap-3">
-            {filtered.map((r) => <ParkingCard key={r.id} r={r} />)}
+            {filteredParking.map((r) => <ParkingCard key={r.id} r={r} />)}
           </div>
         )}
       </div>

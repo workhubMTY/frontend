@@ -15,16 +15,16 @@ type Props = {
 
 export function DashboardSelect({ value, onChange }: Props) {
   return (
-    <div className="flex gap-1 p-1 bg-slate-100 rounded-xl">
+    <div className="mb-4 grid grid-cols-3 border border-slate-200 bg-slate-50 p-1 text-sm font-semibold text-slate-600">
       {OPTIONS.map((opt) => (
         <button
           key={opt.value}
           onClick={() => onChange(opt.value)}
           className={`
-            px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-200
+            px-4 py-1.5 text-sm font-medium transition-all duration-200
             ${value === opt.value
-              ? "bg-white text-slate-800 shadow-sm"
-              : "text-slate-500 hover:text-slate-700"
+              ? "bg-violet-700 text-white shadow-sm"
+              : "hover:bg-white"
             }
           `}
         >
