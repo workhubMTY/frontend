@@ -13,11 +13,6 @@ export function TimelineLegend() {
       />
 
       <LegendItem
-        markerClassName="bg-blue-600"
-        label="Mi reservación"
-      />
-
-      <LegendItem
         markerClassName="bg-violet-700"
         label="Mi selección"
       />
