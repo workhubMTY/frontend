@@ -1,4 +1,4 @@
-export type SpaceStatus = "available" | "occupied" | "soon" | "partial";
+export type SpaceStatus = "available" | "occupied" | "soon" | "blocked" ;
 
 // Display Name es calculable a partir del codigo y el nombre concatenados
 // status label igual.
@@ -9,7 +9,7 @@ export type ReservableSpace = {
   name: string;
   floor?: string;
   capacity: number;
-  status: "available" | "occupied" | "soon";
+  status: SpaceStatus;
   statusLabel: string;
   timeline: TimelineBlock[];
 };

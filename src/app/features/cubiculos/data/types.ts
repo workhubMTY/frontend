@@ -101,12 +101,6 @@ export type BlockSlotDto = {
   is_blocked: boolean;
 };
 
-export type AvailableOfficeSlotsQuery = {
-  floor_id?: number;
-  start_time?: string;
-  end_time?: string;
-  user_id?: string;
-};
 
 export type CreateReservationBatchDto = {
   reservableId: number;
@@ -172,4 +166,24 @@ export type CreateEventDto = {
   reservable_id?: number;
   start_time: string;
   end_time: string;
+};
+
+export type AvailableOfficeSlotsQuery = {
+  floorId?: number;
+  startTime: string;
+  endTime: string;
+  minCapacity: number;
+  maxCapacity: number;
+  query?: string;
+  daysToApply?: string[];
+  userId?: string;
+};
+
+export type OfficeSlotSummary = {
+  id: number;
+  name: string;
+  code: string;
+  floor: string;
+  capacity: number;
+  status: string;
 };

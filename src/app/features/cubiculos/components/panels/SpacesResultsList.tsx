@@ -25,15 +25,24 @@ function getStatusDot(status: SpaceStatus) {
   if (status === "available") return "bg-green-500";
   if (status === "occupied") return "bg-red-500";
   if (status === "soon") return "bg-orange-500";
+  if (status === "blocked") return "bg-gray-500";
   return "bg-blue-500";
 }
 
-function getSpaceDisplayName(space: ReservableSpace, defaultName = "cubículo") {
+function getStatusLabel(status: SpaceStatus) {
+  if (status === "available") return "Disponible";
+  if (status === "occupied") return "Ocupado";
+  if (status === "soon") return "Próximamente";
+  if (status === "blocked") return "Bloqueado";
+  return "Desconocido";
+}
+
+function getSpaceDisplayName(space: ReservableSpace) {
   if (space.name) {
     return `${space.code} ${space.name}`;
   }
 
-  return defaultName;
+  return space.code;
 }
 
 export function SpacesResultsList({
@@ -177,7 +186,7 @@ export function SpacesResultsList({
                     getStatusDot(space.status),
                   ].join(" ")}
                 />
-                {space.statusLabel}
+                {getStatusLabel(space.status)}
               </div>
 
               <ChevronRight className="h-5 w-5 shrink-0 text-slate-500" />

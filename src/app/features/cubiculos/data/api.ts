@@ -10,6 +10,7 @@ import type {
   UpdateOfficeSlotDto,
   BlockSlotDto,
   AvailableOfficeSlotsQuery,
+  OfficeSlotSummary,
   CreateReservationBatchDto,
   UpdateParticipantStatusDto,
   UserReservationSummary,
@@ -19,50 +20,56 @@ import type {
   CreateEventDto,
 } from "./types";
 
-const BASE = "/reservations";
-const RESERVABLES = `${BASE}/reservables`;
-const RESERVATIONS = BASE;
-const EVENTS = `${BASE}/events`;
-const WORK_GROUPS = `${BASE}/work-groups`;
+const BASE = "/office";
+const SLOTS_BASE  = `${BASE}/slots`;
+const RESERVATIONS_BASE = `${BASE}/reservations`;
+const EVENTS = `${SLOTS_BASE}/events`;
+const WORK_GROUPS = `${SLOTS_BASE}/work-groups`;
 
 export const officeSlotsApi = {
-  getAllSlots: () => authFetch<OfficeSlot[]>(`${RESERVABLES}`),
+  getAllSlots: () => authFetch<OfficeSlot[]>(`${SLOTS_BASE}/`),
 
-  getSlotById: (id: number) => authFetch<OfficeSlot>(`${RESERVABLES}/${id}`),
+  getSlotById: (id: number) => authFetch<OfficeSlot>(`${SLOTS_BASE}/${id}`),
 
   getAvailableSlots: (query: AvailableOfficeSlotsQuery) => {
     const params = new URLSearchParams();
-    if (query.floor_id) params.append("floor_id", query.floor_id.toString());
-    if(query.start_time)
-      params.append("start_time", query.start_time);
-    if(query.end_time)
-      params.append("end_time", query.end_time);
-    if (query.user_id) params.append("user_id", query.user_id);
+    if (query.floorId) params.append("floorId", query.floorId.toString());
+    if(query.startTime)
+      params.append("startTime", query.startTime);
+    if(query.endTime)
+      params.append("endTime", query.endTime);
+    if (query.userId) params.append("userId", query.userId);
+    if (query.minCapacity) params.append("minCapacity", query.minCapacity.toString());
+    if (query.maxCapacity) params.append("maxCapacity", query.maxCapacity.toString());
+    if (query.query) params.append("query", query.query);
+    if (query.daysToApply && query.daysToApply.length > 0) {
+      query.daysToApply.forEach(day => params.append("daysToApply", day));
+    }
 
-    return authFetch<OfficeSlot[]>(
-      `${RESERVABLES}/available?${params.toString()}`,
+    return authFetch<OfficeSlotSummary[]>(
+      `${SLOTS_BASE}/available?${params.toString()}`,
     );
   },
 
   createSlot: (payload: CreateOfficeSlotDto) =>
-    authFetch<OfficeSlot>(`${RESERVABLES}`, {
+    authFetch<OfficeSlot>(`${SLOTS_BASE}`, {
       method: "POST",
       body: JSON.stringify(payload),
     }),
 
   updateSlot: (id: number, payload: UpdateOfficeSlotDto) =>
-    authFetch<OfficeSlot>(`${RESERVABLES}/${id}`, {
+    authFetch<OfficeSlot>(`${SLOTS_BASE}/${id}`, {
       method: "PATCH",
       body: JSON.stringify(payload),
     }),
 
   deleteSlot: (id: number) =>
-    authFetch<void>(`${RESERVABLES}/${id}`, {
+    authFetch<void>(`${SLOTS_BASE}/${id}`, {
       method: "DELETE",
     }),
 
   blockSlot: (id: number, payload: BlockSlotDto) =>
-    authFetch<OfficeSlot>(`${RESERVABLES}/${id}/block`, {
+    authFetch<OfficeSlot>(`${SLOTS_BASE}/${id}/block`, {
       method: "POST",
       body: JSON.stringify(payload),
     }),
@@ -70,17 +77,17 @@ export const officeSlotsApi = {
   getWorkGroups: () => authFetch<WorkGroup[]>(`${WORK_GROUPS}`),
 
   getReservationDetail: (id: number) =>
-    authFetch<ReservationDetail>(`${RESERVATIONS}/${id}`),
+    authFetch<ReservationDetail>(`${RESERVATIONS_BASE}/${id}`),
 
   createReservationBatch: (payload: CreateReservationBatchDto) =>
-    authFetch<ReservationDetail[]>(`${RESERVATIONS}/`, {
+    authFetch<ReservationDetail[]>(`${RESERVATIONS_BASE}/`, {
       method: "POST",
       body: JSON.stringify(payload),
     }),
 
   updateParticipantStatus: (id: number, payload: UpdateParticipantStatusDto) =>
     authFetch<ReservationParticipant>(
-      `${RESERVATIONS}/participants/${id}/status`,
+      `${RESERVATIONS_BASE}/participants/${id}/status`,
       {
         method: "PATCH",
         body: JSON.stringify(payload),
@@ -88,10 +95,10 @@ export const officeSlotsApi = {
     ),
 
   getMyReservations: () =>
-    authFetch<UserReservationSummary>(`${RESERVATIONS}/me`),
+    authFetch<UserReservationSummary>(`${RESERVATIONS_BASE}/me`),
 
   getFriendsReservations: () =>
-    authFetch<FriendReservationsSummary>(`${RESERVATIONS}/me/friends`),
+    authFetch<FriendReservationsSummary>(`${RESERVATIONS_BASE}/me/friends`),
 
   getEvents: (query?: GetEventsQuery) => {
     const params = new URLSearchParams();
@@ -114,7 +121,7 @@ export const officeSlotsApi = {
       body: JSON.stringify(payload),
     }),
 
-  getUsers: () => authFetch<UserSummary[]>(`${BASE}/users`),
+  getUsers: () => authFetch<UserSummary[]>(`${RESERVATIONS_BASE}/users`),
 
-  getGuests: () => authFetch<Guest[]>(`${BASE}/guests`),
+  getGuests: () => authFetch<Guest[]>(`${RESERVATIONS_BASE}/guests`),
 };
