@@ -364,7 +364,7 @@ export function useMyParkingReservations(
   options?: { enabled?: boolean },
 ) {
   return useQuery({
-    queryKey: ["parking-reservations", "me", query],
+    queryKey: parkingKeys.myReservations(query),
     queryFn: () => parkingReservationsApi.getMyReservations(query),
     enabled: Boolean(query) && (options?.enabled ?? true),
   });
