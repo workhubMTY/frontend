@@ -237,7 +237,10 @@ export function useParkingLotDetail(id: number) {
     mutationFn: (payload: CreateParkingReservation) =>
       parkingReservationsApi.create(payload),
     onSuccess: () =>
-      queryClient.invalidateQueries({ queryKey: parkingKeys.reservations() }),
+    {
+      queryClient.invalidateQueries({ queryKey: parkingKeys.reservations() })
+      queryClient.invalidateQueries({ queryKey: parkingKeys.myReservations() })
+    },
   });
 
   const cancelReservation = useMutation({
