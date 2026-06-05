@@ -33,7 +33,7 @@ export function ParkingReservationConfirmModal({
       <div className="w-full max-w-xl overflow-hidden border border-slate-200 bg-white shadow-2xl">
         <header className="flex items-start justify-between border-b border-slate-200 px-6 py-5">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary-1">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary-2">
               Confirmar reservación
             </p>
 
@@ -124,8 +124,8 @@ export function ParkingReservationConfirmModal({
             </section>
           </div>
 
-          <div className="border border-primary-1  px-4 py-3">
-            <p className="text-sm text-primary-900">
+          <div className="border border-primary-2  px-4 py-3">
+            <p className="text-sm text-primary-2">
               Total:{" "}
               <span className="font-semibold">
                 {totalReservations} reservación{totalReservations === 1 ? "" : "es"}
@@ -149,7 +149,7 @@ export function ParkingReservationConfirmModal({
             onClick={onConfirm}
             disabled={isSubmitting || hasConflict || selectedDateIds.length === 0 || blocks.length === 0}
             className={cn(
-              "inline-flex items-center justify-center gap-2 bg-primary-1 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-700",
+              "inline-flex items-center justify-center gap-2 bg-primary-2 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-1",
               "disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-500 disabled:shadow-none",
             )}
           >
