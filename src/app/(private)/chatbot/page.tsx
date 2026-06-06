@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import {
   Search,
@@ -10,42 +10,70 @@ import {
   Bot,
   Send,
 } from "lucide-react";
-import AccentureLogo from "../../../../public/accenture_logo_purple1.png";
+const AccentureLogo = "/accenture_logo_purple1.png";
 import Image from "next/image";
 import DownTransition from "@/app/shared/components/PageTransition/DownTransition";
+
+// ─── Tipos ────────────────────────────────────────────────────────────────────
 
 interface Message {
   id: string;
   role: "user" | "assistant";
   content: string;
+  toolUse?: string[];   // herramientas MCP usadas (se muestran discretamente)
 }
 
-const PREDEFINED_RESPONSES: Record<string, string> = {
-  "Quiero buscar salas disponibles":
-    "Claro, ¿para cuántas personas necesitas la sala y en qué fecha y horario?",
-  "Quiero reservar un espacio":
-    "Por supuesto. ¿Qué tipo de espacio necesitas reservar y para cuándo?",
-  "¿Qué amigos van hoy a la oficina?":
-    "Hoy están en la oficina: Ana García, Luis Martínez y Sofía Ramírez.",
-  "Quiero realizar una agenda múltiple":
-    "Entendido. ¿Cuántas personas participarán y cuáles son los días que necesitas agendar?",
-};
+// ─── Config API ───────────────────────────────────────────────────────────────
 
-const DEFAULT_RESPONSE =
-  "Entendido. ¿Hay algo más en lo que pueda ayudarte? Puedo buscar salas, reservar espacios, informarte quién está en la oficina o gestionar una agenda múltiple.";
+const API_URL = process.env.NEXT_PUBLIC_CHATBOT_API_URL ?? "http://localhost:3000";
+
+// sessionId se mantiene en memoria mientras la página esté abierta
+let sessionId: string | null = null;
+
+async function* streamChat(message: string): AsyncGenerator<{
+  type: string;
+  text?: string;
+  sessionId?: string;
+}> {
+  const res = await fetch(`${API_URL}/chat`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ message, sessionId }),
+  });
+
+  if (!res.ok || !res.body) throw new Error(`Error del servidor: ${res.status}`);
+
+  const reader = res.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = "";
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+    const lines = buffer.split("\n");
+    buffer = lines.pop() ?? "";
+    for (const line of lines) {
+      if (!line.trim()) continue;
+      try { yield JSON.parse(line); } catch { /* ignorar líneas malformadas */ }
+    }
+  }
+}
+
+// ─── Quick actions ────────────────────────────────────────────────────────────
 
 const QUICK_ACTIONS = [
   {
     id: "search",
     icon: Search,
     label: "Busca salas\ndisponibles",
-    prompt: "Quiero buscar salas disponibles",
+    prompt: "¿Qué salas de juntas tienen disponibles?",
   },
   {
     id: "reserve",
     icon: CalendarPlus,
     label: "Reserva un\nespacio",
-    prompt: "Quiero reservar un espacio",
+    prompt: "Quiero reservar una sala",
   },
   {
     id: "friends",
@@ -61,6 +89,8 @@ const QUICK_ACTIONS = [
   },
 ];
 
+// ─── Componente principal ─────────────────────────────────────────────────────
+
 export default function ChatbotPage() {
   const router = useRouter();
   const [messages, setMessages] = useState<Message[]>([]);
@@ -75,7 +105,7 @@ export default function ChatbotPage() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isTyping]);
 
-  const sendMessage = (text: string) => {
+  const sendMessage = useCallback(async (text: string) => {
     if (!text.trim() || isTyping) return;
 
     const userMsg: Message = {
@@ -84,13 +114,10 @@ export default function ChatbotPage() {
       content: text.trim(),
     };
 
+    // Primera vez: agrega el saludo del asistente + el mensaje del usuario
     if (messages.length === 0) {
       setMessages([
-        {
-          id: "greeting",
-          role: "assistant",
-          content: "Hola! ¿Cómo puedo asistirle hoy?",
-        },
+        { id: "greeting", role: "assistant", content: "Hola! ¿Cómo puedo asistirle hoy?" },
         userMsg,
       ]);
     } else {
@@ -101,16 +128,63 @@ export default function ChatbotPage() {
     inputRef.current?.focus();
     setIsTyping(true);
 
-    setTimeout(() => {
-      const reply = PREDEFINED_RESPONSES[text.trim()] ?? DEFAULT_RESPONSE;
-      setMessages((prev) => [
-        ...prev,
-        { id: (Date.now() + 1).toString(), role: "assistant", content: reply },
-      ]);
+    // Agrega burbuja vacía del asistente (se irá llenando con el stream)
+    const assistantId = (Date.now() + 1).toString();
+    setMessages((prev) => [
+      ...prev,
+      { id: assistantId, role: "assistant", content: "", toolUse: [] },
+    ]);
+
+    try {
+      for await (const chunk of streamChat(text.trim())) {
+        // Guarda el sessionId para mantener contexto
+        if (chunk.type === "session" && chunk.sessionId) {
+          sessionId = chunk.sessionId;
+        }
+        // Muestra qué herramienta MCP se está usando
+        else if (chunk.type === "tool_use" && chunk.text) {
+          setMessages((prev) =>
+            prev.map((m) =>
+              m.id === assistantId
+                ? { ...m, toolUse: [...(m.toolUse ?? []), chunk.text!] }
+                : m
+            )
+          );
+        }
+        // Acumula el texto de la respuesta (streaming)
+        else if (chunk.type === "content" && chunk.text) {
+          setMessages((prev) =>
+            prev.map((m) =>
+              m.id === assistantId
+                ? { ...m, content: m.content + chunk.text }
+                : m
+            )
+          );
+        }
+        // Error del backend
+        else if (chunk.type === "error") {
+          setMessages((prev) =>
+            prev.map((m) =>
+              m.id === assistantId
+                ? { ...m, content: "Lo siento, ocurrió un error. Intenta de nuevo." }
+                : m
+            )
+          );
+        }
+      }
+    } catch {
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.id === assistantId
+            ? { ...m, content: "No pude conectarme al servidor. Verifica tu conexión." }
+            : m
+        )
+      );
+    } finally {
       setIsTyping(false);
       inputRef.current?.focus();
-    }, 800);
-  };
+    }
+  }, [isTyping, messages.length]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -120,21 +194,20 @@ export default function ChatbotPage() {
   return (
     <DownTransition>
       <div className="w-screen h-screen flex flex-col bg-[#e8e8e8] overflow-hidden">
+        {/* Header */}
         <div className="flex items-center gap-3 px-8 py-5">
           <a href="/home">
-            <Image
-              src={AccentureLogo}
-              alt="accenture logo"
-              width={40}
-              height={40}
-            />
+            <Image src={AccentureLogo} alt="accenture logo" width={40} height={40} />
           </a>
           <span className="text-2xl font-semibold text-gray-800 tracking-wide">
             Chatbot
           </span>
         </div>
+
+        {/* Área de mensajes */}
         <div className="flex-1 overflow-y-auto flex flex-col">
           {!hasMessages ? (
+            /* ── Estado vacío: quick actions ── */
             <div className="flex-1 flex flex-col items-center justify-center px-12 gap-10">
               <h1 className="text-2xl font-normal text-gray-700 text-center">
                 ¡Hola! ¿Cómo puedo asistirle hoy?
@@ -146,11 +219,7 @@ export default function ChatbotPage() {
                     onClick={() => sendMessage(prompt)}
                     className="flex flex-col items-center justify-center gap-3 bg-[#d0d0d0] hover:bg-[#c8c8c8] active:scale-95 rounded-2xl p-7 min-h-[140px] transition-all duration-150 text-center"
                   >
-                    <Icon
-                      size={34}
-                      className="text-gray-700"
-                      strokeWidth={1.3}
-                    />
+                    <Icon size={34} className="text-gray-700" strokeWidth={1.3} />
                     <span className="text-sm text-gray-700 leading-snug font-medium whitespace-pre-line">
                       {label}
                     </span>
@@ -159,11 +228,14 @@ export default function ChatbotPage() {
               </div>
             </div>
           ) : (
+            /* ── Historial de mensajes ── */
             <div className="flex-1 flex flex-col px-12 py-6 gap-4 max-w-5xl mx-auto w-full">
               {messages.map((msg) => (
                 <div
                   key={msg.id}
-                  className={`flex items-end gap-3 ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+                  className={`flex items-end gap-3 ${
+                    msg.role === "user" ? "justify-end" : "justify-start"
+                  }`}
                 >
                   {msg.role === "assistant" && (
                     <div className="w-10 h-10 rounded-full bg-gray-400 flex items-center justify-center flex-shrink-0">
@@ -172,46 +244,47 @@ export default function ChatbotPage() {
                   )}
                   <div className="flex flex-col gap-1 max-w-[55%]">
                     {msg.role === "assistant" && (
-                      <span className="text-xs text-gray-500 ml-1 font-medium">
-                        Asistente virtual
-                      </span>
+                      <div className="flex items-center gap-2 ml-1">
+                        <span className="text-xs text-gray-500 font-medium">
+                          Asistente virtual
+                        </span>
+                        {/* Badges de herramientas MCP (discretos) */}
+                        {msg.toolUse?.map((t, i) => (
+                          <span
+                            key={i}
+                            className="text-[10px] text-gray-400 bg-gray-200 rounded-full px-2 py-0.5"
+                          >
+                            {t.replace("🔧 Consultando: ", "")}
+                          </span>
+                        ))}
+                      </div>
                     )}
                     <div
-                      className={`rounded-2xl px-5 py-3 text-sm leading-relaxed ${
+                      className={`rounded-2xl px-5 py-3 text-sm leading-relaxed whitespace-pre-wrap ${
                         msg.role === "user"
                           ? "bg-[#1a1a2e] text-white rounded-br-sm"
                           : "bg-white text-gray-800 rounded-bl-sm shadow-sm"
                       }`}
                     >
-                      {msg.content}
+                      {/* Burbuja vacía mientras llega el stream */}
+                      {msg.content || (msg.role === "assistant" && isTyping && (
+                        <span className="flex gap-2 items-center py-0.5">
+                          <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:0ms]" />
+                          <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:150ms]" />
+                          <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:300ms]" />
+                        </span>
+                      ))}
                     </div>
                   </div>
                 </div>
               ))}
 
-              {isTyping && (
-                <div className="flex items-end gap-3 justify-start">
-                  <div className="w-10 h-10 rounded-full bg-gray-400 flex items-center justify-center flex-shrink-0">
-                    <Bot size={20} className="text-white" />
-                  </div>
-                  <div className="flex flex-col gap-1">
-                    <span className="text-xs text-gray-500 ml-1 font-medium">
-                      Asistente virtual
-                    </span>
-                    <div className="bg-white rounded-2xl rounded-bl-sm px-5 py-3 shadow-sm flex gap-2 items-center">
-                      <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:0ms]" />
-                      <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:150ms]" />
-                      <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:300ms]" />
-                    </div>
-                  </div>
-                </div>
-              )}
               <div ref={messagesEndRef} />
             </div>
           )}
         </div>
 
-        {/* Input bar */}
+        {/* Input bar — idéntico al original */}
         <div className="w-full bg-[#e8e8e8]">
           <svg width="0" height="0" style={{ position: "absolute" }}>
             <defs>
@@ -231,13 +304,8 @@ export default function ChatbotPage() {
             <form onSubmit={handleSubmit} className="flex-1 ml-3 mb-1">
               <div className="flex items-center bg-[#d4d4d4] rounded-full px-4 py-0.5">
                 <svg
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="#6b7280"
-                  strokeWidth="1.8"
-                  className="flex-shrink-0"
+                  width="20" height="20" viewBox="0 0 24 24" fill="none"
+                  stroke="#6b7280" strokeWidth="1.8" className="flex-shrink-0"
                 >
                   <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
                 </svg>
