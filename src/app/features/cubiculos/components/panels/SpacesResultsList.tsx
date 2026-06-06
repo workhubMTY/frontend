@@ -112,10 +112,10 @@ export function SpacesResultsList({
   const isLastPage = safeCurrentPage === totalPages;
 
   return (
-    <section className="border border-slate-200 bg-container p-5 shadow-sm">
+    <section className="flex-1 border border-slate-200 bg-container p-5 ">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <h2 className="text-lg font-semibold text-slate-950">
+          <h2 className="text-md font-semibold text-slate-950">
             Espacios encontrados
           </h2>
 
@@ -141,7 +141,7 @@ export function SpacesResultsList({
               type="button"
               onClick={() => onSelectSpace(space.code)}
               className={[
-                "flex w-full items-center gap-3 rounded-lg border p-3 text-left transition",
+                "flex w-full items-center gap-3 border p-3 text-left transition",
                 isSelected
                   ? "border-purple-500 bg-purple-50"
                   : "border-slate-200 bg-white hover:border-purple-300 hover:bg-slate-50",
@@ -176,7 +176,7 @@ export function SpacesResultsList({
 
               <div
                 className={[
-                  "hidden items-center gap-2 text-xs font-semibold sm:flex",
+                  "hidden items-center gap-2 text-xs/2 font-semibold sm:flex",
                   getStatusColor(space.status),
                 ].join(" ")}
               >
@@ -186,27 +186,23 @@ export function SpacesResultsList({
                     getStatusDot(space.status),
                   ].join(" ")}
                 />
-                {getStatusLabel(space.status)}
+                <span className="text-xxs">{getStatusLabel(space.status)}</span>
               </div>
 
-              <ChevronRight className="h-5 w-5 shrink-0 text-slate-500" />
             </button>
           );
         })}
       </div>
 
       {totalItems > pageSize ? (
-        <footer className="mt-5 flex flex-col gap-3 border-t border-slate-200 pt-4 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-xs text-slate-500">
-            Página {safeCurrentPage} de {totalPages}
-          </p>
+        <footer className="flex mt-5 flex flex-col gap-3 border-t border-slate-200 pt-4 sm:flex-row sm:items-center sm:justify-between">
 
-          <div className="flex min-w-0 items-center gap-2">
+          <div className="flex-1 flex min-w-0 items-center gap-2 justify-center">
             <button
               type="button"
               onClick={goToPreviousPage}
               disabled={isFirstPage}
-              className="inline-flex h-9 items-center gap-1 border border-slate-200 bg-white px-3 text-sm font-medium text-slate-600 transition hover:border-slate-300 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
+              className="inline-flex  h-9 items-center gap-1 border border-slate-200 bg-white px-3 text-xs font-medium text-slate-600 transition hover:border-slate-300 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
             >
               <ChevronLeft className="h-4 w-4" />
               Anterior
@@ -220,7 +216,7 @@ export function SpacesResultsList({
               id="spaces-page-select"
               value={safeCurrentPage}
               onChange={(event) => handlePageSelect(event.target.value)}
-              className="h-9 max-w-[96px] border border-slate-200 bg-white px-2 text-sm font-medium text-slate-700 outline-none transition focus:border-purple-400 focus:ring-2 focus:ring-purple-100"
+              className="h-9 max-w-[96px] border border-slate-200 bg-white px-2 text-xs font-medium text-slate-700 outline-none transition focus:border-purple-400 focus:ring-2 focus:ring-purple-100"
             >
               {Array.from({ length: totalPages }, (_, index) => {
                 const page = index + 1;
@@ -237,7 +233,7 @@ export function SpacesResultsList({
               type="button"
               onClick={goToNextPage}
               disabled={isLastPage}
-              className="inline-flex h-9 items-center gap-1 border border-slate-200 bg-white px-3 text-sm font-medium text-slate-600 transition hover:border-slate-300 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
+              className="inline-flex h-9 items-center gap-1 border border-slate-200 bg-white px-3 text-xs font-medium text-slate-600 transition hover:border-slate-300 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
             >
               Siguiente
               <ChevronRight className="h-4 w-4" />

@@ -123,7 +123,7 @@ export function SelectedSpacePanel({
   }
 
   return (
-    <section className="border border-slate-200 bg-white p-5 shadow-sm">
+    <section className="border border-slate-200 bg-white p-5 ">
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="flex gap-2 text-lg">
@@ -153,7 +153,7 @@ export function SelectedSpacePanel({
             ].join(" ")}
           />
 
-          {getStatusLabel(selectedSpace.status)}
+          <span className="text-xxs">{getStatusLabel(selectedSpace.status)}</span>
         </span>
       </div>
 
@@ -165,7 +165,7 @@ export function SelectedSpacePanel({
           <span>24 horas</span>
         </div>
 
-        <div className="max-h-[200px] overflow-y-auto rounded-md border border-slate-200 bg-white">
+        <div className="max-h-[160px] overflow-y-auto rounded-md border border-slate-200 bg-white">
           <div
             className="relative"
             style={{
@@ -208,7 +208,7 @@ export function SelectedSpacePanel({
                   <div
                     key={reservation.id}
                     className={[
-                      "absolute left-2 right-0 z-10 overflow-hidden rounded-md px-2 py-1 text-[10px] font-medium shadow-sm",
+                      "absolute left-2 right-0 z-10 overflow-hidden rounded-md px-2 py-1 text-[10px] font-medium ",
                       getTimelineBlockClass(reservation.attendance_status),
                     ].join(" ")}
                     title={`${startLabel} - ${endLabel}`}

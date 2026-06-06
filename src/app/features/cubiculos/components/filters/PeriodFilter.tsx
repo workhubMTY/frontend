@@ -34,7 +34,7 @@ export function PeriodFilter({ value, onChange }: PeriodFilterProps) {
         isActive={periodFilter.hasActivePeriodFilter}
         onToggle={periodFilter.openPeriodFilter}
       >
-        <div className="w-[420px]">
+        <div className="w-[360px]">
           <div className="mb-4">
             <p className="text-sm font-semibold text-neutral-900">
               Selecciona periodo
@@ -65,7 +65,7 @@ export function PeriodFilter({ value, onChange }: PeriodFilterProps) {
             type="button"
             onClick={periodFilter.handleClearDraftPeriod}
             disabled={periodFilter.draftPeriodDateIds.length === 0}
-            className="mt-4 flex h-10 w-full items-center justify-center border border-neutral-300 bg-white px-3 text-sm font-medium text-neutral-700 transition hover:bg-neutral-50 disabled:cursor-not-allowed disabled:text-neutral-300"
+            className="mt-4 flex h-10 w-full items-center justify-center border border-neutral-300 bg-white px-3 text-xs font-medium text-neutral-700 transition hover:bg-neutral-50 disabled:cursor-not-allowed disabled:text-neutral-300"
           >
             Limpiar selección
           </button>
@@ -74,7 +74,7 @@ export function PeriodFilter({ value, onChange }: PeriodFilterProps) {
             <button
               type="button"
               onClick={periodFilter.handleCancelPeriodFilter}
-              className="h-10 border border-neutral-300 px-4 text-sm font-medium text-neutral-700 transition hover:border-neutral-400 hover:bg-neutral-50"
+              className="h-10 border border-neutral-300 px-4 text-xs font-medium text-neutral-700 transition hover:border-neutral-400 hover:bg-neutral-50"
             >
               Cancelar
             </button>
@@ -82,7 +82,7 @@ export function PeriodFilter({ value, onChange }: PeriodFilterProps) {
             <button
               type="button"
               onClick={periodFilter.handleApplyPeriodFilter}
-              className="h-10 border border-primary-2 bg-primary-2 px-4 text-sm font-medium text-on-primary transition hover:opacity-90"
+              className="h-10 border border-primary-2 bg-primary-2 px-4 text-xs font-medium text-on-primary transition hover:opacity-90"
             >
               Aplicar
             </button>

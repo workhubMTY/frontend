@@ -1,8 +1,9 @@
-import type { ReservableSpace } from "../../types/reservableSpaces";
+
+import { OfficeSlot } from "../../data/types";
 import InteractiveSvgViewer from "./InteractiveSvgViewer";
 
 type FloorMapCardProps = {
-  spaces: ReservableSpace[];
+  spaces: OfficeSlot[];
   isLoading?: boolean;
   selectedMapId: string | null;
   availableMapIds?: string[];
@@ -18,7 +19,7 @@ export function FloorMapCard({
   onSelectMapId,
 }: FloorMapCardProps) {
   return (
-    <section className="overflow-hidden border border-slate-200 bg-container shadow-sm">
+    <section className="overflow-hidden border border-slate-200 bg-container ">
       <header className="flex items-center justify-between border-b border-slate-200 px-5 py-4">
         <div>
           <h2 className="text-lg font-semibold text-slate-950">

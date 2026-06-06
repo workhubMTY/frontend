@@ -61,7 +61,7 @@ const {
 
   return (
     <div onPointerUp={finishDrag} onPointerLeave={finishDrag}>
-      <CalendarHeader calendarCells={calendarCells} />
+      {/* <CalendarHeader calendarCells={calendarCells} /> */}
 
       <div
         className={cn(

@@ -40,7 +40,7 @@ export function TimeFilter({ value, onChange }: TimeFilterProps) {
 
           <div className="grid grid-cols-2 gap-4">
             <label className="flex flex-col gap-2">
-              <span className="text-sm font-medium text-neutral-800">
+              <span className="text-xs font-medium text-neutral-800">
                 Hora de inicio
               </span>
 
@@ -52,7 +52,7 @@ export function TimeFilter({ value, onChange }: TimeFilterProps) {
                 }}
                 onBlur={timeFilter.handleStartTimeBlur}
                 placeholder="Ej. 3pm"
-                className={`h-12 border bg-white px-3 text-sm font-medium text-neutral-900 outline-none transition placeholder:text-neutral-400 focus:ring-2 focus:ring-purple-100 ${
+                className={`h-12 border bg-white px-3 text-xs font-medium text-neutral-900 outline-none transition placeholder:text-neutral-400 focus:ring-2 focus:ring-purple-100 ${
                   timeFilter.startTimeError
                     ? "border-red-500 focus:border-red-500"
                     : "border-neutral-300 hover:border-primary-2 focus:border-primary-2"
@@ -68,7 +68,7 @@ export function TimeFilter({ value, onChange }: TimeFilterProps) {
             </label>
 
             <label className="flex flex-col gap-2">
-              <span className="text-sm font-medium text-neutral-800">
+              <span className="text-xs font-medium text-neutral-800">
                 Hora de fin
               </span>
 
@@ -80,7 +80,7 @@ export function TimeFilter({ value, onChange }: TimeFilterProps) {
                 }}
                 onBlur={timeFilter.handleEndTimeBlur}
                 placeholder="Ej. 5pm"
-                className={`h-12 border bg-white px-3 text-sm font-medium text-neutral-900 outline-none transition placeholder:text-neutral-400 focus:ring-2 focus:ring-purple-100 ${
+                className={`h-12 border bg-white px-3 text-xs font-medium text-neutral-900 outline-none transition placeholder:text-neutral-400 focus:ring-2 focus:ring-purple-100 ${
                   timeFilter.endTimeError
                     ? "border-red-500 focus:border-red-500"
                     : "border-neutral-300 hover:border-primary-2 focus:border-primary-2"
@@ -100,7 +100,7 @@ export function TimeFilter({ value, onChange }: TimeFilterProps) {
             <button
               type="button"
               onClick={timeFilter.handleCancelTimeFilter}
-              className="h-10 border border-neutral-300 px-4 text-sm font-medium text-neutral-700 transition hover:border-neutral-400 hover:bg-neutral-50"
+              className="h-10 border border-neutral-300 px-4 text-xs font-medium text-neutral-700 transition hover:border-neutral-400 hover:bg-neutral-50"
             >
               Cancelar
             </button>
@@ -108,7 +108,7 @@ export function TimeFilter({ value, onChange }: TimeFilterProps) {
             <button
               type="button"
               onClick={timeFilter.handleApplyTimeFilter}
-              className="h-10 border border-primary-2 bg-primary-2 px-4 text-sm font-medium text-on-primary transition hover:opacity-90"
+              className="h-10 border border-primary-2 bg-primary-2 px-4 text-xs font-medium text-on-primary transition hover:opacity-90"
             >
               Aplicar
             </button>

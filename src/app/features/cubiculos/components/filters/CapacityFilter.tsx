@@ -27,7 +27,7 @@ export function CapacityFilter({ value, onChange }: CapacityFilterProps) {
         isActive={capacityFilter.hasActiveCapacityFilter}
         onToggle={capacityFilter.openCapacityFilter}
       >
-        <div className="w-[430px]">
+        <div className="w-[360px]">
           <div className="mb-3">
             <p className="text-sm font-semibold text-neutral-900">
               Selecciona capacidad
@@ -40,7 +40,7 @@ export function CapacityFilter({ value, onChange }: CapacityFilterProps) {
 
           <div className="grid grid-cols-2 gap-4">
             <label className="flex flex-col gap-2">
-              <span className="text-sm font-medium text-neutral-800">
+              <span className="text-xs font-medium text-neutral-800">
                 Capacidad mínima
               </span>
 
@@ -53,7 +53,7 @@ export function CapacityFilter({ value, onChange }: CapacityFilterProps) {
                 onBlur={capacityFilter.handleMinCapacityBlur}
                 inputMode="numeric"
                 placeholder="Ej. 4"
-                className={`h-12 border bg-white px-3 text-sm font-medium text-neutral-900 outline-none transition placeholder:text-neutral-400 focus:ring-2 focus:ring-purple-100 ${
+                className={`h-12 border bg-white px-3 text-xs font-medium text-neutral-900 outline-none transition placeholder:text-neutral-400 focus:ring-2 focus:ring-purple-100 ${
                   capacityFilter.minCapacityError
                     ? "border-red-500 focus:border-red-500"
                     : "border-neutral-300 hover:border-primary-2 focus:border-primary-2"
@@ -68,7 +68,7 @@ export function CapacityFilter({ value, onChange }: CapacityFilterProps) {
             </label>
 
             <label className="flex flex-col gap-2">
-              <span className="text-sm font-medium text-neutral-800">
+              <span className="text-xs font-medium text-neutral-800">
                 Capacidad máxima
               </span>
 
@@ -81,7 +81,7 @@ export function CapacityFilter({ value, onChange }: CapacityFilterProps) {
                 onBlur={capacityFilter.handleMaxCapacityBlur}
                 inputMode="numeric"
                 placeholder="Ej. 12"
-                className={`h-12 border bg-white px-3 text-sm font-medium text-neutral-900 outline-none transition placeholder:text-neutral-400 focus:ring-2 focus:ring-purple-100 ${
+                className={`h-12 border bg-white px-3 text-xs font-medium text-neutral-900 outline-none transition placeholder:text-neutral-400 focus:ring-2 focus:ring-purple-100 ${
                   capacityFilter.maxCapacityError
                     ? "border-red-500 focus:border-red-500"
                     : "border-neutral-300 hover:border-primary-2 focus:border-primary-2"
@@ -100,7 +100,7 @@ export function CapacityFilter({ value, onChange }: CapacityFilterProps) {
             <button
               type="button"
               onClick={capacityFilter.handleCancelCapacityFilter}
-              className="h-10 border border-neutral-300 px-4 text-sm font-medium text-neutral-700 transition hover:border-neutral-400 hover:bg-neutral-50"
+              className="h-10 border border-neutral-300 px-4 text-xs font-medium text-neutral-700 transition hover:border-neutral-400 hover:bg-neutral-50"
             >
               Cancelar
             </button>
@@ -108,7 +108,7 @@ export function CapacityFilter({ value, onChange }: CapacityFilterProps) {
             <button
               type="button"
               onClick={capacityFilter.handleApplyCapacityFilter}
-              className="h-10 border border-primary-2 bg-primary-2 px-4 text-sm font-medium text-on-primary transition hover:opacity-90"
+              className="h-10 border border-primary-2 bg-primary-2 px-4 text-xs font-medium text-on-primary transition hover:opacity-90"
             >
               Aplicar
             </button>

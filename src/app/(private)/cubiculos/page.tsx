@@ -63,7 +63,7 @@ export default function ReservableSpacesSearchPage() {
   }
 
   return (
-    <main className="min-h-screen bg-background-page px-4 py-6 text-neutral-700 sm:px-6 lg:px-12">
+    <main className="min-h-screen bg-background-page px-4 py-6 text-neutral-700 sm:px-6 lg:px-8">
       <div className="mx-auto flex flex-col gap-5">
         {/* <ReservationSearchHeader /> */}
 
@@ -73,7 +73,7 @@ export default function ReservableSpacesSearchPage() {
           onSubmit={handleSubmitFilters}
         />
 
-        <section className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_420px]">
+        <section className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
           <FloorMapCard
             spaces={spaces}
             isLoading={isLoading}

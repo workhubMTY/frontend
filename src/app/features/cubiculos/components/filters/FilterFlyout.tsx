@@ -23,7 +23,7 @@ export function FilterFlyout({
       <button
         type="button"
         onClick={onToggle}
-        className={`flex h-12 w-full items-center justify-between border bg-white px-4 text-sm font-medium transition ${
+        className={`flex h-10 w-full items-center justify-between border bg-white px-4 text-xs font-medium transition ${
           isOpen || isActive
             ? "border-primary-2 text-primary-2 ring-2 ring-purple-100"
             : "border-neutral-300 text-neutral-700 hover:border-primary-2 hover:text-primary-2"
