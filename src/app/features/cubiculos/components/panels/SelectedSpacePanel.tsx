@@ -1,3 +1,5 @@
+"use client";
+import { useEffect, useMemo, useRef } from "react";
 import { UsersRound } from "lucide-react";
 import type { TimelineBlock } from "../../types/reservableSpaces";
 
@@ -19,6 +21,7 @@ type SelectedSpacePanelProps = {
 const DAY_HOURS = 24;
 const HOUR_HEIGHT = 28;
 const DAY_MINUTES = 24 * 60;
+const AGENDA_VISIBLE_HEIGHT = 160;
 
 const timelineHours = Array.from({ length: DAY_HOURS }, (_, index) => index);
 
@@ -42,7 +45,7 @@ function getStatusDotClass(status: SpaceStatus) {
 }
 
 function getTimelineBlockClass(status: TimelineBlock["status"]) {
-  return "bg-slate-500 text-white";
+  return "bg-slate-300 text-on-container";
 }
 
 function formatHour(hour: number) {
@@ -53,6 +56,22 @@ function getMinutesFromDate(value: string) {
   const date = new Date(value);
 
   return date.getHours() * 60 + date.getMinutes();
+}
+
+function getCurrentMinutes() {
+  const now = new Date();
+
+  return now.getHours() * 60 + now.getMinutes();
+}
+
+function getCurrentTimeLabel() {
+  const now = new Date();
+
+  return now.toLocaleTimeString("es-MX", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  });
 }
 
 function formatTimeFromDate(value: string) {
@@ -69,10 +88,6 @@ function getReservationPosition(startTime: string, endTime: string) {
   const startMinutes = getMinutesFromDate(startTime);
   let endMinutes = getMinutesFromDate(endTime);
 
-  /**
-   * Si empieza antes de medianoche y termina después,
-   * en esta agenda del día solo pintamos hasta las 24:00.
-   */
   if (endMinutes <= startMinutes) {
     endMinutes = DAY_MINUTES;
   }
@@ -88,12 +103,36 @@ function getReservationPosition(startTime: string, endTime: string) {
   };
 }
 
+function getCurrentTimePosition(currentMinutes: number) {
+  return (currentMinutes / 60) * HOUR_HEIGHT;
+}
+
 export function SelectedSpacePanel({
   selectedSpace,
   selectedSpaceReservations,
   isLoading = false,
   onContinue,
 }: SelectedSpacePanelProps) {
+  const agendaScrollRef = useRef<HTMLDivElement | null>(null);
+
+  const currentMinutes = useMemo(() => getCurrentMinutes(), []);
+  const currentTimeLabel = useMemo(() => getCurrentTimeLabel(), []);
+  const currentTimeTop = getCurrentTimePosition(currentMinutes);
+
+  useEffect(() => {
+    if (!selectedSpace) return;
+
+    const scrollElement = agendaScrollRef.current;
+    if (!scrollElement) return;
+
+    const targetScrollTop = Math.max(
+      currentTimeTop - AGENDA_VISIBLE_HEIGHT / 2,
+      0,
+    );
+
+    scrollElement.scrollTop = targetScrollTop;
+  }, [selectedSpace, currentTimeTop]);
+
   if (isLoading) {
     return (
       <section className="border border-slate-200 bg-white p-5 shadow-sm">
@@ -123,7 +162,7 @@ export function SelectedSpacePanel({
   }
 
   return (
-    <section className="border border-slate-200 bg-white p-5 ">
+    <section className="border border-slate-200 bg-white p-5">
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="flex gap-2 text-lg">
@@ -153,7 +192,9 @@ export function SelectedSpacePanel({
             ].join(" ")}
           />
 
-          <span className="text-xxs">{getStatusLabel(selectedSpace.status)}</span>
+          <span className="text-xxs">
+            {getStatusLabel(selectedSpace.status)}
+          </span>
         </span>
       </div>
 
@@ -162,10 +203,14 @@ export function SelectedSpacePanel({
           <span className="font-medium text-slate-700">
             Disponibilidad del día
           </span>
+
           <span>24 horas</span>
         </div>
 
-        <div className="max-h-[160px] overflow-y-auto rounded-md border border-slate-200 bg-white">
+        <div
+          ref={agendaScrollRef}
+          className="max-h-[160px] overflow-y-auto rounded-md border border-slate-200 bg-white"
+        >
           <div
             className="relative"
             style={{
@@ -193,6 +238,24 @@ export function SelectedSpacePanel({
               ))}
             </div>
 
+            {/* Línea de hora actual */}
+            <div
+              className="pointer-events-none absolute left-0 right-2 z-20"
+              style={{
+                top: `${currentTimeTop}px`,
+              }}
+            >
+              <div className="grid grid-cols-[46px_minmax(0,1fr)] items-center">
+                <div className="pr-1 text-right text-[10px] font-semibold text-primary-2">
+                </div>
+
+                <div className="relative">
+                  <div className="absolute left-0 top-1/2 h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary-2" />
+                  <div className="h-px w-full bg-primary-2" />
+                </div>
+              </div>
+            </div>
+
             {/* Reservaciones */}
             <div className="absolute left-[46px] right-2 top-0">
               {selectedSpaceReservations?.map((reservation) => {
@@ -208,7 +271,7 @@ export function SelectedSpacePanel({
                   <div
                     key={reservation.id}
                     className={[
-                      "absolute left-2 right-0 z-10 overflow-hidden rounded-md px-2 py-1 text-[10px] font-medium ",
+                      "absolute left-2 right-0 z-10 overflow-hidden rounded-md px-2 py-1 text-[10px] font-medium",
                       getTimelineBlockClass(reservation.attendance_status),
                     ].join(" ")}
                     title={`${startLabel} - ${endLabel}`}
