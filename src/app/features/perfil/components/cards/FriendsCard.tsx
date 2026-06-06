@@ -50,10 +50,10 @@ const FriendRow = React.memo(
           )}
 
           <div className="min-w-0">
-            <h3 className="truncate font-semibold text-neutral-950">
+            <h3 className="truncate font-semibold text-sm text-neutral-950">
               {friend.name}
             </h3>
-            <p className="text-sm text-neutral-500">{friend.role}</p>
+            <p className="text-xs text-neutral-500">{friend.email}</p>
           </div>
         </div>
 
@@ -64,7 +64,7 @@ const FriendRow = React.memo(
               isSelected ? onClearComparison() : onCompareFriend(friend.eId)
             }
             className={[
-              "inline-flex h-10 items-center gap-2 border px-4 text-sm font-medium transition",
+              "inline-flex h-10 items-center gap-2 border px-4 text-xs font-medium transition",
               isSelected
                 ? "border-purple-700 bg-purple-700 text-white hover:bg-purple-800"
                 : "border-neutral-300 bg-white text-neutral-700 hover:bg-neutral-50",
