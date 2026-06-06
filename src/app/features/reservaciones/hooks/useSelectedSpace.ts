@@ -27,7 +27,7 @@ export function useSelectedSpace() {
     try {
       const parsedSpace = JSON.parse(rawSelectedSpace) as SelectedSpace;
 
-      if (!parsedSpace?.id || !parsedSpace?.name) {
+      if (!parsedSpace?.id) {
         router.replace("/cubiculos");
         return;
       }

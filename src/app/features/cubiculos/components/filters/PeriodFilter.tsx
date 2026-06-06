@@ -27,7 +27,7 @@ export function PeriodFilter({ value, onChange }: PeriodFilterProps) {
         align="right"
         icon={<CalendarDays className="h-5 w-5 shrink-0 text-neutral-700" />}
         label={getPeriodButtonLabel(
-          value.dateIds,
+          value,
           periodFilter.periodCalendarCells,
         )}
         isOpen={periodFilter.isOpen}

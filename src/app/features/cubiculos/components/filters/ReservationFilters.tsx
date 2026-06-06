@@ -29,11 +29,11 @@ export function ReservationFilters({
           }
         />
         <PeriodFilter
-          value={value.period}
+          value={value["daysToApply"]}
           onChange={(period) =>
             onChange({
               ...value,
-              period,
+              daysToApply: period,
             })
           }
         />

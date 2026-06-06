@@ -28,9 +28,7 @@ export function usePeriodFilter({ value, onChange }: UsePeriodFilterParams) {
   const [periodSelectionMode, setPeriodSelectionMode] =
     useState<SelectionMode>("multiple");
 
-  const [draftPeriodDateIds, setDraftPeriodDateIds] = useState<string[]>(
-    value.dateIds,
-  );
+  const [draftPeriodDateIds, setDraftPeriodDateIds] = useState<string[]>(value);
 
   const [periodActiveDayId, setPeriodActiveDayId] = useState(() =>
     getFirstAvailableDateId(periodCalendarCells),
@@ -41,7 +39,7 @@ export function usePeriodFilter({ value, onChange }: UsePeriodFilterParams) {
 
   const periodFilterRef = useRef<HTMLDivElement | null>(null);
 
-  const hasActivePeriodFilter = value.dateIds.length > 0;
+  const hasActivePeriodFilter = value.length > 0;
 
   function isWeekendDateId(dateId: string) {
     return (
@@ -69,9 +67,9 @@ export function usePeriodFilter({ value, onChange }: UsePeriodFilterParams) {
   }
 
   const closeAndRevert = useCallback(() => {
-    setDraftPeriodDateIds(value.dateIds);
+    setDraftPeriodDateIds(value);
     setIsOpen(false);
-  }, [value.dateIds]);
+  }, [value]);
 
   useCloseOnOutsideClick({
     ref: periodFilterRef,
@@ -80,14 +78,12 @@ export function usePeriodFilter({ value, onChange }: UsePeriodFilterParams) {
   });
 
   function openPeriodFilter() {
-    setDraftPeriodDateIds(value.dateIds);
+    setDraftPeriodDateIds(value);
     setIsOpen((current) => !current);
   }
 
   function handleCancelPeriodFilter() {
-    onChange({
-      dateIds: [],
-    });
+    onChange([]);
 
     setDraftPeriodDateIds([]);
     setHasAppliedPeriodSelection(false);
@@ -95,9 +91,7 @@ export function usePeriodFilter({ value, onChange }: UsePeriodFilterParams) {
   }
 
   function handleApplyPeriodFilter() {
-    onChange({
-      dateIds: draftPeriodDateIds,
-    });
+    onChange(draftPeriodDateIds);
 
     setHasAppliedPeriodSelection(true);
     setIsOpen(false);

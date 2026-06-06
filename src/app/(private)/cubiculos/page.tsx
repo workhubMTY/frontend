@@ -8,6 +8,10 @@ import { SpacesResultsList } from "@/app/features/cubiculos/components/panels/Sp
 import { useReservableSpacesSearch } from "@/app/features/cubiculos/hooks/useReservableSpacesSearch";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
+import {
+  useOfficeSlotDetail,
+  useSlotReservations,
+} from "@/app/features/cubiculos/data/hooks";
 
 export default function ReservableSpacesSearchPage() {
   const {
@@ -26,14 +30,35 @@ export default function ReservableSpacesSearchPage() {
     handleSubmitFilters,
   } = useReservableSpacesSearch();
   const router = useRouter();
+  const selectedSpaceId = selectedSpace?.id ?? null;
+
+  const selectedDates =
+    filters.daysToApply.length > 0 ? filters.daysToApply : undefined;
+
+  const selectedSlotId = selectedSpace?.id ?? null;
+
+  const {
+    data: selectedSpaceReservations = [],
+    isLoading: isLoadingSelectedSpaceReservations,
+  } = useSlotReservations(selectedSpaceId, [new Date().toISOString().split("T")[0]], false);
+
+  // const { data: selectedSpaceDetail, isLoading: isLoadingSelectedSpace } =
+  //   useOfficeSlotDetail(selectedSlotId);
 
   function handleOnContinue() {
-    if (selectedSpace) {
-      window.sessionStorage.setItem(
-        "cubiculos:selectedSpace",
-        JSON.stringify(selectedSpace),
-      );
-    }
+    console.log(selectedSpace)
+    if (!selectedSpace) return;
+
+    const selectedSpaceDetail = {
+      ...selectedSpace,
+      reservations: selectedSpaceReservations,
+    };
+
+    window.sessionStorage.setItem(
+      "cubiculos:selectedSpace",
+      JSON.stringify(selectedSpaceDetail),
+    );
+
     router.push("/cubiculos/reservacion");
   }
 
@@ -62,6 +87,8 @@ export default function ReservableSpacesSearchPage() {
           <aside className="flex flex-col gap-4">
             <SelectedSpacePanel
               selectedSpace={selectedSpace}
+              selectedSpaceReservations={selectedSpaceReservations}
+              // isLoading={isLoadingSelectedSpace}
               onContinue={handleOnContinue}
             />
 

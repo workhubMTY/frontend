@@ -1,14 +1,15 @@
 import { UsersRound } from "lucide-react";
 import type {
-  ReservableSpace,
-  SpaceStatus,
   TimelineBlock,
 } from "../../types/reservableSpaces";
 
-import { useRouter } from "next/navigation";
+import { OfficeSlotSummary, ReservationSummary, SpaceStatus } from "../../data/types";
+import { getSpaceDisplayName, getStatusLabel } from "./SpacesResultsList";
 
 type SelectedSpacePanelProps = {
-  selectedSpace?: ReservableSpace;
+  selectedSpace?: OfficeSlotSummary;
+  selectedSpaceReservations?: ReservationSummary[];
+  isLoading?: boolean;
   onContinue: () => void;
 };
 
@@ -32,14 +33,34 @@ function getStatusDotClass(status: SpaceStatus) {
 
 function getTimelineBlockClass(status: TimelineBlock["status"]) {
   if (status === "occupied") return "bg-slate-600";
-  if (status === "search") return "border-2 border-purple-600 bg-purple-50";
+  if (status === "blocked") return "border-2 border-red-600";
+  if (status === "soon") return "border-2 border-yellow-600 bg-yellow-50";
   return "border border-slate-200 bg-white";
 }
 
 export function SelectedSpacePanel({
   selectedSpace,
+  selectedSpaceReservations,
+  isLoading = false,
   onContinue,
 }: SelectedSpacePanelProps) {
+  console.log("SelectedSpacePanel render", { selectedSpace, selectedSpaceReservations, isLoading });
+  if (isLoading) {
+    return (
+      <section className="border border-slate-200 bg-white p-5 shadow-sm">
+        <h2 className="text-lg font-semibold text-slate-950">
+          Espacio seleccionado
+        </h2>
+
+        <div className="mt-6 animate-pulse space-y-4">
+          <div className="h-5 w-40 rounded bg-slate-200" />
+          <div className="h-4 w-28 rounded bg-slate-200" />
+          <div className="h-10 w-full rounded bg-slate-200" />
+        </div>
+      </section>
+    );
+  }
+
   if (!selectedSpace) {
     return (
       <section className="border border-slate-200 bg-white p-5 shadow-sm">
@@ -59,9 +80,7 @@ export function SelectedSpacePanel({
     );
   }
 
-  const router = useRouter();
-
-  return (
+ return (
     <section className="border border-slate-200 bg-white p-5 shadow-sm">
       <div className="flex items-start justify-between gap-4">
         <div>
@@ -70,7 +89,7 @@ export function SelectedSpacePanel({
           </h2>
 
           <p className="mt-4 text-lg font-semibold text-purple-700">
-            {`${selectedSpace.code} ${selectedSpace.name}`}
+            {getSpaceDisplayName(selectedSpace)}
           </p>
 
           <p className="mt-1 flex items-center gap-2 text-sm text-slate-600">
@@ -91,14 +110,14 @@ export function SelectedSpacePanel({
               getStatusDotClass(selectedSpace.status),
             ].join(" ")}
           />
-          {selectedSpace.statusLabel}
+          {getStatusLabel(selectedSpace.status)}
         </span>
       </div>
 
       <div className="mt-6 border-t border-slate-200 pt-5">
-        <p className="text-sm font-semibold text-slate-800">
+        {/* <p className="text-sm font-semibold text-slate-800">
           Ocupación del día · mié 29 de abr
-        </p>
+        </p> */}
 
         <div className="mt-4">
           <div className="mb-2 grid grid-cols-6 text-xs text-slate-500">
@@ -108,16 +127,16 @@ export function SelectedSpacePanel({
           </div>
 
           <div className="flex h-10 overflow-hidden rounded-md border border-slate-200">
-            {selectedSpace.timeline.map((block) => (
+            {selectedSpaceReservations && selectedSpaceReservations.map((block) => (
               <div
                 key={block.id}
-                className={getTimelineBlockClass(block.status)}
-                title={`${block.start} - ${block.end}`}
+                className={getTimelineBlockClass(block.attendance_status)}
+                title={`${block.start_time} - ${block.end_time}`}
                 style={{
                   flex:
-                    block.status === "occupied"
+                    block.attendance_status === "occupied"
                       ? 1.5
-                      : block.status === "search"
+                      : block.attendance_status === "soon"
                         ? 1
                         : 2,
                 }}

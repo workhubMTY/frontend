@@ -1,4 +1,5 @@
 export type ParticipantStatus = "PENDING" | "ACCEPTED" | "REJECTED";
+export type SpaceStatus = "available" | "occupied" | "soon" | "blocked" ;
 
 export type Floor = {
   id: number;
@@ -70,19 +71,18 @@ export type OfficeSlot = {
   name: string;
   code: string;
   capacity: number;
-  floor_id: number;
-  floor_name: string;
+  floor: string;
   is_blocked: boolean;
-  is_available: boolean;
-  status: "available" | "occupied" | "soon";
-  statusLabel: string;
-  timeline: {
-    id: string;
-    start: string;
-    end: string;
-    status: "free" | "occupied" | "search";
-  }[];
+  status: SpaceStatus;
   occupied_by_friends: FriendOccupancy[];
+};
+
+export type ReservationForSlot = {
+  date: string;
+  start_time: string;
+  end_time: string;
+  user_id: string;
+  user_name: string;
 };
 
 export type CreateOfficeSlotDto = {
@@ -117,17 +117,6 @@ export type UpdateParticipantStatusDto = {
   reinvite?: boolean;
 };
 
-export type ReservationSummary = {
-  id: number;
-  reservable_id: number;
-  reservable_name: string;
-  floor_id: number;
-  floor_name: string;
-  start_time: string;
-  end_time: string;
-  checked_in: boolean;
-  status: ParticipantStatus;
-};
 
 export type UserReservationSummary = {
   user_id: string;
@@ -167,23 +156,39 @@ export type CreateEventDto = {
   start_time: string;
   end_time: string;
 };
-
 export type AvailableOfficeSlotsQuery = {
   floorId?: number;
-  startTime: string;
-  endTime: string;
-  minCapacity: number;
-  maxCapacity: number;
+  startTime?: string;
+  endTime?: string;
+  minCapacity?: number;
+  maxCapacity?: number;
   query?: string;
   daysToApply?: string[];
   userId?: string;
+};
+
+
+export type ReservationSummary = {
+  id: number;
+  reservable_id: number;
+  start_time: string;
+  end_time: string;
+  attendance_status: SpaceStatus;
+  reservable_name: string;
+  floor_id: number;
+  floor_name: string;
+};
+
+export type GetSlotReservationsPayload = {
+  dates?: string[];
 };
 
 export type OfficeSlotSummary = {
   id: number;
   name: string;
   code: string;
-  floor: string;
   capacity: number;
-  status: string;
-};
+  floor: string;
+  is_blocked: boolean;
+  status: SpaceStatus;
+}

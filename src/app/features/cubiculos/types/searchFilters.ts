@@ -2,13 +2,11 @@ export type TimeFilterValue = {
   startTime: string;
   endTime: string;
 };
+export type PeriodFilterValue = string[];
+
 export type CapacityFilterValue = {
   minCapacity: string;
   maxCapacity: string;
-};
-
-export type PeriodFilterValue = {
-  dateIds: string[];
 };
 
 export type SpaceSearchFilters = {
@@ -18,5 +16,5 @@ export type SpaceSearchFilters = {
     endTime: string;
   };
   capacity: CapacityFilterValue;
-  period: PeriodFilterValue;
+  daysToApply: PeriodFilterValue;
 };

@@ -3,12 +3,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { ChevronLeft, ChevronRight, UsersRound } from "lucide-react";
 import type {
-  ReservableSpace,
   SpaceStatus,
-} from "../../types/reservableSpaces";
+} from "../../data/types";
+import { OfficeSlotSummary } from "../../data/types";
 
 type SpacesResultsListProps = {
-  spaces: ReservableSpace[];
+  spaces: OfficeSlotSummary[];
   selectedSpaceCode?: string;
   onSelectSpace: (spaceCode: string) => void;
   pageSize?: number;
@@ -29,7 +29,7 @@ function getStatusDot(status: SpaceStatus) {
   return "bg-blue-500";
 }
 
-function getStatusLabel(status: SpaceStatus) {
+export function getStatusLabel(status: SpaceStatus) {
   if (status === "available") return "Disponible";
   if (status === "occupied") return "Ocupado";
   if (status === "soon") return "Próximamente";
@@ -37,7 +37,7 @@ function getStatusLabel(status: SpaceStatus) {
   return "Desconocido";
 }
 
-function getSpaceDisplayName(space: ReservableSpace) {
+export function getSpaceDisplayName(space: OfficeSlotSummary) {
   if (space.name) {
     return `${space.code} ${space.name}`;
   }
