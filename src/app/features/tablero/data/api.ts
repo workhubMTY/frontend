@@ -5,7 +5,8 @@ import type {
     ParkingReservationData, 
     GetParkingReservationsParams,
     Users,
-    Friendships
+    Friendships,
+    OfficeReservations
 } from "./types";
 
 const ParkingLink = "/parking";
@@ -41,8 +42,8 @@ export const listParkingReservations = {
 } as const;
 
 export const listOfficeReservations = {
-  // Get /office
-  getOffice: () => authFetch<Parking>(`${OfficeLink}`),
+  // Get /office/reservations
+  getOfficeReservations: () => authFetch<OfficeReservations>(`${OfficeLink}/reservations`),
 } as const
 
 export const listUsers = {

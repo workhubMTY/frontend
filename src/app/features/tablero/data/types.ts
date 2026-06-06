@@ -34,15 +34,38 @@ export type GetParkingReservationsParams = {
   cursor?: string;
 };
 
-export type Office = Parking;
+export type Office = {
+    id: number;
+    name: string;
+    capacity: number;
+    floor_id: number;
+    is_blocked: boolean;
+};
 
-export type OfficeReservations = ParkingReservations;
+export type Participants = {
+    id: number;
+    reservations_id: number;
+    user_id: number;
+    ownership_priority: number;
+    attendance_status: string | null;
+    created_at: string;
+    updated_at: string;
+};
 
-// export type Office = {
-// };
-
-// export type OfficeReservations = {
-// };
+export type OfficeReservations = {
+    id: number;
+    reservavle_id: number;
+    category: string;
+    start_time: string;
+    end_time: string;
+    description: string;
+    attendance_status: string;
+    created_at: string;
+    updated_at: string;
+    lifecycle_status: string;
+    reservable: Office;
+    participants: Participants[];
+};
 
 export type Users = {
     eId: string;
