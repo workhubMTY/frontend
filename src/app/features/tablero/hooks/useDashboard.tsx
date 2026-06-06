@@ -1,10 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { listParkingReservations, listUsers } from "../data/api";
+import { listParkingReservations, listOfficeReservations, listUsers } from "../data/api";
 import type {
   ParkingReservations,
-  ParkingReservationData,
+  OfficeReservations,
   Users,
   Friendships,
 } from "../data/types";
@@ -20,18 +20,21 @@ export function useDashboard() {
   const [usersLoading, setUsersLoading] = useState(false);
   const [usersError, setUsersError] = useState<string | null>(null);
 
-  // Parking reservations
+  // Reservations
   const [parkingReservations, setParkingReservations] = useState<ParkingReservations[]>([]);
+  const [officeReservations, setOfficeReservations] = useState<OfficeReservations[]>([]);
   const [reservationsLoading, setReservationsLoading] = useState(false);
   const [reservationsError, setReservationsError] = useState<string | null>(null);
 
-  // Modal — amistades del usuario seleccionado
+  // Modal amistades
   const [selectedUser, setSelectedUser] = useState<Users | null>(null);
   const [friendships, setFriendships] = useState<Friendships[]>([]);
   const [friendshipsLoading, setFriendshipsLoading] = useState(false);
 
   // Friends view
-  
+  const [friends, setFriends] = useState<Friendships[]>([]);
+  const [friendsLoading, setFriendsLoading] = useState(false);
+  const [friendsError, setFriendsError] = useState<string | null>(null);
 
   const handleSetActiveView = (view: DashboardView) => {
     setSearch("");
@@ -44,10 +47,7 @@ export function useDashboard() {
     setUsersError(null);
     listUsers
       .getUsers()
-      .then((data: any) => {
-        const list = Array.isArray(data) ? data : (data?.items ?? []);
-        setUsers(list);
-      })
+      .then((data: any) => setUsers(Array.isArray(data) ? data : (data?.items ?? [])))
       .catch(() => setUsersError("Error al cargar usuarios"))
       .finally(() => setUsersLoading(false));
   }, [activeView]);
@@ -56,11 +56,20 @@ export function useDashboard() {
     if (activeView !== "reservations") return;
     setReservationsLoading(true);
     setReservationsError(null);
-    listParkingReservations
-      .getparkingReservations()
-      .then((data: any) => {
-        const list = Array.isArray(data) ? data : (data?.items ?? []);
-        setParkingReservations(list);
+
+    Promise.all([
+      listParkingReservations
+        .getparkingReservations()
+        .then((data: any) => Array.isArray(data) ? data : (data?.items ?? [])),
+      listOfficeReservations
+        .getOfficeReservations()
+        .then((data: any) => {
+            console.log("OFFICE RAW:", data);
+            return Array.isArray(data) ? data : (data?.items ?? [])}),
+    ])
+      .then(([parking, office]) => {
+        setParkingReservations(parking);
+        setOfficeReservations(office);
       })
       .catch(() => setReservationsError("Error al cargar reservaciones"))
       .finally(() => setReservationsLoading(false));
@@ -72,8 +81,7 @@ export function useDashboard() {
     setFriendships([]);
     try {
       const data: any = await listUsers.getUsersFriendships(user.eId);
-      const list = Array.isArray(data) ? data : (data?.items ?? []);
-      setFriendships(list);
+      setFriendships(Array.isArray(data) ? data : (data?.items ?? []));
     } catch {
       setFriendships([]);
     } finally {
@@ -95,6 +103,7 @@ export function useDashboard() {
     usersLoading,
     usersError,
     parkingReservations,
+    officeReservations,
     reservationsLoading,
     reservationsError,
     selectedUser,
@@ -102,5 +111,8 @@ export function useDashboard() {
     friendshipsLoading,
     openUserModal,
     closeUserModal,
+    friends,
+    friendsLoading,
+    friendsError,
   };
 }
