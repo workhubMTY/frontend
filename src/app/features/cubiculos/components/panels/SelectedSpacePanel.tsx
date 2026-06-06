@@ -7,10 +7,7 @@ import {
   SpaceStatus,
 } from "../../data/types";
 
-import {
-  getSpaceDisplayName,
-  getStatusLabel,
-} from "./SpacesResultsList";
+import { getStatusLabel } from "./SpacesResultsList";
 
 type SelectedSpacePanelProps = {
   selectedSpace?: OfficeSlotSummary;
@@ -19,17 +16,11 @@ type SelectedSpacePanelProps = {
   onContinue: () => void;
 };
 
-const timelineLabelHours = [
-  "00:00",
-  "04:00",
-  "08:00",
-  "12:00",
-  "16:00",
-  "20:00",
-  "24:00",
-];
-
+const DAY_HOURS = 24;
+const HOUR_HEIGHT = 28;
 const DAY_MINUTES = 24 * 60;
+
+const timelineHours = Array.from({ length: DAY_HOURS }, (_, index) => index);
 
 function getStatusClass(status: SpaceStatus) {
   if (status === "available")
@@ -51,8 +42,11 @@ function getStatusDotClass(status: SpaceStatus) {
 }
 
 function getTimelineBlockClass(status: TimelineBlock["status"]) {
+  return "bg-slate-500 text-white";
+}
 
-  return " bg-slate-500";
+function formatHour(hour: number) {
+  return `${String(hour).padStart(2, "0")}:00`;
 }
 
 function getMinutesFromDate(value: string) {
@@ -61,14 +55,23 @@ function getMinutesFromDate(value: string) {
   return date.getHours() * 60 + date.getMinutes();
 }
 
+function formatTimeFromDate(value: string) {
+  const date = new Date(value);
+
+  return date.toLocaleTimeString("es-MX", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  });
+}
+
 function getReservationPosition(startTime: string, endTime: string) {
   const startMinutes = getMinutesFromDate(startTime);
   let endMinutes = getMinutesFromDate(endTime);
 
   /**
-   * Caso especial:
-   * Si una reserva empieza en la noche y termina después de medianoche,
-   * por ejemplo 23:00 → 02:00, solo pintamos hasta las 24:00.
+   * Si empieza antes de medianoche y termina después,
+   * en esta agenda del día solo pintamos hasta las 24:00.
    */
   if (endMinutes <= startMinutes) {
     endMinutes = DAY_MINUTES;
@@ -76,12 +79,12 @@ function getReservationPosition(startTime: string, endTime: string) {
 
   const durationMinutes = Math.max(endMinutes - startMinutes, 0);
 
-  const left = (startMinutes / DAY_MINUTES) * 100;
-  const width = (durationMinutes / DAY_MINUTES) * 100;
+  const top = (startMinutes / 60) * HOUR_HEIGHT;
+  const height = Math.max((durationMinutes / 60) * HOUR_HEIGHT, 10);
 
   return {
-    left: `${left}%`,
-    width: `${width}%`,
+    top: `${top}px`,
+    height: `${height}px`,
   };
 }
 
@@ -94,7 +97,6 @@ export function SelectedSpacePanel({
   if (isLoading) {
     return (
       <section className="border border-slate-200 bg-white p-5 shadow-sm">
-
         <div className="animate-pulse space-y-4">
           <div className="h-5 w-40 rounded bg-slate-200" />
           <div className="h-4 w-28 rounded bg-slate-200" />
@@ -107,8 +109,7 @@ export function SelectedSpacePanel({
   if (!selectedSpace) {
     return (
       <section className="border border-slate-200 bg-white p-5 shadow-sm">
-
-        <div className=" border border-dashed border-slate-300 bg-slate-50 p-6 text-center">
+        <div className="border border-dashed border-slate-300 bg-slate-50 p-6 text-center">
           <p className="font-medium text-slate-700">
             Selecciona un espacio en el mapa
           </p>
@@ -125,13 +126,12 @@ export function SelectedSpacePanel({
     <section className="border border-slate-200 bg-white p-5 shadow-sm">
       <div className="flex items-start justify-between gap-4">
         <div>
-          {/* <h2 className="text-lg font-semibold text-slate-950">
-            Espacio seleccionado
-          </h2> */}
+          <p className="flex gap-2 text-lg">
+            <span className="text-slate-500">{selectedSpace.code}</span>
 
-          <p className="text-lg flex gap-2">
-            <span className="text-slate-500">{selectedSpace.code}</span> 
-            <span className="font-semibold text-purple-700">{selectedSpace.name ?? ""}</span>
+            <span className="font-semibold text-purple-700">
+              {selectedSpace.name ?? ""}
+            </span>
           </p>
 
           <p className="mt-1 flex items-center gap-2 text-sm text-slate-600">
@@ -157,55 +157,71 @@ export function SelectedSpacePanel({
         </span>
       </div>
 
-      <div >
-        <div className="mt-4">
-          <div className="mb-2 grid grid-cols-7 text-xs text-slate-500">
-            {timelineLabelHours.map((hour, index) => (
-              <span
-                key={hour}
-                className={[
-                  index === 0 ? "text-left" : "",
-                  index === timelineLabelHours.length - 1 ? "text-right" : "",
-                  index !== 0 && index !== timelineLabelHours.length - 1
-                    ? "text-center"
-                    : "",
-                ].join(" ")}
-              >
-                {hour}
-              </span>
-            ))}
-          </div>
+      <div className="mt-4">
+        <div className="mb-2 flex items-center justify-between text-xs text-slate-500">
+          <span className="font-medium text-slate-700">
+            Disponibilidad del día
+          </span>
+          <span>24 horas</span>
+        </div>
 
-          <div className="relative h-10 overflow-hidden rounded-md border border-slate-200 bg-white">
-            <div className="absolute inset-0 grid grid-cols-24">
-              {Array.from({ length: 24 }).map((_, index) => (
+        <div className="max-h-[200px] overflow-y-auto rounded-md border border-slate-200 bg-white">
+          <div
+            className="relative"
+            style={{
+              height: `${DAY_HOURS * HOUR_HEIGHT}px`,
+            }}
+          >
+            {/* Líneas de horas */}
+            <div className="absolute inset-0">
+              {timelineHours.map((hour) => (
                 <div
-                  key={index}
-                  className="border-r border-slate-100 last:border-r-0"
-                />
+                  key={hour}
+                  className="grid grid-cols-[46px_minmax(0,1fr)] border-b border-slate-100"
+                  style={{
+                    height: `${HOUR_HEIGHT}px`,
+                  }}
+                >
+                  <div className="bg-slate-50 px-2 pt-1 text-[10px] font-medium text-slate-500">
+                    {formatHour(hour)}
+                  </div>
+
+                  <div className="relative bg-white">
+                    <div className="absolute left-0 top-1/2 h-px w-full bg-slate-50" />
+                  </div>
+                </div>
               ))}
             </div>
 
-            {selectedSpaceReservations?.map((reservation) => {
-              const position = getReservationPosition(
-                reservation.start_time,
-                reservation.end_time,
-              );
+            {/* Reservaciones */}
+            <div className="absolute left-[46px] right-2 top-0">
+              {selectedSpaceReservations?.map((reservation) => {
+                const position = getReservationPosition(
+                  reservation.start_time,
+                  reservation.end_time,
+                );
 
-              return (
-                <div
-                  key={reservation.id}
-                  className={[
-                    "absolute top-0 z-10 h-full",
-                    getTimelineBlockClass(reservation.attendance_status),
-                  ].join(" ")}
-                  title={`${reservation.start_time} - ${reservation.end_time}`}
-                  style={position}
-                />
-              );
-            })}
+                const startLabel = formatTimeFromDate(reservation.start_time);
+                const endLabel = formatTimeFromDate(reservation.end_time);
+
+                return (
+                  <div
+                    key={reservation.id}
+                    className={[
+                      "absolute left-2 right-0 z-10 overflow-hidden rounded-md px-2 py-1 text-[10px] font-medium shadow-sm",
+                      getTimelineBlockClass(reservation.attendance_status),
+                    ].join(" ")}
+                    title={`${startLabel} - ${endLabel}`}
+                    style={position}
+                  >
+                    <span className="block truncate">
+                      {startLabel} - {endLabel}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
           </div>
-
         </div>
       </div>
 
