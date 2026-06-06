@@ -57,7 +57,7 @@ export type UserProfile = {
     streak: number;
     friendCount: number;
     levelsPassed: number;
-    points:number
+    ap:number
   };
 };
 

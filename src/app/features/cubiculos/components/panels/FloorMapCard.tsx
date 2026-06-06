@@ -1,9 +1,9 @@
 
-import { OfficeSlot } from "../../data/types";
+import { OfficeSlot, OfficeSlotSummary } from "../../data/types";
 import InteractiveSvgViewer from "./InteractiveSvgViewer";
 
 type FloorMapCardProps = {
-  spaces: OfficeSlot[];
+  spaces: OfficeSlotSummary[];
   isLoading?: boolean;
   selectedMapId: string | null;
   availableMapIds?: string[];

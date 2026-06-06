@@ -137,7 +137,7 @@ function getRankByPoints(points: number) {
 }
 
 export function ProgressSummaryCard({ profile }: ProgressSummaryCardProps) {
-  const { points } = profile.stats;
+  const points = profile.stats.ap;
   const { rank, nextRank, progressToNextRank } = getRankByPoints(points);
 
   return (

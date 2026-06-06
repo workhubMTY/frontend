@@ -45,7 +45,7 @@ function getStatusDotClass(status: SpaceStatus) {
 }
 
 function getTimelineBlockClass(status: TimelineBlock["status"]) {
-  return "bg-slate-300 text-on-container";
+  return "bg-slate-100 text-on-container";
 }
 
 function formatHour(hour: number) {
