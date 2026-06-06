@@ -91,12 +91,6 @@ export function SelectedSpacePanel({
   isLoading = false,
   onContinue,
 }: SelectedSpacePanelProps) {
-  console.log("SelectedSpacePanel render", {
-    selectedSpace,
-    selectedSpaceReservations,
-    isLoading,
-  });
-
   if (isLoading) {
     return (
       <section className="border border-slate-200 bg-white p-5 shadow-sm">
