@@ -14,7 +14,7 @@ type UseReservationSchedulerPageParams = {
   showAllEvents: boolean;
 };
 
-export function useReservationSchedulerPage({
+export function useReservationSchedulerViewModel({
   showAllEvents,
 }: UseReservationSchedulerPageParams) {
   const { selectedSpace, spaceId, spaceName } = useSelectedSpace();
@@ -82,14 +82,6 @@ export function useReservationSchedulerPage({
       .filter((event) => event.status !== "normal")
       .slice(0, 2);
   }, [activeDayExternalEvents, showAllEvents]);
-
-  console.log("DEBUG RESERVATION PAGE", {
-    activeDayId: scheduler.activeDayId,
-    externalEventsForInterval: reservationQueries.externalEventsForInterval,
-    activeDayExternalEvents,
-    spaceReservationsByDate: reservationQueries.spaceReservationsByDate,
-    spaceReservationsForActiveDay,
-  });
 
   return {
     selectedSpace,

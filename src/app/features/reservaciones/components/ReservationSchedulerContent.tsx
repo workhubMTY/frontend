@@ -10,24 +10,22 @@ import { ReservationFooter } from "@/app/features/reservaciones/components/Reser
 import { ReservationTimelineCard } from "@/app/features/reservaciones/components/Cards/ReservationTimelineCard";
 import { SelectionModeCalendarCard } from "@/app/features/reservaciones/components/Calendar/DaysSelection/SelectionModeCalendarCard";
 
-import { useReservationSchedulerPage } from "@/app/features/reservaciones/hooks/useReservationSchedulerPage";
+import { useReservationSchedulerViewModel } from "@/app/features/reservaciones/hooks/useReservationSchedulerViewModel";
 
 export function ReservationSchedulerContent() {
   const router = useRouter();
   const [showAllEvents, setShowAllEvents] = useState(false);
 
   const {
-    spaceName,
     selectedSpace,
     calendarCells,
     scheduler,
     activeDayExternalEvents,
     externalTimelineEventsForActiveDay,
-    proposedTimelineEventsForActiveDay,
     spaceReservationsForActiveDay,
     conflictCount,
     visibleEvents,
-  } = useReservationSchedulerPage({ showAllEvents });
+  } = useReservationSchedulerViewModel({ showAllEvents });
 
   function handleContinue() {
     if (!selectedSpace) return;
@@ -54,7 +52,7 @@ export function ReservationSchedulerContent() {
         </div>
       </header> */}
 
-      <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_390px]">
+      <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">
         <section className="space-y-5">
           <Card className="p-5">
             <ReservationTimelineCard
