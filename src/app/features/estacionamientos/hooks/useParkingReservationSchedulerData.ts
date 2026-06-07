@@ -56,7 +56,7 @@ type UseParkingReservationSchedulerPageParams = {
   parkingId: number | null;
 };
 
-export function useParkingReservationSchedulerPage({
+export function useParkingReservationSchedulerData({
   parkingId,
 }: UseParkingReservationSchedulerPageParams) {
   const calendarCells = useMemo(() => createCalendarCells(), []);

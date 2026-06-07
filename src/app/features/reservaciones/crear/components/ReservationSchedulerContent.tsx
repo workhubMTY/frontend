@@ -15,7 +15,7 @@ import { ReservationFinishedModal } from "@/app/features/reservaciones/confirmar
 
 import { useReservationSchedulerViewModel } from "@/app/features/reservaciones/crear/hooks/useReservationSchedulerViewModel";
 
-export function   ReservationSchedulerContent() {
+export function ReservationSchedulerContent() {
   const [showAllEvents, setShowAllEvents] = useState(false);
 
   const { state, actions } = useReservationSchedulerViewModel({
@@ -25,8 +25,8 @@ export function   ReservationSchedulerContent() {
   return (
     <>
       <main className="min-h-full bg-background-page p-4 text-slate-950 sm:p-6 lg:p-8">
-        <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_320px]">
-          <section className="h-full space-y-4 flex flex-col">
+        <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_340px] 2xl:grid-cols-[minmax(0,1fr)_380px]">
+          <section className="flex min-w-0 flex-col gap-4">
             <Card className="p-4">
               <ReservationTimelineCard
                 activeDayId={state.scheduler.activeDayId}
@@ -40,17 +40,12 @@ export function   ReservationSchedulerContent() {
               />
             </Card>
 
-            <ProposedSchedulesCard
-              proposedBlocks={state.scheduler.proposedBlocks}
-              selectedDateCount={
-                state.scheduler.selectableSelectedDateIds.length
-              }
-              hasSelectedDates={
-                state.scheduler.selectableSelectedDateIds.length > 0
-              }
-              onAddBlock={state.scheduler.addProposedBlock}
-              onDeleteBlock={state.scheduler.deleteProposedBlock}
-              onUpdateBlock={state.scheduler.updateProposedBlock}
+            <EventsCard
+              events={state.activeDayExternalEvents}
+              visibleEvents={state.visibleEvents}
+              conflictCount={state.conflictCount}
+              showAllEvents={showAllEvents}
+              onToggleShowAllEvents={() => setShowAllEvents((value) => !value)}
             />
 
             <ReservationFooter
@@ -63,7 +58,7 @@ export function   ReservationSchedulerContent() {
             />
           </section>
 
-          <aside className="h-full sticky self-start space-y-5 flex flex-col">
+          <aside className="flex h-full flex-col gap-5 self-start xl:sticky xl:top-6">
             <SelectionModeCalendarCard
               calendarCells={state.calendarCells}
               activeDayId={state.scheduler.activeDayId}
@@ -76,12 +71,17 @@ export function   ReservationSchedulerContent() {
               onActivateDay={state.scheduler.setActiveDayId}
             />
 
-            <EventsCard
-              events={state.activeDayExternalEvents}
-              visibleEvents={state.visibleEvents}
-              conflictCount={state.conflictCount}
-              showAllEvents={showAllEvents}
-              onToggleShowAllEvents={() => setShowAllEvents((value) => !value)}
+            <ProposedSchedulesCard
+              proposedBlocks={state.scheduler.proposedBlocks}
+              selectedDateCount={
+                state.scheduler.selectableSelectedDateIds.length
+              }
+              hasSelectedDates={
+                state.scheduler.selectableSelectedDateIds.length > 0
+              }
+              onAddBlock={state.scheduler.addProposedBlock}
+              onDeleteBlock={state.scheduler.deleteProposedBlock}
+              onUpdateBlock={state.scheduler.updateProposedBlock}
             />
           </aside>
         </div>

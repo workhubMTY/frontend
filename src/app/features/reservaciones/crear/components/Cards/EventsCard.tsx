@@ -25,7 +25,7 @@ export function EventsCard({
     <Card className="flex flex-1 flex-col p-5 gap-2">
       <>
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-bold text-slate-950">Eventos</h2>
+          <h2 className="text-lg font-bold text-slate-950">Reservaciones y eventos</h2>
 
           {hasEvents && conflictCount > 0 && (
             <span className="rounded-full bg-red-50 px-3 py-1 text-xs font-bold text-red-600">
