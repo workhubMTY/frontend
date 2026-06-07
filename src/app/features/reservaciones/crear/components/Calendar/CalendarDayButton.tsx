@@ -1,5 +1,5 @@
-import { cn } from "@/app/features/reservaciones/lib/cn";
-import { CalendarCell } from "@/app/features/reservaciones/types/reservaciones";
+import { cn } from "@/app/shared/lib/cn";
+import { CalendarCell } from "@/app/features/reservaciones/crear/types/reservaciones";
 
 type CalendarDayButtonProps = {
   cell: CalendarCell;

@@ -2,13 +2,13 @@
 
 import { useMemo } from "react";
 
-import { toTimelineEvent } from "@/app/features/reservaciones/data/reservationsApi";
+import { toTimelineEvent } from "@/app/features/reservaciones/crear/data/reservationsApi";
 
-import { createCalendarCells } from "@/app/features/reservaciones/lib/dates";
+import { createCalendarCells } from "@/app/features/reservaciones/crear/lib/dates";
 
-import { useSelectedSpace } from "@/app/features/reservaciones/hooks/useSelectedSpace";
-import { useReservationQueries } from "@/app/features/reservaciones/hooks/useReservationQueries";
-import { useReservationScheduler } from "@/app/features/reservaciones/hooks/useReservationScheduler";
+import { useSelectedSpace } from "@/app/features/reservaciones/crear/hooks/useSelectedSpace";
+import { useReservationQueries } from "@/app/features/reservaciones/crear/hooks/useReservationQueries";
+import { useReservationScheduler } from "@/app/features/reservaciones/crear/hooks/useReservationScheduler";
 
 type UseReservationSchedulerPageParams = {
   showAllEvents: boolean;

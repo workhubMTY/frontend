@@ -2,8 +2,8 @@
 
 import { AlertTriangle, CalendarDays, Car, Clock, Loader2, X } from "lucide-react";
 
-import { cn } from "@/app/features/reservaciones/lib/cn";
-import type { TimeBlock } from "@/app/features/reservaciones/types/reservaciones";
+import { cn } from "@/app/shared/lib/cn";
+import type { TimeBlock } from "@/app/features/reservaciones/crear/types/reservaciones";
 
 type ParkingReservationConfirmModalProps = {
   open: boolean;

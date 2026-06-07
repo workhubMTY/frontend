@@ -4,9 +4,9 @@ import type {
   CalendarCell,
   CalendarSelectionAction,
   SelectionMode,
-} from "@/app/features/reservaciones/types/reservaciones";
+} from "@/app/features/reservaciones/crear/types/reservaciones";
 
-import { getRangeIds } from "@/app/features/reservaciones/lib/dates";
+import { getRangeIds } from "@/app/features/reservaciones/crear/lib/dates";
 
 type UseCalendarDragSelectionParams = {
   activeDayId: string;

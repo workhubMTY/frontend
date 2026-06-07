@@ -3,9 +3,9 @@
 import { useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
-import { ProposedSchedulesCard } from "@/app/features/reservaciones/components/Cards/ProposedSchedulesCard";
-import { ReservationFooter } from "@/app/features/reservaciones/components/ReservationFooter";
-import { SelectionModeCalendarCard } from "@/app/features/reservaciones/components/Calendar/DaysSelection/SelectionModeCalendarCard";
+import { ProposedSchedulesCard } from "@/app/features/reservaciones/crear/components/Cards/ProposedSchedulesCard";
+import { ReservationFooter } from "@/app/features/reservaciones/crear/components/ReservationFooter";
+import { SelectionModeCalendarCard } from "@/app/features/reservaciones/crear/components/Calendar/DaysSelection/SelectionModeCalendarCard";
 
 import { AvailabilityIntervalCard } from "@/app/features/estacionamientos/components/Cards/AvailabilityIntervalCard";
 import { ParkingCapacityTimelineCard } from "@/app/features/estacionamientos/components/Timeline/ParkingCapacityTimelineCard";
@@ -14,7 +14,7 @@ import { getParkingAvailability } from "@/app/features/estacionamientos/lib/park
 import { useParkingReservationSchedulerPage } from "@/app/features/estacionamientos/hooks/useParkingReservationSchedulerPage";
 import { getHourFromTimeLabel } from "@/app/features/estacionamientos/components/Timeline/utils";
 
-import type { TimeBlock } from "@/app/features/reservaciones/types/reservaciones";
+import type { TimeBlock } from "@/app/features/reservaciones/crear/types/reservaciones";
 import type { CreateParkingReservation } from "@/app/features/estacionamientos/data/types";
 import { ParkingReservationConfirmModal } from "@/app/features/estacionamientos/components/ParkingReservationsConfirmModals";
 

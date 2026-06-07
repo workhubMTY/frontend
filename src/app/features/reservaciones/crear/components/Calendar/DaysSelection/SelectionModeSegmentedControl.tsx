@@ -1,8 +1,8 @@
 "use client";
 
-import { cn } from "@/app/features/reservaciones/lib/cn";
+import { cn } from "@/app/shared/lib/cn";
 
-import type { SelectionMode } from "@/app/features/reservaciones/types/reservaciones";
+import type { SelectionMode } from "@/app/features/reservaciones/crear/types/reservaciones";
 
 type SelectionModeOption = {
   value: SelectionMode;

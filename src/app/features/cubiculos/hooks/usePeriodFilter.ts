@@ -5,12 +5,12 @@ import { useCallback, useMemo, useRef, useState } from "react";
 import {
   createCalendarCells,
   getFirstAvailableDateId,
-} from "@/app/features/reservaciones/lib/dates";
-import { uniqueSortedIds } from "@/app/features/reservaciones/lib/formatting";
+} from "@/app/features/reservaciones/crear/lib/dates";
+import { uniqueSortedIds } from "@/app/features/reservaciones/crear/lib/formatting";
 import type {
   CalendarSelectionAction,
   SelectionMode,
-} from "@/app/features/reservaciones/types/reservaciones";
+} from "@/app/features/reservaciones/crear/types/reservaciones";
 
 import { useCloseOnOutsideClick } from "./useCloseOnOutsideClick";
 import type { PeriodFilterValue } from "../types/searchFilters";

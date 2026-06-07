@@ -1,14 +1,14 @@
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 
-import type { CalendarCell } from "@/app/features/reservaciones/types/reservaciones";
+import type { CalendarCell } from "@/app/features/reservaciones/crear/types/reservaciones";
 
 import {
   apiGetExternalEventsInVisibleRange,
   apiGetSpaceReservationsInVisibleRange,
   getVisibleRange,
   groupTimelineEventsByDate,
-} from "@/app/features/reservaciones/data/reservationsApi";
+} from "@/app/features/reservaciones/crear/data/reservationsApi";
 
 type UseReservationQueriesParams = {
   calendarCells: CalendarCell[];

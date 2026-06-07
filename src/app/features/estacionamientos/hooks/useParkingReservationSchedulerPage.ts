@@ -9,15 +9,15 @@ import {
   useParkingReservations,
 } from "@/app/features/estacionamientos/data/hooks";
 
-import { createCalendarCells } from "@/app/features/reservaciones/lib/dates";
+import { createCalendarCells } from "@/app/features/reservaciones/crear/lib/dates";
 import {
   getVisibleRange,
   groupTimelineEventsByDate,
-} from "@/app/features/reservaciones/data/reservationsApi";
+} from "@/app/features/reservaciones/crear/data/reservationsApi";
 
-import { useReservationScheduler } from "@/app/features/reservaciones/hooks/useReservationScheduler";
+import { useReservationScheduler } from "@/app/features/reservaciones/crear/hooks/useReservationScheduler";
 
-import type { TimelineEvent } from "@/app/features/reservaciones/types/reservaciones";
+import type { TimelineEvent } from "@/app/features/reservaciones/crear/types/reservaciones";
 import type {
   ListReservationsQuery,
   ParkingReservation,

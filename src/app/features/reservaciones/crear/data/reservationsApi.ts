@@ -10,9 +10,9 @@ import type {
   CalendarCell,
   DayEvent,
   TimelineEvent,
-} from "@/app/features/reservaciones/types/reservaciones";
+} from "@/app/features/reservaciones/crear/types/reservaciones";
 
-import { dateToId } from "@/app/features/reservaciones/lib/dates";
+import { dateToId } from "@/app/features/reservaciones/crear/lib/dates";
 
 type SpaceReservationsByDate = Record<string, TimelineEvent[]>;
 

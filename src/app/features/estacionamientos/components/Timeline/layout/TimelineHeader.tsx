@@ -1,4 +1,4 @@
-import { cn } from "@/app/features/reservaciones/lib/cn";
+import { cn } from "@/app/shared/lib/cn";
 import { HOURS } from "../utils";
 
 export function TimelineHeader() {

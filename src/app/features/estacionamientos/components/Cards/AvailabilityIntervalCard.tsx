@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 
 import { Card } from "@/app/shared/components/Card";
-import { cn } from "@/app/features/reservaciones/lib/cn";
+import { cn } from "@/app/shared/lib/cn";
 
 type AvailabilityStatus = "available" | "partial" | "conflict";
 

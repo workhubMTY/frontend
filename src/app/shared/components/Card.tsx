@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { cn } from "../../features/reservaciones/lib/cn";
+import { cn } from "../lib/cn";
 
 type CardProps = {
   children: ReactNode;

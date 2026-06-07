@@ -1,5 +1,5 @@
 import type { TimeBlock } from "../../types/reservaciones";
-import { cn } from "../../lib/cn";
+import { cn } from "../../../../../shared/lib/cn";
 import { blockStyle, getDurationPercent, to24Hour } from "../../lib/time";
 import { ConflictOverlay } from "./ConflictOverlay";
 

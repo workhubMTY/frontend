@@ -3,16 +3,16 @@
 import { X } from "lucide-react";
 
 import { Card } from "@/app/shared/components/Card";
-import { MonthCalendar } from "@/app/features/reservaciones/components/Calendar/MonthCalendar";
-import { SelectionModeSegmentedControl } from "@/app/features/reservaciones/components/Calendar/DaysSelection/SelectionModeSegmentedControl";
+import { MonthCalendar } from "@/app/features/reservaciones/crear/components/Calendar/MonthCalendar";
+import { SelectionModeSegmentedControl } from "@/app/features/reservaciones/crear/components/Calendar/DaysSelection/SelectionModeSegmentedControl";
 
-import { cn } from "@/app/features/reservaciones/lib/cn";
+import { cn } from "@/app/shared/lib/cn";
 
 import type {
   CalendarCell,
   CalendarSelectionAction,
   SelectionMode,
-} from "@/app/features/reservaciones/types/reservaciones";
+} from "@/app/features/reservaciones/crear/types/reservaciones";
 
 type SelectionModeCalendarCardProps = {
   calendarCells: CalendarCell[];

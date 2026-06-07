@@ -1,5 +1,5 @@
 import type { TimelineEvent } from "../../types/reservaciones";
-import { cn } from "../../lib/cn";
+import { cn } from "../../../../../shared/lib/cn";
 import { blockStyle, getDurationPercent } from "../../lib/time";
 
 type TimelineBlockProps = {

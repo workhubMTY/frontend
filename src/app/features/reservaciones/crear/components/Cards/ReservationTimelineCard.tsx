@@ -1,7 +1,7 @@
 import { CalendarCheck, Lock } from "lucide-react";
 
 import type { TimeBlock, TimelineEvent } from "../../types/reservaciones";
-import { cn } from "../../lib/cn";
+import { cn } from "../../../../../shared/lib/cn";
 import { to24Hour } from "../../lib/time";
 import { TimelineAxis } from "../Timeline/TimelineAxis";
 

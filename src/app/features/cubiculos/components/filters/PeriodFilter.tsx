@@ -2,8 +2,8 @@
 
 import { CalendarDays } from "lucide-react";
 
-import { MonthCalendar } from "@/app/features/reservaciones/components/Calendar/MonthCalendar";
-import { SelectionModeSegmentedControl } from "@/app/features/reservaciones/components/Calendar/DaysSelection/SelectionModeSegmentedControl";
+import { MonthCalendar } from "@/app/features/reservaciones/crear/components/Calendar/MonthCalendar";
+import { SelectionModeSegmentedControl } from "@/app/features/reservaciones/crear/components/Calendar/DaysSelection/SelectionModeSegmentedControl";
 
 import { FilterFlyout } from "./FilterFlyout";
 import { usePeriodFilter } from "../../hooks/usePeriodFilter";

@@ -1,7 +1,7 @@
 import type {
   TimeBlock,
   TimelineEvent,
-} from "@/app/features/reservaciones/types/reservaciones";
+} from "@/app/features/reservaciones/crear/types/reservaciones";
 
 type ParkingAvailabilityResult = {
   status: "available" | "partial" | "conflict";

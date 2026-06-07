@@ -1,4 +1,4 @@
-import { CalendarCell } from "@/app/features/reservaciones/types/reservaciones";
+import { CalendarCell } from "@/app/features/reservaciones/crear/types/reservaciones";
 
 type CalendarHeaderProps = {
   calendarCells: CalendarCell[];

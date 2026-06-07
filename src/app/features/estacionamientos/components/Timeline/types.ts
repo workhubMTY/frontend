@@ -1,4 +1,4 @@
-import type { TimeBlock } from "@/app/features/reservaciones/types/reservaciones";
+import type { TimeBlock } from "@/app/features/reservaciones/crear/types/reservaciones";
 import type { ReservationBucket } from "../../data/types";
 
 export type ParkingCapacityBar = {

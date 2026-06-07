@@ -1,4 +1,3 @@
-import { cn } from "@/app/features/reservaciones/lib/cn";
 export function TimelineLegend() {
   return (
     <div className="flex flex-wrap items-center gap-3 text-xs text-slate-600">

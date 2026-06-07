@@ -4,13 +4,13 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { Card } from "@/app/shared/components/Card";
-import { EventsAndConflictsCard } from "@/app/features/reservaciones/components/Cards/EventsAndConflictCard";
-import { ProposedSchedulesCard } from "@/app/features/reservaciones/components/Cards/ProposedSchedulesCard";
-import { ReservationFooter } from "@/app/features/reservaciones/components/ReservationFooter";
-import { ReservationTimelineCard } from "@/app/features/reservaciones/components/Cards/ReservationTimelineCard";
-import { SelectionModeCalendarCard } from "@/app/features/reservaciones/components/Calendar/DaysSelection/SelectionModeCalendarCard";
+import { EventsAndConflictsCard } from "@/app/features/reservaciones/crear/components/Cards/EventsAndConflictCard";
+import { ProposedSchedulesCard } from "@/app/features/reservaciones/crear/components/Cards/ProposedSchedulesCard";
+import { ReservationFooter } from "@/app/features/reservaciones/crear/components/ReservationFooter";
+import { ReservationTimelineCard } from "@/app/features/reservaciones/crear/components/Cards/ReservationTimelineCard";
+import { SelectionModeCalendarCard } from "@/app/features/reservaciones/crear/components/Calendar/DaysSelection/SelectionModeCalendarCard";
 
-import { useReservationSchedulerViewModel } from "@/app/features/reservaciones/hooks/useReservationSchedulerViewModel";
+import { useReservationSchedulerViewModel } from "@/app/features/reservaciones/crear/hooks/useReservationSchedulerViewModel";
 
 export function ReservationSchedulerContent() {
   const router = useRouter();

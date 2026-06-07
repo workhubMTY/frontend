@@ -8,17 +8,17 @@ import type {
   SelectionMode,
   TimeBlock,
   TimelineEvent,
-} from "@/app/features/reservaciones/types/reservaciones";
+} from "@/app/features/reservaciones/crear/types/reservaciones";
 
-import { getFirstAvailableDateId } from "@/app/features/reservaciones/lib/dates";
-import { hasOverlappingBlocks } from "@/app/features/reservaciones/lib/conflicts";
-import { uniqueSortedIds } from "@/app/features/reservaciones/lib/formatting";
+import { getFirstAvailableDateId } from "@/app/features/reservaciones/crear/lib/dates";
+import { hasOverlappingBlocks } from "@/app/features/reservaciones/crear/lib/conflicts";
+import { uniqueSortedIds } from "@/app/features/reservaciones/crear/lib/formatting";
 import {
   isValidTimeRange,
   normalizeTimeInput,
   parseTimeToMinutes,
   to24Hour,
-} from "@/app/features/reservaciones/lib/time";
+} from "@/app/features/reservaciones/crear/lib/time";
 
 type SelectedSpace = {
   id: string;

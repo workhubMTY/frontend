@@ -4,13 +4,13 @@ import { Clock3, GripVertical, Plus, Trash2 } from "lucide-react";
 
 import type { TimeBlock } from "../../types/reservaciones";
 import { blockHasConflict } from "../../lib/conflicts";
-import { cn } from "../../lib/cn";
-import { Card } from "../../../../shared/components/Card";
+import { cn } from "../../../../../shared/lib/cn";
+import { Card } from "@/app/shared/components/Card";
 import {
   isValidTimeRange,
   normalizeTimeInput,
   parseTimeToMinutes,
-} from "@/app/features/reservaciones/lib/time";
+} from "@/app/features/reservaciones/crear/lib/time";
 
 type ProposedSchedulesCardProps = {
   proposedBlocks: TimeBlock[];

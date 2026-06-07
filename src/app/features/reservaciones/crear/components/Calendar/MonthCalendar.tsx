@@ -4,9 +4,9 @@ import type {
   CalendarCell,
   CalendarSelectionAction,
   SelectionMode,
-} from "@/app/features/reservaciones/types/reservaciones";
+} from "@/app/features/reservaciones/crear/types/reservaciones";
 
-import { cn } from "@/app/features/reservaciones/lib/cn";
+import { cn } from "@/app/shared/lib/cn";
 import { useCalendarDragSelection } from "./hooks/useCalendarDragSelection";
 import { CalendarHeader } from "./CalendarHeader";
 import { CalendarDayButton } from "./CalendarDayButton";
