@@ -180,6 +180,8 @@ export type ReservationSummary = {
 };
 
 export type GetSlotReservationsPayload = {
+  start_time?: string;
+  end_time?: string;
   dates?: string[];
 };
 

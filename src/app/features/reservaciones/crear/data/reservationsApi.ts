@@ -114,32 +114,46 @@ export function groupTimelineEventsByDate(
     return eventsByDate;
   }, {});
 }
-
-export async function apiGetSpaceReservationsInVisibleRange({
+export async function apiGetSlotReservationsInVisibleRange({
   reservableId,
   calendarCells,
 }: {
   reservableId: number;
   calendarCells: CalendarCell[];
-}): Promise<TimelineEvent[]> {
+}): Promise<ReservationSummary[]> {
   const visibleRange = getVisibleRange(calendarCells);
 
   if (!visibleRange) return [];
 
-  const events = await officeSlotsApi.getEvents({
-    reservable_id: reservableId,
-    start_time: visibleRange.start_time,
-    end_time: visibleRange.end_time,
+  return officeSlotsApi.getSlotReservationsInRange({
+    id: reservableId,
+    startTime: visibleRange.start_time,
+    endTime: visibleRange.end_time,
   });
+}
 
-  return events.map((event) =>
-    toTimelineEvent(toApiReservationFromEvent(event), "reserved"),
-  );
+export async function apiGetSlotReservationsForSelectedDates({
+  reservableId,
+  dateIds,
+}: {
+  reservableId: number;
+  dateIds: string[];
+}): Promise<ReservationSummary[]> {
+  const dates = Array.from(new Set(dateIds)).filter(Boolean);
+
+  if (dates.length === 0) return [];
+
+  return officeSlotsApi.getSlotReservationsForDates({
+    id: reservableId,
+    dates,
+  });
 }
 
 export async function apiGetExternalEventsInVisibleRange({
+  reservableId,
   calendarCells,
 }: {
+  reservableId: number;
   calendarCells: CalendarCell[];
 }): Promise<DayEvent[]> {
   const visibleRange = getVisibleRange(calendarCells);
@@ -147,12 +161,47 @@ export async function apiGetExternalEventsInVisibleRange({
   if (!visibleRange) return [];
 
   const dateIds = new Set(calendarCells.map((cell) => cell.id));
+  let dates = Array.from(dateIds);
+  let initialDate = new Date(visibleRange.start_time);
 
-  const myReservations = await officeSlotsApi.getMyReservations();
+  const payload = {
+    dates,
+  };
 
-  return myReservations.reservations
+  const myReservations = await officeSlotsApi.getSlotReservations(
+    reservableId,
+    payload,
+  );
+
+  return myReservations
     .filter((reservation) => reservation.status === "ACCEPTED")
     .map(toApiReservationFromMyReservation)
     .filter((reservation) => dateIds.has(reservation.dateId))
     .map((reservation) => toDayEvent(reservation, "external", "partial"));
 }
+
+/*
+
+  getSlotReservations: (
+    id: number,
+    payload?: GetSlotReservationsPayload,
+    detail = false,
+  ) => {
+    const params = new URLSearchParams();
+
+    if (detail) {
+      params.append("detail", "true");
+    }
+
+    const search = params.toString();
+
+    return authFetch<ReservationSummary[]>(
+      `${SLOTS_BASE}/${id}/reservations${search ? `?${search}` : ""}`,
+      {
+        method: "POST",
+        body: JSON.stringify(payload ?? {}),
+      },
+    );
+  },
+
+*/

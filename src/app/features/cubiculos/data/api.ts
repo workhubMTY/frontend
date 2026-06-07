@@ -27,6 +27,36 @@ const EVENTS = `${SLOTS_BASE}/events`;
 const WORK_GROUPS = `${SLOTS_BASE}/work-groups`;
 const RESERVATIONS_BASE = `/office/reservations`;
 
+function toApiDateTime(value: string | Date | undefined) {
+  if (!value) return undefined;
+
+  if (value instanceof Date) {
+    return value.toISOString();
+  }
+
+  return value;
+}
+
+function normalizeSlotReservationsPayload(
+  payload?: GetSlotReservationsPayload,
+): GetSlotReservationsPayload {
+  if (!payload) return {};
+
+  const uniqueDates = payload.dates
+    ? Array.from(new Set(payload.dates)).filter(Boolean)
+    : undefined;
+
+  if (uniqueDates && uniqueDates.length > 0) {
+    return {
+      dates: uniqueDates,
+    };
+  }
+
+  return {
+    start_time: toApiDateTime(payload.start_time),
+    end_time: toApiDateTime(payload.end_time),
+  };
+}
 
 export const officeSlotsApi = {
   getAllSlots: () => authFetch<OfficeSlot[]>(`${SLOTS_BASE}/`),
@@ -75,6 +105,7 @@ export const officeSlotsApi = {
       method: "POST",
       body: JSON.stringify(payload),
     }),
+
   getSlotReservations: (
     id: number,
     payload?: GetSlotReservationsPayload,
@@ -92,10 +123,47 @@ export const officeSlotsApi = {
       `${SLOTS_BASE}/${id}/reservations${search ? `?${search}` : ""}`,
       {
         method: "POST",
-        body: JSON.stringify(payload ?? {}),
+        body: JSON.stringify(normalizeSlotReservationsPayload(payload)),
       },
     );
   },
+
+  getSlotReservationsInRange: ({
+    id,
+    startTime,
+    endTime,
+    detail = false,
+  }: {
+    id: number;
+    startTime: string | Date;
+    endTime: string | Date;
+    detail?: boolean;
+  }) =>
+    officeSlotsApi.getSlotReservations(
+      id,
+      {
+        start_time: toApiDateTime(startTime),
+        end_time: toApiDateTime(endTime),
+      },
+      detail,
+    ),
+
+  getSlotReservationsForDates: ({
+    id,
+    dates,
+    detail = false,
+  }: {
+    id: number;
+    dates: string[];
+    detail?: boolean;
+  }) =>
+    officeSlotsApi.getSlotReservations(
+      id,
+      {
+        dates,
+      },
+      detail,
+    ),
 
   getWorkGroups: () => authFetch<WorkGroup[]>(`${WORK_GROUPS}`),
 

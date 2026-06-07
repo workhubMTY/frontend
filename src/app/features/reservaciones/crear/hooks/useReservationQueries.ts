@@ -15,7 +15,6 @@ type UseReservationQueriesParams = {
   reservableId: number | null;
   enabled: boolean;
 };
-
 export function useReservationQueries({
   calendarCells,
   reservableId,
@@ -35,10 +34,10 @@ export function useReservationQueries({
       visibleRange?.firstDateId,
       visibleRange?.lastDateId,
     ],
-    enabled: enabled && Boolean(reservableId) && Boolean(visibleRange),
+    enabled: enabled && !!reservableId && !!visibleRange,
     queryFn: () =>
       apiGetSpaceReservationsInVisibleRange({
-        reservableId: reservableId as number,
+        reservableId: reservableId!,
         calendarCells,
       }),
   });
@@ -51,12 +50,14 @@ export function useReservationQueries({
       visibleRange?.firstDateId,
       visibleRange?.lastDateId,
     ],
-    enabled: enabled && Boolean(visibleRange),
+    enabled: enabled && !!visibleRange && !!reservableId,
     queryFn: () =>
       apiGetExternalEventsInVisibleRange({
+        reservableId: reservableId!, // igual aquí
         calendarCells,
       }),
   });
+
 
   const spaceReservationsByDate = useMemo(
     () => groupTimelineEventsByDate(spaceReservationsQuery.data ?? []),
