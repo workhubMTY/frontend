@@ -12,6 +12,7 @@ import type {
 const ParkingLink = "/parking";
 const OfficeLink = "/office"
 const UserLink = "/users"
+const GuestLink = "";
 
 export const listParkingReservations = {
   // Get /parking
@@ -52,3 +53,5 @@ export const listUsers = {
     // Get /users/:eId/friendships
     getUsersFriendships: (eId: string) => authFetch<Friendships>(`${UserLink}/${eId}/friendships`),
 } as const
+
+export const listGuest = {} as const

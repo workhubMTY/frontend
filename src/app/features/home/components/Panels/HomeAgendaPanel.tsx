@@ -1,17 +1,14 @@
 import AgendaRapida from "@/app/features/home/components/AgendaRapida/AgendaRapida";
-import { EventoGeneralDetail } from "@/app/features/home/components/EventoGeneralDetail";
 
 import type { ExternalEvent } from "@/app/features/home/types/Agenda";
 
 type HomeAgendaPanelProps = {
   externalEvents: ExternalEvent[];
-  carouselProps: React.ComponentProps<typeof EventoGeneralDetail>;
   variant?: "desktop" | "mobile";
 };
 
 export function HomeAgendaPanel({
   externalEvents,
-  carouselProps,
   variant = "desktop",
 }: HomeAgendaPanelProps) {
   const agendaContainerClass =
@@ -24,8 +21,6 @@ export function HomeAgendaPanel({
       <div className={agendaContainerClass}>
         <AgendaRapida externalEvents={externalEvents} />
       </div>
-
-      <EventoGeneralDetail {...carouselProps} />
     </div>
   );
 }
