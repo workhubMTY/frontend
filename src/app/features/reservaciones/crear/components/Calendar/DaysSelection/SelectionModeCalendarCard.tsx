@@ -39,13 +39,13 @@ export function SelectionModeCalendarCard({
   const hasSelectedDates = selectedDateIds.length > 0;
 
   return (
-    <Card className="p-5">
+    <Card className="p-4 flex flex-col font-bold">
       <SelectionModeSegmentedControl
         value={selectionMode}
         onChange={onModeChange}
       />
 
-      <div className="mt-4 p-4">
+      <div className="mt-4">
         <MonthCalendar
           activeDayId={activeDayId}
           selectionMode={selectionMode}
@@ -60,7 +60,6 @@ export function SelectionModeCalendarCard({
           disabled={!hasSelectedDates}
           onClearSelection={onClearSelection}
         />
-
       </div>
     </Card>
   );
@@ -91,4 +90,3 @@ type CalendarLegendItemProps = {
   label: string;
   className: string;
 };
-

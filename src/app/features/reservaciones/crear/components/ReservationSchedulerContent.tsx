@@ -24,10 +24,10 @@ export function ReservationSchedulerContent() {
 
   return (
     <>
-      <main className="min-h-screen bg-background-page p-4 text-slate-950 sm:p-6 lg:p-8">
-        <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">
-          <section className="space-y-5">
-            <Card className="p-5">
+      <main className="min-h-full bg-background-page p-4 text-slate-950 sm:p-6 lg:p-8">
+        <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_320px]">
+          <section className="h-full space-y-4 flex flex-col">
+            <Card className="p-2">
               <ReservationTimelineCard
                 activeDayId={state.scheduler.activeDayId}
                 proposedBlocks={state.scheduler.proposedBlocksForActiveDay}
@@ -63,7 +63,7 @@ export function ReservationSchedulerContent() {
             />
           </section>
 
-          <aside className="sticky top-5 self-start space-y-5">
+          <aside className="sticky self-start space-y-5">
             <SelectionModeCalendarCard
               calendarCells={state.calendarCells}
               activeDayId={state.scheduler.activeDayId}

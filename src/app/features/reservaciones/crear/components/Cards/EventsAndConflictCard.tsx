@@ -21,7 +21,7 @@ export function EventsAndConflictsCard({
 }: EventsAndConflictsCardProps) {
   return (
     <Card className="p-5">
-      <h2 className="text-lg font-bold text-slate-950">Eventos y conflictos</h2>
+      <h2 className="text-lg font-bold text-slate-950">Eventos</h2>
 
       <div className="my-4 grid grid-cols-2 gap-3">
         <div className="flex items-center justify-center gap-2 rounded-xl border border-blue-100 bg-blue-50 px-3 py-3 text-sm font-semibold text-slate-700">

@@ -34,27 +34,21 @@ export function ProposedSchedulesCard({
   onUpdateBlock,
 }: ProposedSchedulesCardProps) {
   return (
-    <Card className="p-5">
-      <div className="mb-4 flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+    <Card className="p-4">
+      <div className="mb-4 flex flex-col gap-4 lg:flex-row  lg:justify-between items-center">
         <div>
           <div className="flex items-center gap-3">
-            <h2 className="text-xl font-bold text-slate-950">
+            <h2 className="text-lg font-bold text-slate-950">
               Horarios propuestos
             </h2>
           </div>
 
-          <p className="mt-1 text-sm text-slate-500">
+          {/* <p className="mt-1 text-sm text-slate-500">
             Estos horarios se aplicarán a los días seleccionados cuando
             continúes con la reservación.
-          </p>
+          </p> */}
 
-          <p className="mt-2 text-xs font-semibold text-slate-500">
-            {hasSelectedDates
-              ? `${selectedDateCount} día${
-                  selectedDateCount === 1 ? "" : "s"
-                } seleccionado${selectedDateCount === 1 ? "" : "s"}`
-              : "Selecciona al menos un día para continuar"}
-          </p>
+
         </div>
 
         <button

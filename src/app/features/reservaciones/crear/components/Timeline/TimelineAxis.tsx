@@ -4,7 +4,7 @@ import { timeToPercent } from "../../lib/time";
 
 export function TimelineAxis() {
   return (
-    <div className="relative ml-32 h-7 text-xs font-medium text-slate-500">
+    <div className="relative ml-32 h-5 text-xs font-medium text-slate-500">
       {timelineHours.map((hour, index) => {
         const left = hour === "23:59" ? 100 : timeToPercent(hour);
         const isFirst = index === 0;

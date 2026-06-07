@@ -74,24 +74,29 @@ export function ReservationTimelineCard({
     .filter(Boolean) as TimelineRange[];
 
   return (
-    <div className="p-5">
-      <div className="overflow-x-auto pb-2">
+    <div className="p-4">
+      <div className="overflow-x-auto">
+        <div className="flex items-top justify-between gap-3 items-start">
+          <h2 className="text-lg font-bold text-slate-950 pb-2 ">
+            Línea de tiempo 
+          </h2>
+          <TimelineLegend /> 
+        </div>
         <div className="min-w-[880px]">
-          <TimelineAxis />
+          <div className="mb-3 overflow-hidden rounded-xl border border-slate-200">
+            <OccupiedSpaceRow
+              ranges={occupiedRanges}
+              selectedBlocks={proposedBlocks}
+              conflictRanges={[...occupiedRanges, ...myReservationRanges]}
+            />
 
-          <div className="mt-3 overflow-hidden rounded-xl border border-slate-200">
-<OccupiedSpaceRow
-  ranges={occupiedRanges}
-  selectedBlocks={proposedBlocks}
-  conflictRanges={[...occupiedRanges, ...myReservationRanges]}
-/>
-
-<MyReservationsRow ranges={myReservationRanges} />
+            <MyReservationsRow ranges={myReservationRanges} />
           </div>
+          <TimelineAxis />
         </div>
       </div>
 
-      <TimelineLegend />
+      {/* <TimelineLegend /> */}
     </div>
   );
 }
@@ -121,11 +126,7 @@ function OccupiedSpaceRow({
       ) : null}
 
       {ranges.map((range) => (
-        <ExistingRangeBlock
-          key={range.id}
-          range={range}
-          variant="occupied"
-        />
+        <ExistingRangeBlock key={range.id} range={range} variant="occupied" />
       ))}
 
       {selectedBlocks.slice(0, 3).map((block) => (
@@ -214,8 +215,7 @@ function ExistingRangeBlock({
         !isLaned && "top-1/2 h-9 -translate-y-1/2",
         variant === "occupied" &&
           "border-slate-300 bg-slate-200 text-slate-700",
-        variant === "mine" &&
-          "border-slate-300 bg-slate-100 text-slate-600",
+        variant === "mine" && "border-slate-300 bg-slate-100 text-slate-600",
       )}
       style={{
         left: `${left}%`,
@@ -394,15 +394,10 @@ function EmptyRowMessage({ children }: EmptyRowMessageProps) {
 
 function TimelineLegend() {
   return (
-    <div className="mt-4 flex flex-wrap items-center gap-5 text-xs text-slate-600">
-      <LegendItem
-        markerClassName="border border-slate-300 bg-slate-200"
-        label="Espacio ocupado"
-      />
-
+    <div className=" flex flex-wrap items-start gap-5 text-xs text-slate-600">
       <LegendItem
         markerClassName="border border-slate-300 bg-slate-100"
-        label="Tu reservación"
+        label="Reservación existente"
       />
 
       <LegendItem
