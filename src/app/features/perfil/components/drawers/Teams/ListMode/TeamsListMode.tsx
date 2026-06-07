@@ -3,7 +3,7 @@ import { TeamListItem } from "./TeamsListItem";
 import { TeamsEmptyState } from "./TeamsEmptyState";
 import { TeamsListFooter } from "./TeamsListFooter";
 import { TeamsListHeader } from "./TeamsListHeader";
-import { SuccessMessage } from "./SuccessMessage";
+import { Message } from "../../../../../../shared/components/Message/Message";
 
 type TeamsListModeProps = {
   search: string;
@@ -43,8 +43,11 @@ export function TeamsListMode({
       />
 
       {successMessage && (
-        <SuccessMessage
+        <Message
           message={successMessage}
+          bgColor={"bg-green-50"}
+          borderColor={"border-green-200"}
+          textColor={"text-green-700"}
           onDismiss={onDismissSuccessMessage}
         />
       )}
