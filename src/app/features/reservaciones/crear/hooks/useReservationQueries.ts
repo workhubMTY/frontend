@@ -5,7 +5,7 @@ import type { CalendarCell } from "@/app/features/reservaciones/crear/types/rese
 
 import {
   apiGetExternalEventsInVisibleRange,
-  apiGetSpaceReservationsInVisibleRange,
+  apiGetSlotReservationsInVisibleRange,
   getVisibleRange,
   groupTimelineEventsByDate,
 } from "@/app/features/reservaciones/crear/data/reservationsApi";
@@ -36,7 +36,7 @@ export function useReservationQueries({
     ],
     enabled: enabled && !!reservableId && !!visibleRange,
     queryFn: () =>
-      apiGetSpaceReservationsInVisibleRange({
+      apiGetSlotReservationsInVisibleRange({
         reservableId: reservableId!,
         calendarCells,
       }),
