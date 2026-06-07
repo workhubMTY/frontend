@@ -8,7 +8,7 @@ import { ReservationFinishedModal } from "@/app/features/reservaciones/confirmar
 import { ReservationSummaryCard } from "@/app/features/reservaciones/confirmar/components/ReservationSummaryCard";
 import { useCubiculoConfirmarViewModel } from "@/app/features/reservaciones/confirmar/hooks/useCubiculoConfirmarViewModel";
 
-export function CubiculoConfirmarView() {
+export default function CubiculoConfirmarView() {
   const { state, refs, actions } = useCubiculoConfirmarViewModel();
 
   return (
