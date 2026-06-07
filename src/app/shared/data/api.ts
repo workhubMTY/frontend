@@ -36,7 +36,7 @@ async function authFetch<T>(
   endpoint: string,
   options: RequestOptions = {}
 ): Promise<T> {
-  console.log("API request:", { endpoint, options });
+  // console.log("API request:", { endpoint, options });
   if (!_auth) {
     throw new Error("[authFetch] Auth accessors not registered. Wrap your app in AuthProvider.");
   }
@@ -82,11 +82,11 @@ async function authFetch<T>(
   }
 
   if (!response.ok) {
-    console.log("API error response:", { endpoint, status: response.status, payload });
+    // console.log("API error response:", { endpoint, status: response.status, payload });
     throw new Error(payload?.message ?? `Error ${response.status}`);
   }
 
-  console.log("API response:", payload.data as T);
+  // console.log("API response:", payload.data as T);
 
   return payload.data as T;
 }

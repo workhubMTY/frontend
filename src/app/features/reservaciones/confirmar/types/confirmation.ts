@@ -8,6 +8,7 @@ export type ReservationDraftSchedule = {
 export type ReservationDraft = {
   reservableId: number;
   reservableName: string;
+  reservableCode: string;
   schedules: ReservationDraftSchedule[];
 };
 

@@ -3,12 +3,11 @@
 import type { ReservationDraft } from "../../types/confirmation";
 import { useConfirmReservationViewModel } from "../../hooks/useConfirmReservationViewModel";
 
-import { ConfirmReservationModalShell } from "./ConfirmReservationModalShell";
+import { ConfirmReservationModalShell } from "./layout/ConfirmReservationModalShell";
 import { ReservationSummaryAside } from "./ReservationSummaryAside";
-import { InviteSearchPanel } from "./InviteSearchPanel";
-import { CreateTeamCard } from "./CreateTeamCard";
-import { SelectedGuestsPanel } from "./SelectedGuestsPanel";
-import { ConfirmReservationFooter } from "./ConfirmReservationFooter";
+import { InviteSearchPanel } from "./panels/InviteSearchPanel";
+import { SelectedGuestsPanel } from "./panels/SelectedGuestsPanel";
+import { ConfirmReservationFooter } from "./layout/ConfirmReservationFooter";
 
 type ConfirmReservationModalProps = {
   isOpen: boolean;
@@ -81,7 +80,7 @@ export function ConfirmReservationModal({
               onWorkGroupSelect={actions.addWorkGroup}
             />
 
-            <div className="mt-auto pt-6">
+            {/* <div className="mt-auto pt-6">
               <CreateTeamCard
                 shouldCreateTeam={state.shouldCreateTeam}
                 teamName={state.teamName}
@@ -89,7 +88,7 @@ export function ConfirmReservationModal({
                 onToggle={actions.toggleShouldCreateTeam}
                 onTeamNameChange={actions.updateTeamName}
               />
-            </div>
+            </div> */}
           </main>
 
           <SelectedGuestsPanel

@@ -102,6 +102,7 @@ export function useReservationSchedulerViewModel({
 
     setConfirmationDraft({
       reservableId: Number(selectedSpace.id),
+      reservableCode: selectedSpace.code,
       reservableName: selectedSpace.name,
       schedules,
     });

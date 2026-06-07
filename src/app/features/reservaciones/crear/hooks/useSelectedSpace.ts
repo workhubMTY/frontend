@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 
 export type SelectedSpace = {
   id: string;
+  code:string;
   name: string;
 };
 
@@ -41,6 +42,7 @@ export function useSelectedSpace() {
   return {
     selectedSpace,
     spaceId: selectedSpace?.id,
+    code: selectedSpace?.code,
     spaceName: selectedSpace?.name ?? "Cubículo",
   };
 }

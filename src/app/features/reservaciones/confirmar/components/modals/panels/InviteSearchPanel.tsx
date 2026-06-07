@@ -3,8 +3,8 @@
 import type { RefObject } from "react";
 import { Search, Users } from "lucide-react";
 
-import type { PersonOption, WorkGroupOption } from "../../types/confirmation";
-import { Avatar } from "../Avatar";
+import type { PersonOption, WorkGroupOption } from "../../../types/confirmation";
+import { Avatar } from "../../Avatar";
 
 type InviteSearchPanelProps = {
   containerRef: RefObject<HTMLDivElement | null>;

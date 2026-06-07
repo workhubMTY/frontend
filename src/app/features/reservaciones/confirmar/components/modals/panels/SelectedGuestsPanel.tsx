@@ -2,8 +2,8 @@
 
 import { Users, X } from "lucide-react";
 
-import type { InvitedGuest } from "../../types/confirmation";
-import { Avatar } from "../Avatar";
+import type { InvitedGuest } from "../../../types/confirmation";
+import { Avatar } from "../../Avatar";
 
 type SelectedGuestsPanelProps = {
   invitedGuests: InvitedGuest[];
