@@ -111,17 +111,6 @@ export function TeamsDrawer({
     setManagedTeamId(null);
     setSuccessMessage(null);
   }, [open, initialOpenTeamId, initialTeamDrawerMode]);
-  useEffect(() => {
-    if (!successMessage) return;
-
-    const timeoutId = window.setTimeout(() => {
-      setSuccessMessage(null);
-    }, 4000);
-
-    return () => {
-      window.clearTimeout(timeoutId);
-    };
-  }, [successMessage]);
 
   function handleToggleTeam(teamId: string) {
     setOpenTeamId((current) => (current === teamId ? null : teamId));

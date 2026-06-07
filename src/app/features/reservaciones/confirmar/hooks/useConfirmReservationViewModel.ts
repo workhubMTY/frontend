@@ -250,6 +250,7 @@ export function useConfirmReservationViewModel({
       setSearchTerm,
       openDropdown: () => setIsDropdownOpen(true),
       closeDropdown: () => setIsDropdownOpen(false),
+      setLoadError: (errorMsg:string) => setLoadError(errorMsg),
       closeModal,
       addPerson,
       addWorkGroup,

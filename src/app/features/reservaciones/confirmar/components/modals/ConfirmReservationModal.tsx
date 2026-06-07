@@ -8,6 +8,8 @@ import { ReservationSummaryAside } from "./ReservationSummaryAside";
 import { InviteSearchPanel } from "./panels/InviteSearchPanel";
 import { SelectedGuestsPanel } from "./panels/SelectedGuestsPanel";
 import { ConfirmReservationFooter } from "./layout/ConfirmReservationFooter";
+import { Message } from "@/app/shared/components/Message/Message";
+import { useEffect } from "react";
 
 type ConfirmReservationModalProps = {
   isOpen: boolean;
@@ -15,7 +17,6 @@ type ConfirmReservationModalProps = {
   onClose: () => void;
   onCompleted: () => void;
 };
-
 export function ConfirmReservationModal({
   isOpen,
   reservationDraft,
@@ -28,6 +29,21 @@ export function ConfirmReservationModal({
     onClose,
     onCompleted,
   });
+
+  const { setLoadError } = actions;
+
+  useEffect(() => {
+    if (!isOpen) return;
+    if (!state.loadError) return;
+
+    const timeoutId = window.setTimeout(() => {
+      setLoadError("");
+    }, 4000);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [isOpen, state.loadError, setLoadError]);
 
   if (!isOpen) return null;
 
@@ -61,11 +77,16 @@ export function ConfirmReservationModal({
         </header>
 
         <div className="grid min-h-0 flex-1 grid-cols-1 overflow-hidden lg:grid-cols-[minmax(0,1fr)_340px]">
-          <main className="flex min-w-0 flex-col overflow-y-auto px-6 py-5">
+          <main className="flex min-w-0 flex-col overflow-y-auto px-6 py-4 ">
             {state.loadError && (
-              <div className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-600">
+              <Message
+                onDismiss={() => actions.setLoadError("")}
+                autoDismiss={true}
+                delay={4000}
+                extendClass="self-center w-full mb-4 bg-red-50 border-red-200 text-red-700"
+              >
                 {state.loadError}
-              </div>
+              </Message>
             )}
 
             <InviteSearchPanel

@@ -15,7 +15,7 @@ type TeamsListModeProps = {
   onToggleTeam: (teamId: string) => void;
   onManageTeam: (teamId: string) => void;
   successMessage?: string | null;
-  onDismissSuccessMessage?: () => void;
+  onDismissSuccessMessage: () => void;
   onCreateMode: () => void;
 };
 
@@ -44,12 +44,13 @@ export function TeamsListMode({
 
       {successMessage && (
         <Message
-          message={successMessage}
-          bgColor={"bg-green-50"}
-          borderColor={"border-green-200"}
-          textColor={"text-green-700"}
+          extendClass="bg-green-50 border-green-200 text-green-700"
+          autoDismiss={true}
+          delay={4000}
           onDismiss={onDismissSuccessMessage}
-        />
+        >
+          {successMessage}
+        </Message>
       )}
 
       <div className="flex-1 overflow-y-auto">

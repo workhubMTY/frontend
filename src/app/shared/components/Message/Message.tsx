@@ -1,22 +1,51 @@
 import { X } from "lucide-react";
+import { useEffect } from "react";
 
-type MessageProps = {
-  message: string;
-  borderColor: string;
-  bgColor: string;
-  textColor: string;
-  onDismiss?: () => void;
-};
+type MessageProps =
+  | {
+      children: React.ReactNode;
+      extendClass?: string;
+      autoDismiss: true;
+      onDismiss: () => void; // requerido
+      delay: number; // requerido
+    }
+  | {
+      children: React.ReactNode;
+      extendClass?: string;
+      autoDismiss?: false; // opcional o false
+      onDismiss?: () => void; // opcional
+      delay?: number; // opcional
+    };
 
-export function Message({ message, borderColor, bgColor, textColor, onDismiss }: MessageProps) {
+export function Message({
+  children,
+  extendClass,
+  autoDismiss,
+  delay,
+  onDismiss,
+}: MessageProps) {
+  useEffect(() => {
+    if (autoDismiss && onDismiss && delay) {
+      const timeoutId = window.setTimeout(() => {
+        onDismiss();
+      }, delay);
+
+      return () => {
+        window.clearTimeout(timeoutId);
+      };
+    }
+  }, [autoDismiss, delay, onDismiss]);
+
   return (
-    <div className={`mx-8 mt-4 flex items-center justify-between gap-3 border ${borderColor} ${bgColor} px-4 py-3 text-sm font-medium ${textColor}`}>
-      <span>{message}</span>
+    <div
+      className={`flex items-center justify-between gap-3 border px-4 py-3 text-sm font-medium ${extendClass}`}
+    >
+      <span>{children}</span>
       {onDismiss && (
         <button
           type="button"
           onClick={onDismiss}
-          className={`${textColor} transition hover:opacity-80`}
+          className="transition hover:opacity-80"
         >
           <X size={16} />
         </button>
