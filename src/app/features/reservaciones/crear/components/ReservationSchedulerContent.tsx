@@ -10,7 +10,7 @@ import { ReservationFooter } from "@/app/features/reservaciones/crear/components
 import { ReservationTimelineCard } from "@/app/features/reservaciones/crear/components/Cards/ReservationTimelineCard";
 import { SelectionModeCalendarCard } from "@/app/features/reservaciones/crear/components/Calendar/DaysSelection/SelectionModeCalendarCard";
 
-import { ConfirmReservationModal } from "@/app/features/reservaciones/confirmar/components/ConfirmReservationModal";
+import { ConfirmReservationModal } from "@/app/features/reservaciones/confirmar/components/modals/ConfirmReservationModal";
 import { ReservationFinishedModal } from "@/app/features/reservaciones/confirmar/components/ReservationFinishedModal";
 
 import { useReservationSchedulerViewModel } from "@/app/features/reservaciones/crear/hooks/useReservationSchedulerViewModel";
