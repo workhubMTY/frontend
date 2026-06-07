@@ -1,38 +1,94 @@
-import { TEAM_COLOR_CLASS_NAMES } from "../constants";
 import type {
-  CreateReservationGuestsPayload,
   InvitedGuest,
   PersonOption,
   ReservationDraft,
-  ReservationDraftSchedule,
   ReservationSession,
   WorkGroupOption,
-} from "../types";
+} from "../types/confirmation";
 
-export function parseReservationDraft(rawDraft: string | null): ReservationDraft | null {
-  if (!rawDraft) return null;
+type ApiUser = {
+  id: string | number;
+  name: string;
+  email: string;
+};
 
-  try {
-    const draft = JSON.parse(rawDraft) as Partial<ReservationDraft>;
+type ApiGuest = {
+  id: string | number;
+  name: string;
+  email: string;
+};
 
-    if (!draft.reservableId || !Array.isArray(draft.schedules)) {
-      return null;
-    }
+type ApiWorkGroup = {
+  id: string | number;
+  name: string;
+  memberCount?: number | null;
+};
 
-    return {
-      reservableId: Number(draft.reservableId),
-      reservableName: draft.reservableName ?? "Espacio",
-      schedules: draft.schedules,
-    };
-  } catch {
-    return null;
-  }
+const WORK_GROUP_COLORS = [
+  "bg-violet-100 text-violet-700",
+  "bg-pink-100 text-pink-700",
+  "bg-sky-100 text-sky-700",
+  "bg-emerald-100 text-emerald-700",
+];
+
+export function mapUserToPersonOption(user: ApiUser): PersonOption {
+  return {
+    id: String(user.id),
+    name: user.name,
+    email: user.email,
+    kind: "colaborador",
+  };
 }
 
-export function formatReservationSessions(
-  schedules: ReservationDraftSchedule[],
+export function mapGuestToPersonOption(guest: ApiGuest): PersonOption {
+  return {
+    id: `guest-${guest.id}`,
+    name: guest.name,
+    email: guest.email,
+    kind: "invitado",
+  };
+}
+
+export function mapWorkGroupToOption(
+  group: ApiWorkGroup,
+  index: number,
+): WorkGroupOption {
+  return {
+    id: String(group.id),
+    name: group.name,
+    memberCount: group.memberCount ?? 0,
+    colorClassName:
+      WORK_GROUP_COLORS[index % WORK_GROUP_COLORS.length] ??
+      "bg-violet-100 text-violet-700",
+  };
+}
+
+export function mapPersonToInvitedGuest(person: PersonOption): InvitedGuest {
+  return {
+    id: person.id,
+    name: person.name,
+    email: person.email,
+    kind: person.kind,
+  };
+}
+
+export function mapWorkGroupToInvitedGuest(
+  workGroup: WorkGroupOption,
+): InvitedGuest {
+  return {
+    id: `equipo-${workGroup.id}`,
+    name: workGroup.name,
+    email: `${workGroup.memberCount} miembros`,
+    kind: "colaborador",
+  };
+}
+
+export function mapDraftToSessions(
+  draft: ReservationDraft | null,
 ): ReservationSession[] {
-  return schedules.map((schedule) => {
+  if (!draft) return [];
+
+  return draft.schedules.map((schedule) => {
     const start = new Date(schedule.start_time);
     const end = new Date(schedule.end_time);
 
@@ -52,85 +108,18 @@ export function formatReservationSessions(
   });
 }
 
-export function mapUserToPersonOption(user: { id: string; name: string; email: string }): PersonOption {
-  return {
-    id: user.id,
-    name: user.name,
-    email: user.email,
-    kind: "colaborador",
-  };
-}
-
-export function mapGuestToPersonOption(guest: { id: number | string; name: string; email: string }): PersonOption {
-  return {
-    id: `guest-${guest.id}`,
-    name: guest.name,
-    email: guest.email,
-    kind: "invitado",
-  };
-}
-
-export function mapWorkGroupToOption(
-  group: { id: number | string; name: string; memberCount?: number | null },
-  index: number,
-): WorkGroupOption {
-  return {
-    id: String(group.id),
-    name: group.name,
-    members: group.memberCount ?? 0,
-    colorClassName:
-      TEAM_COLOR_CLASS_NAMES[index % TEAM_COLOR_CLASS_NAMES.length] ??
-      "bg-violet-100",
-  };
-}
-
-export function personToInvitedGuest(person: PersonOption): InvitedGuest {
-  return {
-    id: person.id,
-    name: person.name,
-    email: person.email,
-    kind: person.kind,
-  };
-}
-
-export function workGroupToInvitedGuest(workGroup: WorkGroupOption): InvitedGuest {
-  return {
-    id: `equipo-${workGroup.id}`,
-    name: workGroup.name,
-    email: `${workGroup.members} miembros`,
-    kind: "colaborador",
-  };
-}
-
-export function splitInvitedGuestsForReservation(
-  invitedGuests: InvitedGuest[],
-): CreateReservationGuestsPayload {
-  return {
-    userIds: invitedGuests
-      .filter((guest) => !guest.id.startsWith("guest-") && !guest.id.startsWith("equipo-"))
-      .map((guest) => guest.id),
-    guestIds: invitedGuests
-      .filter((guest) => guest.id.startsWith("guest-"))
-      .map((guest) => Number(guest.id.replace("guest-", "")))
-      .filter(Number.isFinite),
-    workGroupIds: invitedGuests
-      .filter((guest) => guest.id.startsWith("equipo-"))
-      .map((guest) => Number(guest.id.replace("equipo-", "")))
-      .filter(Number.isFinite),
-  };
-}
-
 export function filterPeopleOptions(
   people: PersonOption[],
   searchTerm: string,
 ): PersonOption[] {
-  const normalizedSearch = searchTerm.trim().toLowerCase();
+  const normalizedSearch = normalizeSearch(searchTerm);
+
   if (normalizedSearch.length <= 1) return people;
 
   return people.filter(
     (person) =>
-      person.name.toLowerCase().includes(normalizedSearch) ||
-      person.email.toLowerCase().includes(normalizedSearch),
+      normalizeSearch(person.name).includes(normalizedSearch) ||
+      normalizeSearch(person.email).includes(normalizedSearch),
   );
 }
 
@@ -138,10 +127,40 @@ export function filterWorkGroupOptions(
   workGroups: WorkGroupOption[],
   searchTerm: string,
 ): WorkGroupOption[] {
-  const normalizedSearch = searchTerm.trim().toLowerCase();
+  const normalizedSearch = normalizeSearch(searchTerm);
+
   if (normalizedSearch.length <= 1) return workGroups;
 
   return workGroups.filter((workGroup) =>
-    workGroup.name.toLowerCase().includes(normalizedSearch),
+    normalizeSearch(workGroup.name).includes(normalizedSearch),
   );
+}
+
+export function splitInvitedGuestsForReservation(invitedGuests: InvitedGuest[]) {
+  const userIds = invitedGuests
+    .filter(
+      (guest) =>
+        !guest.id.startsWith("guest-") && !guest.id.startsWith("equipo-"),
+    )
+    .map((guest) => guest.id);
+
+  const guestIds = invitedGuests
+    .filter((guest) => guest.id.startsWith("guest-"))
+    .map((guest) => Number(guest.id.replace("guest-", "")))
+    .filter(Number.isFinite);
+
+  const workGroupIds = invitedGuests
+    .filter((guest) => guest.id.startsWith("equipo-"))
+    .map((guest) => Number(guest.id.replace("equipo-", "")))
+    .filter(Number.isFinite);
+
+  return {
+    userIds,
+    guestIds,
+    workGroupIds,
+  };
+}
+
+function normalizeSearch(value: string) {
+  return value.trim().toLowerCase();
 }

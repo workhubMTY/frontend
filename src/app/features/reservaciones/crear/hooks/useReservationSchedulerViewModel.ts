@@ -1,22 +1,32 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 
 import { toTimelineEvent } from "@/app/features/reservaciones/crear/data/reservationsApi";
-
 import { createCalendarCells } from "@/app/features/reservaciones/crear/lib/dates";
 
 import { useSelectedSpace } from "@/app/features/reservaciones/crear/hooks/useSelectedSpace";
 import { useReservationQueries } from "@/app/features/reservaciones/crear/hooks/useReservationQueries";
 import { useReservationScheduler } from "@/app/features/reservaciones/crear/hooks/useReservationScheduler";
 
-type UseReservationSchedulerPageParams = {
+import type { ReservationDraft } from "@/app/features/reservaciones/confirmar/types/confirmation";
+
+type UseReservationSchedulerViewModelParams = {
   showAllEvents: boolean;
 };
 
 export function useReservationSchedulerViewModel({
   showAllEvents,
-}: UseReservationSchedulerPageParams) {
+}: UseReservationSchedulerViewModelParams) {
+  const router = useRouter();
+
+  const [confirmationDraft, setConfirmationDraft] =
+    useState<ReservationDraft | null>(null);
+
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [isFinishedModalOpen, setIsFinishedModalOpen] = useState(false);
+
   const { selectedSpace, spaceId, spaceName } = useSelectedSpace();
 
   const calendarCells = useMemo(() => createCalendarCells(), []);
@@ -83,23 +93,70 @@ export function useReservationSchedulerViewModel({
       .slice(0, 2);
   }, [activeDayExternalEvents, showAllEvents]);
 
+  function openConfirmationModal() {
+    if (!selectedSpace) return;
+
+    const schedules = scheduler.createReservationSchedules();
+
+    if (!schedules) return;
+
+    setConfirmationDraft({
+      reservableId: Number(selectedSpace.id),
+      reservableName: selectedSpace.name,
+      schedules,
+    });
+
+    setIsConfirmModalOpen(true);
+  }
+
+  function closeConfirmationModal() {
+    setIsConfirmModalOpen(false);
+  }
+
+  function handleReservationCompleted() {
+    setIsConfirmModalOpen(false);
+    setIsFinishedModalOpen(true);
+  }
+
+  function backToReservations() {
+    setIsFinishedModalOpen(false);
+    router.push("/cubiculos");
+  }
+
+  function cancelReservation() {
+    router.push("/cubiculos");
+  }
+
   return {
-    selectedSpace,
-    spaceId,
-    spaceName,
-    calendarCells,
-    scheduler,
+    state: {
+      selectedSpace,
+      spaceId,
+      spaceName,
+      calendarCells,
+      scheduler,
 
-    activeDayExternalEvents,
-    externalTimelineEventsForActiveDay,
-    proposedTimelineEventsForActiveDay,
-    spaceReservationsForActiveDay,
+      activeDayExternalEvents,
+      externalTimelineEventsForActiveDay,
+      proposedTimelineEventsForActiveDay,
+      spaceReservationsForActiveDay,
 
-    conflictCount,
-    visibleEvents,
+      conflictCount,
+      visibleEvents,
 
-    isLoading: reservationQueries.isLoading,
-    isFetching: reservationQueries.isFetching,
-    error: reservationQueries.error,
+      isLoading: reservationQueries.isLoading,
+      isFetching: reservationQueries.isFetching,
+      error: reservationQueries.error,
+
+      confirmationDraft,
+      isConfirmModalOpen,
+      isFinishedModalOpen,
+    },
+    actions: {
+      openConfirmationModal,
+      closeConfirmationModal,
+      handleReservationCompleted,
+      backToReservations,
+      cancelReservation,
+    },
   };
 }

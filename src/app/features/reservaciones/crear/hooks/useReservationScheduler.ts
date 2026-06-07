@@ -17,30 +17,15 @@ import {
   isValidTimeRange,
   normalizeTimeInput,
   parseTimeToMinutes,
-  to24Hour,
 } from "@/app/features/reservaciones/crear/lib/time";
-
-type SelectedSpace = {
-  id: string;
-  name: string;
-};
-
-type ReservationDraftSchedule = {
-  start_time: string;
-  end_time: string;
-};
 
 type SpaceReservationsByDate = Record<string, TimelineEvent[]>;
 
 type UseReservationSchedulerParams = {
   calendarCells: CalendarCell[];
-
-  /**
-   * Reservaciones reales que ya existen en la API.
-   * El scheduler solo las usa para validar conflictos.
-   */
   spaceReservationsByDate?: SpaceReservationsByDate;
 };
+
 function blockOverlapsReservation(
   block: TimeBlock,
   reservation: TimelineEvent,
@@ -68,13 +53,10 @@ export function useReservationScheduler({
   spaceReservationsByDate = {},
 }: UseReservationSchedulerParams) {
   const [selectionMode, setSelectionMode] = useState<SelectionMode>("multiple");
-
   const [selectedDateIds, setSelectedDateIds] = useState<string[]>([]);
-
   const [activeDayId, setActiveDayId] = useState(
     getFirstAvailableDateId(calendarCells),
   );
-
   const [proposedBlocks, setProposedBlocks] = useState<TimeBlock[]>([]);
 
   function isWeekendDateId(dateId: string) {
@@ -93,6 +75,7 @@ export function useReservationScheduler({
 
     return proposedBlocks;
   }, [activeDayIsSelected, proposedBlocks]);
+
   function mergeOrRemoveRange(
     previousDateIds: string[],
     draggedDateIds: string[],
@@ -111,6 +94,7 @@ export function useReservationScheduler({
 
     return uniqueSortedIds([...previousDateIds, ...draggedDateIds]);
   }
+
   function handleCalendarSelect(action: CalendarSelectionAction) {
     if (action.type === "day") {
       const dayId = action.dayId;
@@ -155,8 +139,6 @@ export function useReservationScheduler({
 
           return uniqueSortedIds([...previousDateIds, dayId]);
         });
-
-        return;
       }
     }
 
@@ -233,28 +215,6 @@ export function useReservationScheduler({
     );
   }
 
-  const conflictDateIds = useMemo(() => {
-    const conflictIds = new Set<string>();
-
-    selectableSelectedDateIds.forEach((dateId) => {
-      const reservationsForDate = spaceReservationsByDate[dateId] ?? [];
-
-      const hasInternalConflict = hasOverlappingBlocks(proposedBlocks);
-
-      const hasSpaceConflict = proposedBlocks.some((block) =>
-        reservationsForDate.some((reservation) =>
-          blockOverlapsReservation(block, reservation),
-        ),
-      );
-
-      if (hasInternalConflict || hasSpaceConflict) {
-        conflictIds.add(dateId);
-      }
-    });
-
-    return uniqueSortedIds(Array.from(conflictIds));
-  }, [selectableSelectedDateIds, proposedBlocks, spaceReservationsByDate]);
-
   const proposedBlocksHaveInternalConflict =
     hasOverlappingBlocks(proposedBlocks);
 
@@ -272,6 +232,7 @@ export function useReservationScheduler({
 
   const hasBlockingConflict =
     proposedBlocksHaveInternalConflict || proposedBlocksHaveSpaceConflict;
+
   const proposedBlocksHaveValidTimes = proposedBlocks.every((block) =>
     isValidTimeRange(block.start, block.end),
   );
@@ -281,6 +242,32 @@ export function useReservationScheduler({
     proposedBlocks.length > 0 &&
     proposedBlocksHaveValidTimes &&
     !hasBlockingConflict;
+
+  const conflictDateIds = useMemo(() => {
+    const conflictIds = new Set<string>();
+
+    selectableSelectedDateIds.forEach((dateId) => {
+      const reservationsForDate = spaceReservationsByDate[dateId] ?? [];
+
+      const hasSpaceConflict = proposedBlocks.some((block) =>
+        reservationsForDate.some((reservation) =>
+          blockOverlapsReservation(block, reservation),
+        ),
+      );
+
+      if (proposedBlocksHaveInternalConflict || hasSpaceConflict) {
+        conflictIds.add(dateId);
+      }
+    });
+
+    return uniqueSortedIds(Array.from(conflictIds));
+  }, [
+    selectableSelectedDateIds,
+    proposedBlocks,
+    proposedBlocksHaveInternalConflict,
+    spaceReservationsByDate,
+  ]);
+
   function createReservationSchedules() {
     if (!canContinue) return null;
 
@@ -300,24 +287,7 @@ export function useReservationScheduler({
       }),
     );
   }
-  function createReservationDraft(selectedSpace: SelectedSpace) {
-    const schedules = createReservationSchedules();
 
-    if (!schedules) return null;
-
-    const draft = {
-      reservableId: selectedSpace.id,
-      reservableName: selectedSpace.name,
-      schedules,
-    };
-
-    window.sessionStorage.setItem(
-      "cubiculos:reservationDraft",
-      JSON.stringify(draft),
-    );
-
-    return draft;
-  }
   return {
     selectionMode,
     selectedDateIds,
@@ -332,6 +302,7 @@ export function useReservationScheduler({
     proposedBlocksHaveValidTimes,
     hasBlockingConflict,
     canContinue,
+
     setActiveDayId,
     handleCalendarSelect,
     handleModeChange,
@@ -340,6 +311,5 @@ export function useReservationScheduler({
     updateProposedBlock,
     deleteProposedBlock,
     createReservationSchedules,
-    createReservationDraft,
   };
 }

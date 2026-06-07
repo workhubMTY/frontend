@@ -1,37 +1,40 @@
+"use client";
+
 type ReservationFinishedModalProps = {
   isOpen: boolean;
-  onClose: () => void;
   onBackToReservations: () => void;
 };
 
 export function ReservationFinishedModal({
   isOpen,
-  onClose,
   onBackToReservations,
 }: ReservationFinishedModalProps) {
   if (!isOpen) return null;
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm"
-      onClick={(event) => {
-        if (event.target === event.currentTarget) onClose();
-      }}
-    >
-      <div className="flex w-full max-w-md animate-in flex-col items-center gap-6 bg-white px-10 py-10 shadow-2xl fade-in zoom-in-95 duration-200 mx-6">
-        <h2 className="text-center text-2xl font-bold text-gray-900">
+    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-950/35 px-4 backdrop-blur-sm">
+      <section className="w-full max-w-md rounded-2xl bg-white px-8 py-9 text-center shadow-2xl">
+        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-violet-100 text-2xl">
+          ✓
+        </div>
+
+        <h2 className="mt-5 text-2xl font-bold text-slate-950">
           Reserva finalizada
         </h2>
-        <p className="text-center text-base leading-relaxed text-gray-500">
-          Se ha enviado correo de invitación a los contactos seleccionados.
+
+        <p className="mt-3 text-sm leading-6 text-slate-500">
+          La reservación fue creada correctamente. Se enviará correo de
+          invitación a los contactos seleccionados.
         </p>
+
         <button
+          type="button"
           onClick={onBackToReservations}
-          className="w-full max-w-xs cursor-pointer border-none bg-violet-700 px-8 py-3 text-base font-semibold text-white transition-colors hover:bg-violet-800"
+          className="mt-7 w-full rounded-xl bg-violet-700 px-5 py-3 text-sm font-bold text-white transition hover:bg-violet-800"
         >
           Regresar a reservas
         </button>
-      </div>
+      </section>
     </div>
   );
 }

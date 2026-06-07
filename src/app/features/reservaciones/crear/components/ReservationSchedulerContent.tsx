@@ -1,110 +1,103 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 
 import { Card } from "@/app/shared/components/Card";
+
 import { EventsAndConflictsCard } from "@/app/features/reservaciones/crear/components/Cards/EventsAndConflictCard";
 import { ProposedSchedulesCard } from "@/app/features/reservaciones/crear/components/Cards/ProposedSchedulesCard";
 import { ReservationFooter } from "@/app/features/reservaciones/crear/components/ReservationFooter";
 import { ReservationTimelineCard } from "@/app/features/reservaciones/crear/components/Cards/ReservationTimelineCard";
 import { SelectionModeCalendarCard } from "@/app/features/reservaciones/crear/components/Calendar/DaysSelection/SelectionModeCalendarCard";
 
+import { ConfirmReservationModal } from "@/app/features/reservaciones/confirmar/components/ConfirmReservationModal";
+import { ReservationFinishedModal } from "@/app/features/reservaciones/confirmar/components/ReservationFinishedModal";
+
 import { useReservationSchedulerViewModel } from "@/app/features/reservaciones/crear/hooks/useReservationSchedulerViewModel";
 
 export function ReservationSchedulerContent() {
-  const router = useRouter();
   const [showAllEvents, setShowAllEvents] = useState(false);
 
-  const {
-    selectedSpace,
-    calendarCells,
-    scheduler,
-    activeDayExternalEvents,
-    externalTimelineEventsForActiveDay,
-    spaceReservationsForActiveDay,
-    conflictCount,
-    visibleEvents,
-  } = useReservationSchedulerViewModel({ showAllEvents });
-
-  function handleContinue() {
-    if (!selectedSpace) return;
-
-    const draft = scheduler.createReservationDraft(selectedSpace);
-
-    if (!draft) return;
-
-    router.push("/cubiculos/reservacion/confirmar");
-  }
+  const { state, actions } = useReservationSchedulerViewModel({
+    showAllEvents,
+  });
 
   return (
-    <main className="min-h-screen bg-background-page p-4 text-slate-950 sm:p-6 lg:p-8">
-      {/* <header className="mb-5 flex items-center justify-between rounded-2xl px-5">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl">
-            Ajusta tu reservación · {spaceName}
-          </h1>
+    <>
+      <main className="min-h-screen bg-background-page p-4 text-slate-950 sm:p-6 lg:p-8">
+        <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">
+          <section className="space-y-5">
+            <Card className="p-5">
+              <ReservationTimelineCard
+                activeDayId={state.scheduler.activeDayId}
+                proposedBlocks={state.scheduler.proposedBlocksForActiveDay}
+                spaceReservationsForActiveDay={
+                  state.spaceReservationsForActiveDay
+                }
+                externalTimelineEventsForActiveDay={
+                  state.externalTimelineEventsForActiveDay
+                }
+              />
+            </Card>
 
-          <p className="mt-1 text-sm text-slate-500">
-            Revisa disponibilidad, arrastra días y configura los horarios de tu
-            reservación.
-          </p>
-        </div>
-      </header> */}
-
-      <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">
-        <section className="space-y-5">
-          <Card className="p-5">
-            <ReservationTimelineCard
-              activeDayId={scheduler.activeDayId}
-              proposedBlocks={scheduler.proposedBlocksForActiveDay}
-              spaceReservationsForActiveDay={spaceReservationsForActiveDay}
-              externalTimelineEventsForActiveDay={
-                externalTimelineEventsForActiveDay
+            <ProposedSchedulesCard
+              proposedBlocks={state.scheduler.proposedBlocks}
+              selectedDateCount={
+                state.scheduler.selectableSelectedDateIds.length
               }
+              hasSelectedDates={
+                state.scheduler.selectableSelectedDateIds.length > 0
+              }
+              onAddBlock={state.scheduler.addProposedBlock}
+              onDeleteBlock={state.scheduler.deleteProposedBlock}
+              onUpdateBlock={state.scheduler.updateProposedBlock}
             />
-          </Card>
 
-          <ProposedSchedulesCard
-            proposedBlocks={scheduler.proposedBlocks}
-            selectedDateCount={scheduler.selectableSelectedDateIds.length}
-            hasSelectedDates={scheduler.selectableSelectedDateIds.length > 0}
-            onAddBlock={scheduler.addProposedBlock}
-            onDeleteBlock={scheduler.deleteProposedBlock}
-            onUpdateBlock={scheduler.updateProposedBlock}
-          />
+            <ReservationFooter
+              selectedCount={state.scheduler.selectableSelectedDateIds.length}
+              proposedBlocksCount={state.scheduler.proposedBlocks.length}
+              hasBlockingConflict={state.scheduler.hasBlockingConflict}
+              canContinue={state.scheduler.canContinue}
+              onCancel={actions.cancelReservation}
+              onContinue={actions.openConfirmationModal}
+            />
+          </section>
 
-          <ReservationFooter
-            selectedCount={scheduler.selectableSelectedDateIds.length}
-            proposedBlocksCount={scheduler.proposedBlocks.length}
-            hasBlockingConflict={scheduler.hasBlockingConflict}
-            canContinue={scheduler.canContinue}
-            onCancel={() => router.push("/cubiculos")}
-            onContinue={handleContinue}
-          />
-        </section>
+          <aside className="sticky top-5 self-start space-y-5">
+            <SelectionModeCalendarCard
+              calendarCells={state.calendarCells}
+              activeDayId={state.scheduler.activeDayId}
+              selectionMode={state.scheduler.selectionMode}
+              selectedDateIds={state.scheduler.selectedDateIds}
+              conflictDateIds={state.scheduler.conflictDateIds}
+              onModeChange={state.scheduler.handleModeChange}
+              onSelect={state.scheduler.handleCalendarSelect}
+              onClearSelection={state.scheduler.clearSelection}
+              onActivateDay={state.scheduler.setActiveDayId}
+            />
 
-        <aside className="sticky top-5 self-start space-y-5">
-          <SelectionModeCalendarCard
-            calendarCells={calendarCells}
-            activeDayId={scheduler.activeDayId}
-            selectionMode={scheduler.selectionMode}
-            selectedDateIds={scheduler.selectedDateIds}
-            conflictDateIds={scheduler.conflictDateIds}
-            onModeChange={scheduler.handleModeChange}
-            onSelect={scheduler.handleCalendarSelect}
-            onClearSelection={scheduler.clearSelection}
-            onActivateDay={scheduler.setActiveDayId}
-          />
-          <EventsAndConflictsCard
-            events={activeDayExternalEvents}
-            visibleEvents={visibleEvents}
-            conflictCount={conflictCount}
-            showAllEvents={showAllEvents}
-            onToggleShowAllEvents={() => setShowAllEvents((value) => !value)}
-          />
-        </aside>
-      </div>
-    </main>
+            <EventsAndConflictsCard
+              events={state.activeDayExternalEvents}
+              visibleEvents={state.visibleEvents}
+              conflictCount={state.conflictCount}
+              showAllEvents={showAllEvents}
+              onToggleShowAllEvents={() => setShowAllEvents((value) => !value)}
+            />
+          </aside>
+        </div>
+      </main>
+
+      <ConfirmReservationModal
+        isOpen={state.isConfirmModalOpen}
+        reservationDraft={state.confirmationDraft}
+        onClose={actions.closeConfirmationModal}
+        onCompleted={actions.handleReservationCompleted}
+      />
+
+      <ReservationFinishedModal
+        isOpen={state.isFinishedModalOpen}
+        onBackToReservations={actions.backToReservations}
+      />
+    </>
   );
 }

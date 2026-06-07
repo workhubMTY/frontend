@@ -90,7 +90,7 @@ export function ReservationFooter({
                     ? "Agrega al menos un horario para continuar."
                     : "Continuar a la confirmación"
             }
-            className=" bg-violet-700 px-6 py-2.5 text-sm font-semibold text-on-primary hover:bg-violet-800 disabled:cursor-not-allowed disabled:bg-slate-300"
+            className="bg-violet-700 px-6 py-2.5 text-sm font-semibold text-on-primary hover:bg-violet-800 disabled:cursor-not-allowed disabled:bg-slate-300"
           >
             Continuar
           </button>
