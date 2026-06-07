@@ -4,7 +4,7 @@ import { useState } from "react";
 
 import { Card } from "@/app/shared/components/Card";
 
-import { EventsAndConflictsCard } from "@/app/features/reservaciones/crear/components/Cards/EventsAndConflictCard";
+import { EventsCard } from "@/app/features/reservaciones/crear/components/Cards/EventsCard";
 import { ProposedSchedulesCard } from "@/app/features/reservaciones/crear/components/Cards/ProposedSchedulesCard";
 import { ReservationFooter } from "@/app/features/reservaciones/crear/components/ReservationFooter";
 import { ReservationTimelineCard } from "@/app/features/reservaciones/crear/components/Cards/ReservationTimelineCard";
@@ -15,7 +15,7 @@ import { ReservationFinishedModal } from "@/app/features/reservaciones/confirmar
 
 import { useReservationSchedulerViewModel } from "@/app/features/reservaciones/crear/hooks/useReservationSchedulerViewModel";
 
-export function ReservationSchedulerContent() {
+export function   ReservationSchedulerContent() {
   const [showAllEvents, setShowAllEvents] = useState(false);
 
   const { state, actions } = useReservationSchedulerViewModel({
@@ -27,7 +27,7 @@ export function ReservationSchedulerContent() {
       <main className="min-h-full bg-background-page p-4 text-slate-950 sm:p-6 lg:p-8">
         <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_320px]">
           <section className="h-full space-y-4 flex flex-col">
-            <Card className="p-2">
+            <Card className="p-4">
               <ReservationTimelineCard
                 activeDayId={state.scheduler.activeDayId}
                 proposedBlocks={state.scheduler.proposedBlocksForActiveDay}
@@ -63,7 +63,7 @@ export function ReservationSchedulerContent() {
             />
           </section>
 
-          <aside className="sticky self-start space-y-5">
+          <aside className="h-full sticky self-start space-y-5 flex flex-col">
             <SelectionModeCalendarCard
               calendarCells={state.calendarCells}
               activeDayId={state.scheduler.activeDayId}
@@ -76,7 +76,7 @@ export function ReservationSchedulerContent() {
               onActivateDay={state.scheduler.setActiveDayId}
             />
 
-            <EventsAndConflictsCard
+            <EventsCard
               events={state.activeDayExternalEvents}
               visibleEvents={state.visibleEvents}
               conflictCount={state.conflictCount}

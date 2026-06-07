@@ -34,7 +34,7 @@ export function ProposedSchedulesCard({
   onUpdateBlock,
 }: ProposedSchedulesCardProps) {
   return (
-    <Card className="p-4">
+    <Card className="p-4 flex flex-col flex-1">
       <div className="mb-4 flex flex-col gap-4 lg:flex-row  lg:justify-between items-center">
         <div>
           <div className="flex items-center gap-3">
@@ -47,8 +47,6 @@ export function ProposedSchedulesCard({
             Estos horarios se aplicarán a los días seleccionados cuando
             continúes con la reservación.
           </p> */}
-
-
         </div>
 
         <button
@@ -61,9 +59,11 @@ export function ProposedSchedulesCard({
         </button>
       </div>
 
-      <div className="overflow-hidden rounded-xl border border-slate-200">
+      <div
+        className={`overflow-hidden rounded-xl flex flex-col ${proposedBlocks.length === 0 ? "h-full" : "border border-slate-200"}`}
+      >
         {proposedBlocks.length === 0 && (
-          <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 px-4 py-6 text-center">
+          <div className="rounded-xl border flex-1 flex flex-col justify-center  border-dashed h-full border-slate-300 bg-slate-50 px-4 py-6 text-center">
             <p className="text-sm font-semibold text-slate-700">
               Todavía no has agregado horarios
             </p>

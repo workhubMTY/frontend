@@ -74,29 +74,25 @@ export function ReservationTimelineCard({
     .filter(Boolean) as TimelineRange[];
 
   return (
-    <div className="p-4">
-      <div className="overflow-x-auto">
-        <div className="flex items-top justify-between gap-3 items-start">
-          <h2 className="text-lg font-bold text-slate-950 pb-2 ">
-            Línea de tiempo 
-          </h2>
-          <TimelineLegend /> 
-        </div>
-        <div className="min-w-[880px]">
-          <div className="mb-3 overflow-hidden rounded-xl border border-slate-200">
-            <OccupiedSpaceRow
-              ranges={occupiedRanges}
-              selectedBlocks={proposedBlocks}
-              conflictRanges={[...occupiedRanges, ...myReservationRanges]}
-            />
-
-            <MyReservationsRow ranges={myReservationRanges} />
-          </div>
-          <TimelineAxis />
-        </div>
+    <div className="overflow-x-auto flex flex-col gap-2">
+      <div className="flex items-top justify-between  items-start">
+        <h2 className="text-lg font-bold text-slate-950">
+          Línea de tiempo
+        </h2>
+        <TimelineLegend />
       </div>
+      <div className="min-w-[880px]">
+        <div className="mb-3 overflow-hidden rounded-xl border border-slate-200">
+          <OccupiedSpaceRow
+            ranges={occupiedRanges}
+            selectedBlocks={proposedBlocks}
+            conflictRanges={[...occupiedRanges, ...myReservationRanges]}
+          />
 
-      {/* <TimelineLegend /> */}
+          <MyReservationsRow ranges={myReservationRanges} />
+        </div>
+        <TimelineAxis />
+      </div>
     </div>
   );
 }
