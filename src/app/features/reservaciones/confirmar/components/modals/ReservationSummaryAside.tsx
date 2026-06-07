@@ -48,7 +48,7 @@ export function ReservationSummaryAside({
       </div>
 
       <div className="flex min-h-0 flex-1 flex-col px-6 py-5">
-        <section className="border border-slate-200 bg-white p-5 shadow-sm">
+        <section className="border border-slate-200 bg-white p-5 ">
           <div className="flex items-start gap-3">
             <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-violet-100 text-violet-700">
               <DoorOpen size={20} />
@@ -87,7 +87,7 @@ export function ReservationSummaryAside({
           />
         </section>
 
-        <section className="mt-4  border border-slate-200 bg-white p-5 shadow-sm">
+        <section className="mt-4  border border-slate-200 bg-white p-5 ">
           <SummaryBlock
             icon={<CalendarDays size={17} />}
             label="Rango de fechas"
@@ -122,7 +122,7 @@ function MetricCard({
   helper: string;
 }) {
   return (
-    <div className=" border border-slate-200 bg-white p-4 shadow-sm">
+    <div className=" border border-slate-200 bg-white p-4 ">
       <div className="flex items-center justify-between gap-2">
         <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
           {label}

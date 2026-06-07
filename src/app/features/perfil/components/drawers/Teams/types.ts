@@ -19,10 +19,3 @@ export type CreateTeamPayload = {
   description: string;
   memberEIds: string[];
 };
-
-export type UpdateTeamPayload = {
-  name?: string;
-  description?: string;
-  addMemberEIds?: number[];
-  removeMemberEIds?: number[];
-};

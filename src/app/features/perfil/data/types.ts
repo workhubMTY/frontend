@@ -32,3 +32,10 @@ export type SentFriendRequestSchema = {
     createdAt:  string,
     resolvedAt:  string,
 }
+
+export type UpdateTeamPayload = {
+  name?: string;
+  description?: string;
+  addMemberEIds?: Array<string | number>;
+  removeMemberEIds?: Array<string | number>;
+};

@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { perfilApi } from "../api";
+import { UpdateTeamPayload } from "../types";
 
 export function useUpdateTeam() {
   const queryClient = useQueryClient();
@@ -108,10 +109,3 @@ export function useCreateTeam() {
     },
   });
 }
-
-export type UpdateTeamPayload = {
-  name?: string;
-  description?: string;
-  addMemberEIds?: Array<string | number>;
-  removeMemberEIds?: Array<string | number>;
-};

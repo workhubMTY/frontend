@@ -2,7 +2,6 @@
 
 import type { User } from "../../../../types/profile";
 import type { TeamMembersState, TeamSummary } from "../types";
-import type { UpdateTeamPayload } from "../../../../data/hooks/useTeams";
 
 import { useManageTeamMode } from "./hooks/useManageTeam";
 import { ManageTeamHeader } from "./layout/TeamsManageHeader";
@@ -11,6 +10,7 @@ import { DetailsTab } from "./tabs/DetailsTab";
 import { MembersTab } from "./tabs/MembersTab";
 import { DangerTab } from "./tabs/DangerTab";
 import { ManageTeamFooter } from "./layout/TeamsManageFooter";
+import { UpdateTeamPayload } from "@/app/features/perfil/data/types";
 
 type ManageTeamModeProps = {
   team: TeamSummary;
