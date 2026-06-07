@@ -30,16 +30,12 @@ export default function ParkingReservationSchedulerPage() {
             buckets={state.parkingBuckets}
             conflictRanges={state.myReservationConflictRanges}
           />
-
-          <ProposedSchedulesCard
-            proposedBlocks={state.scheduler.proposedBlocks}
-            selectedDateCount={state.scheduler.selectableSelectedDateIds.length}
-            hasSelectedDates={
-              state.scheduler.selectableSelectedDateIds.length > 0
-            }
-            onAddBlock={state.scheduler.addProposedBlock}
-            onDeleteBlock={state.scheduler.deleteProposedBlock}
-            onUpdateBlock={state.scheduler.updateProposedBlock}
+          <EventsCard
+            events={state.activeDayParkingEvents}
+            visibleEvents={state.visibleEvents}
+            conflictCount={state.conflictCount}
+            showAllEvents={showAllEvents}
+            onToggleShowAllEvents={() => setShowAllEvents((value) => !value)}
           />
 
           <ReservationFooter
@@ -65,18 +61,17 @@ export default function ParkingReservationSchedulerPage() {
             onActivateDay={state.scheduler.setActiveDayId}
           />
 
-          <EventsCard
-            events={state.activeDayParkingEvents}
-            visibleEvents={state.visibleEvents}
-            conflictCount={state.conflictCount}
-            showAllEvents={showAllEvents}
-            onToggleShowAllEvents={() => setShowAllEvents((value) => !value)}
+          <ProposedSchedulesCard
+            proposedBlocks={state.scheduler.proposedBlocks}
+            selectedDateCount={state.scheduler.selectableSelectedDateIds.length}
+            hasSelectedDates={
+              state.scheduler.selectableSelectedDateIds.length > 0
+            }
+            onAddBlock={state.scheduler.addProposedBlock}
+            onDeleteBlock={state.scheduler.deleteProposedBlock}
+            onUpdateBlock={state.scheduler.updateProposedBlock}
           />
 
-          <AvailabilityIntervalCard
-            {...state.parkingAvailability}
-            onViewCapacityDetail={actions.viewCapacityDetail}
-          />
         </aside>
       </div>
 
