@@ -10,7 +10,7 @@ const DAYS_SHORT = ["Lu", "Ma", "Mi", "Ju", "Vi"];
 const START_H = HOURS[0];
 const TOTAL_H = HOURS.length;
 
-const COL_MIN_PX = 56;
+const COL_MIN_PX = 70;
 const DAY_COL_PX = 38;
 const GRID_MIN_W = DAY_COL_PX + COL_MIN_PX * TOTAL_H;
 

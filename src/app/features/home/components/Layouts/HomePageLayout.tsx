@@ -45,7 +45,7 @@ export function HomePageLayout({
   @media (min-width: 1024px) {
     .desktop-grid {
       display: grid !important;
-      grid-template-columns: 300px minmax(0, 1fr) 300px;
+      grid-template-columns: 300px minmax(0, 1fr);
       align-items: stretch;
       gap: 1rem;
     }
@@ -57,13 +57,13 @@ export function HomePageLayout({
 
   @media (min-width: 1280px) {
     .desktop-grid {
-      grid-template-columns: 320px minmax(0, 1fr) 320px;
+      grid-template-columns: 320px minmax(0, 1fr);
     }
   }
 
   @media (min-width: 1536px) {
     .desktop-grid {
-      grid-template-columns: 340px minmax(0, 1fr) 340px;
+      grid-template-columns: 340px minmax(0, 1fr);
     }
   }
 
@@ -111,7 +111,6 @@ export function HomePageLayout({
             personas={personas}
             invitaciones={invitaciones}
             externalEvents={externalEvents}
-            carouselProps={carouselProps}
             selectedPerson={selectedPerson}
             selectedInvitationId={selectedInvitationId}
             onPersonClick={handlePersonClick}
@@ -123,7 +122,6 @@ export function HomePageLayout({
             personas={personas}
             invitaciones={invitaciones}
             externalEvents={externalEvents}
-            carouselProps={carouselProps}
             selectedPerson={selectedPerson}
             selectedInvitationId={selectedInvitationId}
             onPersonClick={handlePersonClick}
