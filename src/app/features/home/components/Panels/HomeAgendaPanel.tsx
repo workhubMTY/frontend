@@ -3,6 +3,7 @@
 import { useState } from "react";
 import AgendaRapida from "@/app/features/home/components/AgendaRapida/AgendaRapida";
 import { useReservationEvents } from "@/app/features/home/hooks/useReservationEvents";
+import { useFriends } from "@/app/features/home/hooks/useFriends";
 
 import type { AgendaFilter } from "@/app/features/home/hooks/useHomePage";
 
@@ -25,10 +26,11 @@ export function HomeAgendaPanel({
     agendaFilter,
   });
 
-  console.log("weekOffset:", weekOffset);
-  console.log("agendaFilter:", agendaFilter);
-  console.log("events:", events);
-  console.log("loading:", loading);
+  // Obtener nombre del amigo para la leyenda
+  const { friends } = useFriends();
+  const friendName = selectedFriendId
+    ? (friends.find((f) => (f.eId ?? (f as any).e_id) === selectedFriendId)?.name ?? null)
+    : null;
 
   const containerClass =
     variant === "mobile"
@@ -41,6 +43,7 @@ export function HomeAgendaPanel({
         <AgendaRapida
           externalEvents={events}
           loading={loading}
+          friendName={friendName}
           onWeekOffsetChange={setWeekOffset}
         />
       </div>
