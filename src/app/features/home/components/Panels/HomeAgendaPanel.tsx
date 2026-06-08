@@ -1,31 +1,49 @@
-import AgendaRapida from "@/app/features/home/components/AgendaRapida/AgendaRapida";
-import { EventoGeneralDetail } from "@/app/features/home/components/EventoGeneralDetail";
+"use client";
 
-import type { ExternalEvent } from "@/app/features/home/types/Agenda";
+import { useState } from "react";
+import AgendaRapida from "@/app/features/home/components/AgendaRapida/AgendaRapida";
+import { useReservationEvents } from "@/app/features/home/hooks/useReservationEvents";
+
+import type { AgendaFilter } from "@/app/features/home/hooks/useHomePage";
 
 type HomeAgendaPanelProps = {
-  externalEvents: ExternalEvent[];
-  carouselProps: React.ComponentProps<typeof EventoGeneralDetail>;
-  variant?: "desktop" | "mobile";
+  agendaFilter:     AgendaFilter[];
+  selectedFriendId: string | null;
+  variant?:         "desktop" | "mobile";
 };
 
 export function HomeAgendaPanel({
-  externalEvents,
-  carouselProps,
+  agendaFilter,
+  selectedFriendId,
   variant = "desktop",
 }: HomeAgendaPanelProps) {
-  const agendaContainerClass =
+  const [weekOffset, setWeekOffset] = useState(0);
+
+  const { events, loading } = useReservationEvents({
+    weekOffset,
+    selectedFriendId,
+    agendaFilter,
+  });
+
+  console.log("weekOffset:", weekOffset);
+  console.log("agendaFilter:", agendaFilter);
+  console.log("events:", events);
+  console.log("loading:", loading);
+
+  const containerClass =
     variant === "mobile"
       ? "flex-1 min-h-0 overflow-hidden rounded-xl shadow-sm border border-gray-100 bg-white"
-      : "flex-1 min-h-0 overflow-hidden shadow-sm border border-neutral-1 bg-container";
+      : "flex-1 min-h-0 overflow-hidden shadow-sm border border-neutral-100 rounded-xl bg-white";
 
   return (
     <div className="flex flex-col min-h-0 gap-3 flex-1">
-      <div className={agendaContainerClass}>
-        <AgendaRapida externalEvents={externalEvents} />
+      <div className={containerClass}>
+        <AgendaRapida
+          externalEvents={events}
+          loading={loading}
+          onWeekOffsetChange={setWeekOffset}
+        />
       </div>
-
-      <EventoGeneralDetail {...carouselProps} />
     </div>
   );
 }

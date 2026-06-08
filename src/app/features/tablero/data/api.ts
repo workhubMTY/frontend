@@ -12,12 +12,13 @@ import type {
 const ParkingLink = "/parking";
 const OfficeLink = "/office"
 const UserLink = "/users"
+const GuestLink = "";
 
 export const listParkingReservations = {
   // Get /parking
   getParking: () => authFetch<Parking>(`${ParkingLink}`),
   // Get /parking/:id
-  getParkingId: (eId: string) => authFetch<Parking>(`${ParkingLink}/${eId}`),
+  getParkingId: (id: number) => authFetch<Parking>(`${ParkingLink}/${id}`),
   // Get /parking/reservations
   getparkingReservations: (params?: GetParkingReservationsParams) => {
     const searchParams = new URLSearchParams();
@@ -52,3 +53,5 @@ export const listUsers = {
     // Get /users/:eId/friendships
     getUsersFriendships: (eId: string) => authFetch<Friendships>(`${UserLink}/${eId}/friendships`),
 } as const
+
+export const listGuest = {} as const
