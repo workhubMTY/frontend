@@ -84,6 +84,27 @@ export function useReservationSchedulerViewModel({
         .length,
     [activeDayExternalEvents],
   );
+  const selectedDaysSpaceReservations = useMemo(
+    () =>
+      scheduler.selectableSelectedDateIds.flatMap(
+        (dateId) => reservationQueries.spaceReservationsByDate[dateId] ?? [],
+      ),
+    [
+      scheduler.selectableSelectedDateIds,
+      reservationQueries.spaceReservationsByDate,
+    ],
+  );
+
+  const selectedDaysExternalEvents = useMemo(
+    () =>
+      reservationQueries.externalEventsForInterval.filter((event) =>
+        scheduler.selectableSelectedDateIds.includes(event.dateId),
+      ),
+    [
+      reservationQueries.externalEventsForInterval,
+      scheduler.selectableSelectedDateIds,
+    ],
+  );
 
   const visibleEvents = useMemo(() => {
     if (showAllEvents) return activeDayExternalEvents;
@@ -151,6 +172,9 @@ export function useReservationSchedulerViewModel({
       confirmationDraft,
       isConfirmModalOpen,
       isFinishedModalOpen,
+
+      selectedDaysSpaceReservations,
+      selectedDaysExternalEvents,
     },
     actions: {
       openConfirmationModal,

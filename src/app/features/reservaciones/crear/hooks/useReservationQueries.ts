@@ -5,7 +5,7 @@ import type { CalendarCell } from "@/app/features/reservaciones/crear/types/rese
 
 import {
   apiGetExternalEventsInVisibleRange,
-  apiGetSlotReservationsInVisibleRange,
+  apiGetTimelineReservationsInVisibleRange,
   getVisibleRange,
   groupTimelineEventsByDate,
 } from "@/app/features/reservaciones/crear/data/reservationsApi";
@@ -15,6 +15,7 @@ type UseReservationQueriesParams = {
   reservableId: number | null;
   enabled: boolean;
 };
+
 export function useReservationQueries({
   calendarCells,
   reservableId,
@@ -34,9 +35,9 @@ export function useReservationQueries({
       visibleRange?.firstDateId,
       visibleRange?.lastDateId,
     ],
-    enabled: enabled && !!reservableId && !!visibleRange,
+    enabled: enabled && Boolean(reservableId) && Boolean(visibleRange),
     queryFn: () =>
-      apiGetSlotReservationsInVisibleRange({
+      apiGetTimelineReservationsInVisibleRange({
         reservableId: reservableId!,
         calendarCells,
       }),
@@ -47,17 +48,17 @@ export function useReservationQueries({
       "reservations",
       "events",
       "external",
+      reservableId,
       visibleRange?.firstDateId,
       visibleRange?.lastDateId,
     ],
-    enabled: enabled && !!visibleRange && !!reservableId,
+    enabled: enabled && Boolean(reservableId) && Boolean(visibleRange),
     queryFn: () =>
       apiGetExternalEventsInVisibleRange({
-        reservableId: reservableId!, // igual aquí
+        reservableId: reservableId!,
         calendarCells,
       }),
   });
-
 
   const spaceReservationsByDate = useMemo(
     () => groupTimelineEventsByDate(spaceReservationsQuery.data ?? []),

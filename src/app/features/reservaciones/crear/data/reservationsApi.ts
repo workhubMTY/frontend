@@ -19,22 +19,28 @@ type SpaceReservationsByDate = Record<string, TimelineEvent[]>;
 function getTimeFromIso(isoDate: string) {
   return isoDate.slice(11, 16);
 }
+
 function getEventLocation(event: ReservationEvent) {
   return event.reservable?.name ?? "Reservación";
 }
 
-function toApiReservationFromMyReservation(
+function getUniqueDateIds(dateIds: string[]) {
+  return Array.from(new Set(dateIds)).filter(Boolean);
+}
+
+function toApiReservationFromSlotReservation(
   reservation: ReservationSummary,
 ): ApiReservation {
   return {
     id: String(reservation.id),
     dateId: dateToId(new Date(reservation.start_time)),
-    title: "Mi reservación",
-    location: "Calendario externo",
+    title: "Reservación",
+    location: reservation.reservable_name ?? "Cubículo",
     start: getTimeFromIso(reservation.start_time),
     end: getTimeFromIso(reservation.end_time),
   };
 }
+
 function toApiReservationFromEvent(event: ReservationEvent): ApiReservation {
   const location = getEventLocation(event);
 
@@ -114,6 +120,11 @@ export function groupTimelineEventsByDate(
     return eventsByDate;
   }, {});
 }
+
+/**
+ * Reservaciones del cubículo dentro del rango visible del calendario.
+ * Útil para alimentar el scheduler y pintar conflictos generales.
+ */
 export async function apiGetSlotReservationsInVisibleRange({
   reservableId,
   calendarCells,
@@ -132,6 +143,10 @@ export async function apiGetSlotReservationsInVisibleRange({
   });
 }
 
+/**
+ * Reservaciones del cubículo en días específicos no necesariamente continuos.
+ * Útil para mostrar eventos/reservaciones de los días seleccionados.
+ */
 export async function apiGetSlotReservationsForSelectedDates({
   reservableId,
   dateIds,
@@ -139,7 +154,7 @@ export async function apiGetSlotReservationsForSelectedDates({
   reservableId: number;
   dateIds: string[];
 }): Promise<ReservationSummary[]> {
-  const dates = Array.from(new Set(dateIds)).filter(Boolean);
+  const dates = getUniqueDateIds(dateIds);
 
   if (dates.length === 0) return [];
 
@@ -149,6 +164,9 @@ export async function apiGetSlotReservationsForSelectedDates({
   });
 }
 
+/**
+ * Eventos externos dentro del rango visible.
+ */
 export async function apiGetExternalEventsInVisibleRange({
   reservableId,
   calendarCells,
@@ -160,48 +178,79 @@ export async function apiGetExternalEventsInVisibleRange({
 
   if (!visibleRange) return [];
 
-  const dateIds = new Set(calendarCells.map((cell) => cell.id));
-  let dates = Array.from(dateIds);
-  let initialDate = new Date(visibleRange.start_time);
+  const events = await officeSlotsApi.getEvents({
+    reservable_id: reservableId,
+    start_time: visibleRange.start_time,
+    end_time: visibleRange.end_time,
+  });
 
-  const payload = {
-    dates,
-  };
-
-  const myReservations = await officeSlotsApi.getSlotReservations(
-    reservableId,
-    payload,
-  );
-
-  return myReservations
-    .filter((reservation) => reservation.status === "ACCEPTED")
-    .map(toApiReservationFromMyReservation)
-    .filter((reservation) => dateIds.has(reservation.dateId))
-    .map((reservation) => toDayEvent(reservation, "external", "partial"));
+  return events
+    .map(toApiReservationFromEvent)
+    .map((event) => toDayEvent(event, "external", "normal"));
 }
 
-/*
 
-  getSlotReservations: (
-    id: number,
-    payload?: GetSlotReservationsPayload,
-    detail = false,
-  ) => {
-    const params = new URLSearchParams();
+export async function apiGetReservationEventsForSelectedDates({
+  reservableId,
+  dateIds,
+}: {
+  reservableId: number;
+  dateIds: string[];
+}): Promise<DayEvent[]> {
+  const dates = getUniqueDateIds(dateIds);
 
-    if (detail) {
-      params.append("detail", "true");
-    }
+  if (dates.length === 0) return [];
 
-    const search = params.toString();
+  const dateIdSet = new Set(dates);
 
-    return authFetch<ReservationSummary[]>(
-      `${SLOTS_BASE}/${id}/reservations${search ? `?${search}` : ""}`,
-      {
-        method: "POST",
-        body: JSON.stringify(payload ?? {}),
-      },
-    );
-  },
+  const reservations = await officeSlotsApi.getSlotReservationsForDates({
+    id: reservableId,
+    dates,
+  });
 
-*/
+  return reservations
+    .map(toApiReservationFromSlotReservation)
+    .filter((reservation) => dateIdSet.has(reservation.dateId))
+    .map((reservation) => toDayEvent(reservation, "space", "partial"));
+}
+
+/**
+ * Reservaciones del slot convertidas a TimelineEvent para el rango visible.
+ * Útil para alimentar spaceReservationsByDate.
+ */
+export async function apiGetTimelineReservationsInVisibleRange({
+  reservableId,
+  calendarCells,
+}: {
+  reservableId: number;
+  calendarCells: CalendarCell[];
+}): Promise<TimelineEvent[]> {
+  const reservations = await apiGetSlotReservationsInVisibleRange({
+    reservableId,
+    calendarCells,
+  });
+
+  return reservations
+    .map(toApiReservationFromSlotReservation)
+    .map((reservation) => toTimelineEvent(reservation, "reserved"));
+}
+
+/**
+ * Reservaciones del slot convertidas a TimelineEvent para días seleccionados.
+ */
+export async function apiGetTimelineReservationsForSelectedDates({
+  reservableId,
+  dateIds,
+}: {
+  reservableId: number;
+  dateIds: string[];
+}): Promise<TimelineEvent[]> {
+  const reservations = await apiGetSlotReservationsForSelectedDates({
+    reservableId,
+    dateIds,
+  });
+
+  return reservations
+    .map(toApiReservationFromSlotReservation)
+    .map((reservation) => toTimelineEvent(reservation, "reserved"));
+}
