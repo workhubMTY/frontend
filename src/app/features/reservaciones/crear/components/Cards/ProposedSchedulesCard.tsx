@@ -43,7 +43,7 @@ export function ProposedSchedulesCard({
         <div className="min-w-0">
           <h2 className="text-base font-semibold text-slate-950">Horarios</h2>
 
-          <p className="mt-0.5 text-xs text-slate-500">
+          <p className={`mt-0.5 text-xs text-${hasSelectedDates ? "slate": "red"}-500`}>
             {hasSelectedDates
               ? `${selectedDateCount} día${selectedDateCount === 1 ? "" : "s"} seleccionado${selectedDateCount === 1 ? "" : "s"}`
               : "Selecciona al menos un día"}
@@ -70,12 +70,12 @@ export function ProposedSchedulesCard({
         </button>
       </div>
 
-      {!hasSelectedDates && (
+      {/* {!hasSelectedDates && (
         <div className="mb-3 flex gap-2 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
-          <Info className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+          <Info className=" h-3.5 w-3.5 shrink-0" />
           <p>Selecciona uno o más días en el calendario antes de agregar horarios.</p>
         </div>
-      )}
+      )} */}
 
       {proposedBlocks.length === 0 ? (
         <div className="rounded-lg flex-1 flex flex-col justify-center border border-dashed border-slate-300 bg-slate-50 px-3 py-4 text-center">

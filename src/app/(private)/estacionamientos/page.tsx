@@ -20,7 +20,7 @@ export default function ParkingReservationSchedulerPage() {
   });
 
   return (
-    <main className="min-h-screen bg-background-page p-4 text-slate-950 sm:p-6 lg:p-8">
+    <main className="min-h-full bg-background-page p-4 text-slate-950 sm:p-6 lg:p-8">
       <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_350px]">
         <section className="space-y-5">
           <ParkingCapacityTimelineCard
