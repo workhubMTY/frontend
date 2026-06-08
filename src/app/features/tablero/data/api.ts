@@ -18,7 +18,7 @@ export const listParkingReservations = {
   // Get /parking
   getParking: () => authFetch<Parking>(`${ParkingLink}`),
   // Get /parking/:id
-  getParkingId: (eId: string) => authFetch<Parking>(`${ParkingLink}/${eId}`),
+  getParkingId: (id: number) => authFetch<Parking>(`${ParkingLink}/${id}`),
   // Get /parking/reservations
   getparkingReservations: (params?: GetParkingReservationsParams) => {
     const searchParams = new URLSearchParams();

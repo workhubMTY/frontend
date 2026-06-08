@@ -111,7 +111,7 @@ export function FriendshipsPanel({ user, friendships, loading, onClose }: Props)
             {friendships.map((friend, i) => {
               const avatarClass = AVATAR_BG[i % AVATAR_BG.length];
               const statusStyle = STATUS_STYLES[friend.status?.toLowerCase()] ?? STATUS_STYLES.offline;
-              const roleStyle   = ROLE_STYLES[friend.roleName?.toUpperCase()] ?? ROLE_STYLES.USER;
+              const roleStyle = ROLE_STYLES[friend.roleName?.toUpperCase()] ?? ROLE_STYLES.USER;
 
               return (
                 <div

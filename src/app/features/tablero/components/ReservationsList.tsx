@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import type { ParkingReservations, OfficeReservations } from "../data/types";
-import { OfficeReservationModal } from "./OfficeReservationModal.tsx";
+import { OfficeReservationModal } from "./OfficeReservationModal";
 
 type Props = {
   parkingReservations?: ParkingReservations[];
