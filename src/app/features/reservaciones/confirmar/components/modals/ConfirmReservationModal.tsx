@@ -16,13 +16,14 @@ type ConfirmReservationModalProps = {
   onClose: () => void;
   onCompleted: () => void;
 };
+
 export function ConfirmReservationModal({
   isOpen,
   reservationDraft,
   onClose,
   onCompleted,
 }: ConfirmReservationModalProps) {
-  const { state, refs, actions } = useConfirmReservationViewModel({
+  const { state, actions } = useConfirmReservationViewModel({
     isOpen,
     reservationDraft,
     onClose,
@@ -61,7 +62,7 @@ export function ConfirmReservationModal({
         </header>
 
         <div className="grid min-h-0 flex-1 grid-cols-1 overflow-hidden lg:grid-cols-[minmax(0,1fr)_340px]">
-          <main className="flex min-w-0 flex-col overflow-y-auto px-6 py-4 ">
+          <main className="flex min-w-0 flex-col overflow-y-auto py-4">
             {state.loadError && (
               <Message
                 onDismiss={() => actions.setLoadError("")}
@@ -72,28 +73,14 @@ export function ConfirmReservationModal({
                 {state.loadError}
               </Message>
             )}
-
             <InviteSearchPanel
-              containerRef={refs.searchContainerRef}
               searchTerm={state.searchTerm}
-              isDropdownOpen={state.isDropdownOpen}
               people={state.filteredPeople}
-              workGroups={state.filteredWorkGroups}
+              teams={state.filteredTeams}
               onSearchTermChange={actions.setSearchTerm}
-              onOpenDropdown={actions.openDropdown}
               onPersonSelect={actions.addPerson}
-              onWorkGroupSelect={actions.addWorkGroup}
+              onTeamSelect={actions.addTeam}
             />
-
-            {/* <div className="mt-auto pt-6">
-              <CreateTeamCard
-                shouldCreateTeam={state.shouldCreateTeam}
-                teamName={state.teamName}
-                teamNameError={state.teamNameError}
-                onToggle={actions.toggleShouldCreateTeam}
-                onTeamNameChange={actions.updateTeamName}
-              />
-            </div> */}
           </main>
 
           <SelectedGuestsPanel

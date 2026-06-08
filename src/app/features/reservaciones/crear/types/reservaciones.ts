@@ -47,4 +47,5 @@ export type CreateReservationBatchDto = {
     end_time: string;
   }>;
   participants?: string[];
+  teamIds?: string[]
 };

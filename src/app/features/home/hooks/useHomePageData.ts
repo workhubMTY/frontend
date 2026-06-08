@@ -1,13 +1,6 @@
 import { useMemo } from "react";
 
 import { useFriends } from "@/app/shared/data/friendships/hooks";
-
-import {
-  useEvents,
-  useFriendsReservations,
-  useMyReservations,
-} from "@/app/features/cubiculos/data/hooks";
-
 import { getInitials } from "@/app/features/home/utils/utils";
 
 import type {
@@ -25,6 +18,8 @@ import {
   mapPendingReservationToInvitacion,
   mapReservationToReserva,
 } from "@/app/features/home/lib/homeMappers";
+import { ReservationEvent } from "../../cubiculos/data/types";
+import { useFriendsReservations, useMyReservations } from "../../reservaciones/crear/data/hooks";
 
 type UseHomePageDataParams = {
   selectedPerson: number | null;
@@ -40,7 +35,7 @@ export function useHomePageData({
   const { data: friends = [] } = useFriends();
   const { data: friendsReservations = [] } = useFriendsReservations();
   const { data: myReservationsData } = useMyReservations();
-  const { data: eventsData = [] } = useEvents();
+  const eventsData : ReservationEvent[] = []
 
   const personas = useMemo<Persona[]>(() => {
     return friends.map((friend: any) => {

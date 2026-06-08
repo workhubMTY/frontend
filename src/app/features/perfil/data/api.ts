@@ -8,11 +8,11 @@ import type {
   User,
   UserProfile,
 } from "@/app/features/perfil/types/profile";
-import type { UpdateTeamPayload } from "@/app/features/perfil/data/hooks/useTeams";
 import {
   SendFriendRequestsPayload,
   SentFriendRequest,
 } from "../components/drawers/Friends/types";
+import { UpdateTeamPayload } from "./types";
 // export const parkingReservationsApi = {
 //   create: (payload: CreateParkingReservation) =>
 //     authFetch<ParkingReservation>(`${BASE}/reservations`, {

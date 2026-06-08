@@ -1,31 +1,24 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 
-import { officeSlotsApi } from "@/app/features/cubiculos/data/api";
+import { useCreateReservationBatch } from "../../crear/data/hooks";
+
+import { useTeams } from "@/app/features/perfil/data/hooks/useTeams";
+import { useUserSearchSuggestions } from "@/app/features/perfil/data/hooks/useUsers";
+import { useAuth } from "@/app/shared/auth/useAuth";
+import { useDebouncedSearch } from "@/app/features/perfil/hooks/useDebouncedSearch";
+
+import type { Team, User } from "@/app/features/perfil/types/profile";
+import type { InvitedGuest, ReservationDraft } from "../types/confirmation";
 
 import {
-  filterPeopleOptions,
-  filterWorkGroupOptions,
+  filterTeams,
   mapDraftToSessions,
-  mapGuestToPersonOption,
-  mapPersonToInvitedGuest,
-  mapUserToPersonOption,
-  mapWorkGroupToInvitedGuest,
-  mapWorkGroupToOption,
+  mapTeamToInvitedGuest,
+  mapUserToInvitedGuest,
   splitInvitedGuestsForReservation,
 } from "../lib/confirmationMappers";
-
-import type {
-  InvitedGuest,
-  PersonOption,
-  ReservationDraft,
-  WorkGroupOption,
-} from "../types/confirmation";
-
-import { useClickOutside } from "./useClickOutside";
-import { useCreateReservationBatch } from "../../crear/data/hooks";
-import { reservationsApi } from "../../crear/data/api";
 
 type UseConfirmReservationViewModelParams = {
   isOpen: boolean;
@@ -40,15 +33,12 @@ export function useConfirmReservationViewModel({
   onClose,
   onCompleted,
 }: UseConfirmReservationViewModelParams) {
-  const searchContainerRef = useRef<HTMLDivElement | null>(null);
+  const { user } = useAuth();
+
   const createReservationBatch = useCreateReservationBatch();
 
-  const [people, setPeople] = useState<PersonOption[]>([]);
-  const [workGroups, setWorkGroups] = useState<WorkGroupOption[]>([]);
   const [invitedGuests, setInvitedGuests] = useState<InvitedGuest[]>([]);
-
   const [searchTerm, setSearchTerm] = useState("");
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   const [shouldCreateTeam, setShouldCreateTeam] = useState(false);
   const [teamName, setTeamName] = useState("");
@@ -56,81 +46,46 @@ export function useConfirmReservationViewModel({
 
   const [loadError, setLoadError] = useState("");
   const [submitError, setSubmitError] = useState("");
-  const [isLoadingOptions, setIsLoadingOptions] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  useClickOutside(
-    searchContainerRef,
-    () => setIsDropdownOpen(false),
-    isDropdownOpen,
-  );
+  const {
+    data: teams = [],
+    isLoading: teamsLoading,
+    error: teamsError,
+  } = useTeams();
 
   const sessions = useMemo(
     () => mapDraftToSessions(reservationDraft),
     [reservationDraft],
   );
 
-  const filteredPeople = useMemo(
-    () => filterPeopleOptions(people, searchTerm),
-    [people, searchTerm],
-  );
+  const {
+    results: filteredPeople,
+    isSearching: isSearchingMembers,
+    hasSearched: hasSearchedMembers,
+  } = useDebouncedSearch<User>({
+    searchTerm,
+    searchFn: useUserSearchSuggestions(user?.eId),
+    delay: 350,
+    enabled: isOpen,
+  });
 
-  const filteredWorkGroups = useMemo(
-    () => filterWorkGroupOptions(workGroups, searchTerm),
-    [workGroups, searchTerm],
+  const filteredTeams = useMemo(
+    () => filterTeams(teams, searchTerm),
+    [teams, searchTerm],
   );
 
   const hasInvitedGuests = invitedGuests.length > 0;
 
-  useEffect(() => {
-    if (!isOpen) return;
-
-    let ignore = false;
-
-    async function loadOptions() {
-      setIsLoadingOptions(true);
-      setLoadError("");
-
-      try {
-        const [users, guests, groups] = await Promise.all([
-          reservationsApi.getUsers(),
-          reservationsApi.getGuests(),
-          officeSlotsApi.getWorkGroups(),
-        ]);
-
-        if (ignore) return;
-
-        setPeople([
-          ...users.map(mapUserToPersonOption),
-          ...guests.map(mapGuestToPersonOption),
-        ]);
-
-        setWorkGroups(groups.map(mapWorkGroupToOption));
-      } catch {
-        if (!ignore) {
-          setLoadError("No se pudieron cargar los invitados disponibles.");
-        }
-      } finally {
-        if (!ignore) {
-          setIsLoadingOptions(false);
-        }
-      }
-    }
-
-    void loadOptions();
-
-    return () => {
-      ignore = true;
-    };
-  }, [isOpen]);
+  const isLoadingOptions = teamsLoading || isSearchingMembers;
 
   const resetModalState = useCallback(() => {
     setSearchTerm("");
-    setIsDropdownOpen(false);
     setShouldCreateTeam(false);
     setTeamName("");
     setTeamNameError("");
     setSubmitError("");
+    setLoadError("");
+    setInvitedGuests([]);
   }, []);
 
   const closeModal = useCallback(() => {
@@ -138,33 +93,37 @@ export function useConfirmReservationViewModel({
     onClose();
   }, [onClose, resetModalState]);
 
-  const addPerson = useCallback((person: PersonOption) => {
+  const addPerson = useCallback((person: User) => {
     setInvitedGuests((currentGuests) => {
+      const invitedGuest = mapUserToInvitedGuest(person);
+
       const alreadyAdded = currentGuests.some(
-        (guest) => guest.id === person.id || guest.email === person.email,
+        (guest) =>
+          guest.id === invitedGuest.id || guest.email === invitedGuest.email,
       );
 
       if (alreadyAdded) return currentGuests;
 
-      return [...currentGuests, mapPersonToInvitedGuest(person)];
+      return [...currentGuests, invitedGuest];
     });
 
     setSearchTerm("");
-    setIsDropdownOpen(false);
   }, []);
 
-  const addWorkGroup = useCallback((workGroup: WorkGroupOption) => {
+  const addTeam = useCallback((team: Team) => {
     setInvitedGuests((currentGuests) => {
-      const guestId = `equipo-${workGroup.id}`;
-      const alreadyAdded = currentGuests.some((guest) => guest.id === guestId);
+      const invitedGuest = mapTeamToInvitedGuest(team);
+
+      const alreadyAdded = currentGuests.some(
+        (guest) => guest.id === invitedGuest.id,
+      );
 
       if (alreadyAdded) return currentGuests;
 
-      return [...currentGuests, mapWorkGroupToInvitedGuest(workGroup)];
+      return [...currentGuests, invitedGuest];
     });
 
     setSearchTerm("");
-    setIsDropdownOpen(false);
   }, []);
 
   const removeInvitedGuest = useCallback((guestId: string) => {
@@ -182,6 +141,7 @@ export function useConfirmReservationViewModel({
     setShouldCreateTeam((currentValue) => !currentValue);
     setTeamNameError("");
   }, []);
+
   const submitReservation = useCallback(async () => {
     if (!reservationDraft) {
       setSubmitError("No hay una reservación para confirmar.");
@@ -199,7 +159,8 @@ export function useConfirmReservationViewModel({
       const { userIds, guestIds, workGroupIds } =
         splitInvitedGuestsForReservation(invitedGuests);
 
-      if (guestIds.length > 0 || workGroupIds.length > 0) {
+
+      if (guestIds.length > 0) {
         setSubmitError(
           "Por ahora solo se pueden invitar usuarios registrados a la reservación.",
         );
@@ -212,6 +173,7 @@ export function useConfirmReservationViewModel({
         description: "",
         timestamps: reservationDraft.schedules,
         participants: userIds,
+        teamIds: workGroupIds.map(id => String(id))
       });
 
       resetModalState();
@@ -220,48 +182,52 @@ export function useConfirmReservationViewModel({
       setSubmitError("No se pudo finalizar la reservación. Intenta de nuevo.");
     }
   }, [
+    createReservationBatch,
     invitedGuests,
     onCompleted,
     reservationDraft,
     resetModalState,
     shouldCreateTeam,
     teamName,
-    createReservationBatch,
   ]);
 
   return {
     state: {
-      people,
-      workGroups,
+      teams,
       invitedGuests,
+
       searchTerm,
-      isDropdownOpen,
       shouldCreateTeam,
       teamName,
       teamNameError,
-      loadError,
+
+      loadError: loadError || (teamsError ? "No se pudieron cargar los equipos." : ""),
       submitError,
+
       isLoadingOptions,
-      isSubmitting,
+      isSubmitting: createReservationBatch.isPending,
+
       sessions,
       filteredPeople,
-      filteredWorkGroups,
+      filteredTeams,
+
       hasInvitedGuests,
+      hasSearchedMembers,
     },
-    refs: {
-      searchContainerRef,
-    },
+
     actions: {
       setSearchTerm,
-      openDropdown: () => setIsDropdownOpen(true),
-      closeDropdown: () => setIsDropdownOpen(false),
-      setLoadError: (errorMsg: string) => setLoadError(errorMsg),
+      setLoadError,
+
       closeModal,
+
       addPerson,
-      addWorkGroup,
+      addTeam,
+
       removeInvitedGuest,
       updateTeamName,
       toggleShouldCreateTeam,
+
       submitReservation,
     },
   };

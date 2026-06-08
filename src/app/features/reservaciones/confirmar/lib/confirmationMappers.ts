@@ -1,85 +1,56 @@
+import type { Team, User } from "@/app/features/perfil/types/profile";
+
 import type {
   InvitedGuest,
-  PersonOption,
   ReservationDraft,
   ReservationSession,
-  WorkGroupOption,
 } from "../types/confirmation";
 
-type ApiUser = {
-  id: string | number;
-  name: string;
-  email: string;
-};
-
-type ApiGuest = {
-  id: string | number;
-  name: string;
-  email: string;
-};
-
-type ApiWorkGroup = {
-  id: string | number;
-  name: string;
-  memberCount?: number | null;
-};
-
-const WORK_GROUP_COLORS = [
-  "bg-violet-100 text-violet-700",
-  "bg-pink-100 text-pink-700",
-  "bg-sky-100 text-sky-700",
-  "bg-emerald-100 text-emerald-700",
-];
-
-export function mapUserToPersonOption(user: ApiUser): PersonOption {
+export function mapUserToInvitedGuest(user: User): InvitedGuest {
   return {
-    id: String(user.id),
+    id: `user:${user.eId}`,
+    source: "user",
+    sourceId: user.eId,
+
     name: user.name,
     email: user.email,
     kind: "colaborador",
   };
 }
 
-export function mapGuestToPersonOption(guest: ApiGuest): PersonOption {
+export function mapTeamToInvitedGuest(team: Team): InvitedGuest {
   return {
-    id: `guest-${guest.id}`,
+    id: `team:${team.id}`,
+    source: "team",
+    sourceId: team.id,
+
+    name: team.name,
+    email: `${team.memberCount} ${
+      team.memberCount === 1 ? "integrante" : "integrantes"
+    }`,
+    kind: "colaborador",
+
+    memberCount: team.memberCount,
+  };
+}
+
+/**
+ * Para cuando tengas invitados externos reales.
+ * Necesitas que el backend te regrese un id de invitado.
+ */
+export function mapGuestToInvitedGuest(guest: {
+  id: string | number;
+  name: string;
+  email: string;
+}): InvitedGuest {
+  return {
+    id: `guest:${guest.id}`,
+    source: "guest",
+    sourceId: String(guest.id),
+
     name: guest.name,
     email: guest.email,
     kind: "invitado",
-  };
-}
-
-export function mapWorkGroupToOption(
-  group: ApiWorkGroup,
-  index: number,
-): WorkGroupOption {
-  return {
-    id: String(group.id),
-    name: group.name,
-    memberCount: group.memberCount ?? 0,
-    colorClassName:
-      WORK_GROUP_COLORS[index % WORK_GROUP_COLORS.length] ??
-      "bg-violet-100 text-violet-700",
-  };
-}
-
-export function mapPersonToInvitedGuest(person: PersonOption): InvitedGuest {
-  return {
-    id: person.id,
-    name: person.name,
-    email: person.email,
-    kind: person.kind,
-  };
-}
-
-export function mapWorkGroupToInvitedGuest(
-  workGroup: WorkGroupOption,
-): InvitedGuest {
-  return {
-    id: `equipo-${workGroup.id}`,
-    name: workGroup.name,
-    email: `${workGroup.memberCount} miembros`,
-    kind: "colaborador",
   };
 }
 
@@ -108,50 +79,37 @@ export function mapDraftToSessions(
   });
 }
 
-export function filterPeopleOptions(
-  people: PersonOption[],
-  searchTerm: string,
-): PersonOption[] {
+export function filterTeams(teams: Team[], searchTerm: string): Team[] {
   const normalizedSearch = normalizeSearch(searchTerm);
 
-  if (normalizedSearch.length <= 1) return people;
+  if (normalizedSearch.length <= 1) return teams;
 
-  return people.filter(
-    (person) =>
-      normalizeSearch(person.name).includes(normalizedSearch) ||
-      normalizeSearch(person.email).includes(normalizedSearch),
-  );
+  return teams.filter((team) => {
+    const normalizedName = normalizeSearch(team.name);
+    const normalizedDescription = normalizeSearch(team.description ?? "");
+
+    return (
+      normalizedName.includes(normalizedSearch) ||
+      normalizedDescription.includes(normalizedSearch)
+    );
+  });
 }
 
-export function filterWorkGroupOptions(
-  workGroups: WorkGroupOption[],
-  searchTerm: string,
-): WorkGroupOption[] {
-  const normalizedSearch = normalizeSearch(searchTerm);
-
-  if (normalizedSearch.length <= 1) return workGroups;
-
-  return workGroups.filter((workGroup) =>
-    normalizeSearch(workGroup.name).includes(normalizedSearch),
-  );
-}
-
-export function splitInvitedGuestsForReservation(invitedGuests: InvitedGuest[]) {
+export function splitInvitedGuestsForReservation(
+  invitedGuests: InvitedGuest[],
+) {
   const userIds = invitedGuests
-    .filter(
-      (guest) =>
-        !guest.id.startsWith("guest-") && !guest.id.startsWith("equipo-"),
-    )
-    .map((guest) => guest.id);
+    .filter((guest) => guest.source === "user")
+    .map((guest) => guest.sourceId);
 
   const guestIds = invitedGuests
-    .filter((guest) => guest.id.startsWith("guest-"))
-    .map((guest) => Number(guest.id.replace("guest-", "")))
+    .filter((guest) => guest.source === "guest")
+    .map((guest) => Number(guest.sourceId))
     .filter(Number.isFinite);
 
   const workGroupIds = invitedGuests
-    .filter((guest) => guest.id.startsWith("equipo-"))
-    .map((guest) => Number(guest.id.replace("equipo-", "")))
+    .filter((guest) => guest.source === "team")
+    .map((guest) => Number(guest.sourceId))
     .filter(Number.isFinite);
 
   return {
