@@ -47,7 +47,7 @@ export default function ParkingReservationSchedulerPage() {
           />
         </section>
 
-        <aside className="sticky top-5 self-start space-y-5">
+        <aside className="sticky h-full flex flex-col top-5 self-start space-y-5">
           <SelectionModeCalendarCard
             calendarCells={state.calendarCells}
             activeDayId={state.scheduler.activeDayId}

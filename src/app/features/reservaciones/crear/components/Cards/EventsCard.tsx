@@ -25,7 +25,7 @@ export function EventsCard({
   return (
     <Card className="flex flex-1 flex-col gap-2 p-5">
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-bold text-slate-950">
+        <h2 className="text-lg font-semibold text-slate-950">
           Reservaciones y eventos
         </h2>
 
