@@ -63,9 +63,7 @@ export function useDashboard() {
         .then((data: any) => Array.isArray(data) ? data : (data?.items ?? [])),
       listOfficeReservations
         .getOfficeReservations()
-        .then((data: any) => {
-            console.log("OFFICE RAW:", data);
-            return Array.isArray(data) ? data : (data?.items ?? [])}),
+        .then((data: any) =>  Array.isArray(data) ? data : (data?.items ?? [])),
     ])
       .then(([parking, office]) => {
         setParkingReservations(parking);
