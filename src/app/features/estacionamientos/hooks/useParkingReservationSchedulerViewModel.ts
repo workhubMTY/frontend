@@ -7,10 +7,8 @@ import { getParkingAvailability } from "@/app/features/estacionamientos/lib/park
 import { getHourFromTimeLabel } from "@/app/features/estacionamientos/components/Timeline/utils";
 import { useParkingReservationSchedulerData } from "@/app/features/estacionamientos/hooks/useParkingReservationSchedulerData";
 
-import type { TimeBlock } from "@/app/features/reservaciones/crear/types/reservaciones";
-import type {
-  CreateParkingReservation,
-} from "@/app/features/estacionamientos/data/types";
+import type { CreateParkingReservation } from "@/app/features/estacionamientos/data/types";
+import { TimeBlock } from "../../reservaciones/crear/types/reservaciones";
 
 const FALLBACK_PARKING_CAPACITY = 40;
 const BASE_OCCUPIED_SPOTS = 0;
@@ -68,11 +66,11 @@ export function useParkingReservationSchedulerViewModel({
 
   const myReservationConflictRanges = useMemo(
     () =>
-      data.myParkingReservationsForActiveDay.map((reservation) => ({
-        startHour: getHourFromTimeLabel(reservation.start),
-        endHour: getHourFromTimeLabel(reservation.end),
+      data.myParkingScheduleItemsForActiveDay.map((item) => ({
+        startHour: getHourFromTimeLabel(item.start),
+        endHour: getHourFromTimeLabel(item.end),
       })),
-    [data.myParkingReservationsForActiveDay],
+    [data.myParkingScheduleItemsForActiveDay],
   );
 
   const parkingAvailability = useMemo(
@@ -83,78 +81,52 @@ export function useParkingReservationSchedulerViewModel({
         highOccupationThreshold,
         activeBlocks: [],
         pendingBlocks: scheduler.proposedBlocksForActiveDay,
-        spaceReservationsForActiveDay: data.parkingReservationsForActiveDay,
+        spaceReservationsForActiveDay: data.parkingScheduleItemsForActiveDay,
       }),
     [
       parkingCapacity,
       highOccupationThreshold,
       scheduler.proposedBlocksForActiveDay,
-      data.parkingReservationsForActiveDay,
+      data.parkingScheduleItemsForActiveDay,
     ],
   );
 
-  /**
-   * Reservaciones del día activo.
-   * Estas son las que puedes mandar a EventsCard.
-   */
-  const activeDayParkingEvents = useMemo(
-    () => data.parkingReservationsForActiveDay,
-    [data.parkingReservationsForActiveDay],
+  const activeDayParkingItems = useMemo(
+    () => data.parkingScheduleItemsForActiveDay,
+    [data.parkingScheduleItemsForActiveDay],
   );
 
-  /**
-   * Tus reservaciones del día activo.
-   * Útil si quieres otra sección tipo "Mis reservaciones".
-   */
-  const activeDayMyParkingEvents = useMemo(
-    () => data.myParkingReservationsForActiveDay,
-    [data.myParkingReservationsForActiveDay],
+  const activeDayMyParkingItems = useMemo(
+    () => data.myParkingScheduleItemsForActiveDay,
+    [data.myParkingScheduleItemsForActiveDay],
   );
 
-  /**
-   * Reservaciones de TODOS los días seleccionados.
-   * Esto sirve para resumen, confirm modal, validaciones extra,
-   * o una card que muestre "eventos en los días seleccionados".
-   */
-  const selectedDaysParkingEvents = useMemo(
+  const selectedDaysParkingItems = useMemo(
     () =>
       scheduler.selectableSelectedDateIds.flatMap(
-        (dateId) => data.parkingReservationsByDate[dateId] ?? [],
+        (dateId) => data.parkingScheduleItemsByDate[dateId] ?? [],
       ),
-    [scheduler.selectableSelectedDateIds, data.parkingReservationsByDate],
+    [scheduler.selectableSelectedDateIds, data.parkingScheduleItemsByDate],
   );
 
-  /**
-   * Tus reservaciones de TODOS los días seleccionados.
-   * Estas son importantes porque en parking tus conflictos bloqueantes
-   * son contra tus propias reservaciones.
-   */
-  const selectedDaysMyParkingEvents = useMemo(
+  const selectedDaysMyParkingItems = useMemo(
     () =>
       scheduler.selectableSelectedDateIds.flatMap(
-        (dateId) => data.myParkingReservationsByDate[dateId] ?? [],
+        (dateId) => data.myParkingScheduleItemsByDate[dateId] ?? [],
       ),
-    [scheduler.selectableSelectedDateIds, data.myParkingReservationsByDate],
+    [scheduler.selectableSelectedDateIds, data.myParkingScheduleItemsByDate],
   );
 
-  /**
-   * Como en reservaciones:
-   * Si showAllEvents = true, muestra todo.
-   * Si no, muestra solo los más importantes.
-   *
-   * En parking puedes considerar "conflicto" las reservaciones propias,
-   * porque esas sí bloquean.
-   */
   const conflictCount = useMemo(
-    () => activeDayMyParkingEvents.length,
-    [activeDayMyParkingEvents],
+    () => activeDayMyParkingItems.length,
+    [activeDayMyParkingItems],
   );
 
   const visibleEvents = useMemo(() => {
-    if (showAllEvents) return activeDayParkingEvents;
+    if (showAllEvents) return activeDayMyParkingItems;
 
-    return activeDayMyParkingEvents.slice(0, 2);
-  }, [showAllEvents, activeDayParkingEvents, activeDayMyParkingEvents]);
+    return activeDayMyParkingItems.slice(0, 2);
+  }, [showAllEvents, activeDayMyParkingItems]);
 
   const canSubmitReservation =
     scheduler.canContinue && !data.createParkingReservation.isPending;
@@ -220,14 +192,15 @@ export function useParkingReservationSchedulerViewModel({
 
       parkingBuckets: data.parkingBuckets,
 
-      parkingReservationsForActiveDay: data.parkingReservationsForActiveDay,
-      myParkingReservationsForActiveDay: data.myParkingReservationsForActiveDay,
+      parkingScheduleItemsForActiveDay: data.parkingScheduleItemsForActiveDay,
+      myParkingScheduleItemsForActiveDay:
+        data.myParkingScheduleItemsForActiveDay,
 
-      activeDayParkingEvents,
-      activeDayMyParkingEvents,
+      activeDayParkingItems,
+      activeDayMyParkingItems,
 
-      selectedDaysParkingEvents,
-      selectedDaysMyParkingEvents,
+      selectedDaysParkingItems,
+      selectedDaysMyParkingItems,
 
       visibleEvents,
       conflictCount,

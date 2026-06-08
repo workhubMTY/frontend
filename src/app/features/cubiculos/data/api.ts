@@ -1,31 +1,19 @@
 import { authFetch } from "@/app/shared/data/api";
+
 import type {
   OfficeSlot,
-  ReservationDetail,
   WorkGroup,
-  ReservationParticipant,
-  UserSummary,
-  Guest,
   CreateOfficeSlotDto,
   UpdateOfficeSlotDto,
   BlockSlotDto,
   AvailableOfficeSlotsQuery,
-  CreateReservationBatchDto,
-  UpdateParticipantStatusDto,
-  UserReservationSummary,
-  FriendReservationsSummary,
-  ReservationEvent,
-  GetEventsQuery,
-  CreateEventDto,
   ReservationSummary,
   GetSlotReservationsPayload,
   OfficeSlotSummary,
 } from "./types";
 
 const SLOTS_BASE = `/office/slots`;
-const EVENTS = `${SLOTS_BASE}/events`;
 const WORK_GROUPS = `${SLOTS_BASE}/work-groups`;
-const RESERVATIONS_BASE = `/office/reservations`;
 
 function toApiDateTime(value: string | Date | undefined) {
   if (!value) return undefined;
@@ -65,6 +53,7 @@ export const officeSlotsApi = {
 
   getAvailableSlots: (query: AvailableOfficeSlotsQuery) => {
     const params = new URLSearchParams();
+
     if (query.floorId) params.append("floorId", query.floorId.toString());
     if (query.startTime) params.append("startTime", query.startTime);
     if (query.endTime) params.append("endTime", query.endTime);
@@ -74,6 +63,7 @@ export const officeSlotsApi = {
     if (query.maxCapacity)
       params.append("maxCapacity", query.maxCapacity.toString());
     if (query.query) params.append("query", query.query);
+
     if (query.daysToApply && query.daysToApply.length > 0) {
       query.daysToApply.forEach((day) => params.append("daysToApply", day));
     }
@@ -166,53 +156,4 @@ export const officeSlotsApi = {
     ),
 
   getWorkGroups: () => authFetch<WorkGroup[]>(`${WORK_GROUPS}`),
-
-  getReservationDetail: (id: number) =>
-    authFetch<ReservationDetail>(`${RESERVATIONS_BASE}/${id}`),
-
-  createReservationBatch: (payload: CreateReservationBatchDto) =>
-    authFetch<ReservationDetail[]>(`${RESERVATIONS_BASE}/`, {
-      method: "POST",
-      body: JSON.stringify(payload),
-    }),
-
-  updateParticipantStatus: (id: number, payload: UpdateParticipantStatusDto) =>
-    authFetch<ReservationParticipant>(
-      `${RESERVATIONS_BASE}/participants/${id}/status`,
-      {
-        method: "PATCH",
-        body: JSON.stringify(payload),
-      },
-    ),
-
-  getMyReservations: () =>
-    authFetch<UserReservationSummary>(`${RESERVATIONS_BASE}/me`),
-
-  getFriendsReservations: () =>
-    authFetch<FriendReservationsSummary>(`${RESERVATIONS_BASE}/me/friends`),
-
-  getEvents: (query?: GetEventsQuery) => {
-    const params = new URLSearchParams();
-
-    if (query?.reservable_id)
-      params.append("reservable_id", query.reservable_id.toString());
-    if (query?.floor_id) params.append("floor_id", query.floor_id.toString());
-    if (query?.start_time) params.append("start_time", query.start_time);
-    if (query?.end_time) params.append("end_time", query.end_time);
-
-    const search = params.toString();
-    return authFetch<ReservationEvent[]>(
-      `${EVENTS}${search ? `?${search}` : ""}`,
-    );
-  },
-
-  createEvent: (payload: CreateEventDto) =>
-    authFetch<ReservationEvent>(`${EVENTS}`, {
-      method: "POST",
-      body: JSON.stringify(payload),
-    }),
-
-  getUsers: () => authFetch<UserSummary[]>(`${RESERVATIONS_BASE}/users`),
-
-  getGuests: () => authFetch<Guest[]>(`${RESERVATIONS_BASE}/guests`),
 };

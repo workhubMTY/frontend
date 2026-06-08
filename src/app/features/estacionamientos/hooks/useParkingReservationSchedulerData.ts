@@ -10,47 +10,18 @@ import {
 } from "@/app/features/estacionamientos/data/hooks";
 
 import { createCalendarCells } from "@/app/features/reservaciones/crear/lib/dates";
-import {
-  getVisibleRange,
-  groupTimelineEventsByDate,
-} from "@/app/features/reservaciones/crear/data/reservationsApi";
+
+import { getVisibleRange, groupScheduleItemsByDate } from "@/app/features/reservaciones/crear/data/api";
 
 import { useReservationScheduler } from "@/app/features/reservaciones/crear/hooks/useReservationScheduler";
 
-import type { TimelineEvent } from "@/app/features/reservaciones/crear/types/reservaciones";
 import type {
   ListReservationsQuery,
-  ParkingReservation,
   ReservationBucketsQuery,
 } from "@/app/features/estacionamientos/data/types";
 
 import { getLocalDayRange } from "../lib/parkingAvailability";
-
-function toDateId(value: Date | string) {
-  return new Date(value).toLocaleDateString("en-CA");
-}
-
-function toTime(value: Date | string) {
-  return new Date(value).toLocaleTimeString("es-MX", {
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-  });
-}
-
-function toParkingTimelineEvent(
-  reservation: ParkingReservation,
-): TimelineEvent {
-  return {
-    id: String(reservation.id),
-    dateId: toDateId(reservation.start_time),
-    start: toTime(reservation.start_time),
-    end: toTime(reservation.end_time),
-    title: "Reservación",
-    label: `${toTime(reservation.start_time)} - ${toTime(reservation.end_time)}`,
-    row: "reserved",
-  };
-}
+import { parkingReservationToScheduleItem } from "../data/lib";
 
 type UseParkingReservationSchedulerPageParams = {
   parkingId: number | null;
@@ -102,46 +73,53 @@ export function useParkingReservationSchedulerData({
     },
   );
 
-  const parkingTimelineEvents = useMemo(
+  /**
+   * Todas las reservaciones del estacionamiento seleccionado.
+   * Sirven para pintar ocupación/capacidad, pero NO necesariamente bloquean.
+   */
+  const parkingScheduleItems = useMemo(
     () =>
       (reservationsQuery.data?.items ?? []).map((reservation) =>
-        toParkingTimelineEvent(reservation),
+        parkingReservationToScheduleItem(reservation, "space_reservation"),
       ),
     [reservationsQuery.data?.items],
   );
-const myParkingReservations = useMemo(
-  () =>
-    (myReservationsQuery.data ?? [])
-      .filter((item) => item.reservation.lifecycle_status === "ACTIVE")
-      .map((item) => item.reservation),
-  [myReservationsQuery.data],
-);
 
-const myParkingTimelineEvents = useMemo(
-  () =>
-    myParkingReservations.map((reservation) =>
-      toParkingTimelineEvent(reservation),
-    ),
-  [myParkingReservations],
-);
-
-  const parkingReservationsByDate = useMemo(
-    () => groupTimelineEventsByDate(parkingTimelineEvents),
-    [parkingTimelineEvents],
+  /**
+   * Mis reservaciones de parking.
+   * Sirven para bloquear empalmes del usuario y para la segunda hilera/card.
+   */
+  const myParkingScheduleItems = useMemo(
+    () =>
+      (myReservationsQuery.data ?? [])
+        .filter((item) => item.reservation.lifecycle_status === "ACTIVE")
+        .map((item) =>
+          parkingReservationToScheduleItem(
+            item.reservation,
+            "parking_reservation",
+          ),
+        ),
+    [myReservationsQuery.data],
   );
 
-  const myParkingReservationsByDate = useMemo(
-    () => groupTimelineEventsByDate(myParkingTimelineEvents),
-    [myParkingTimelineEvents],
+  const parkingScheduleItemsByDate = useMemo(
+    () => groupScheduleItemsByDate(parkingScheduleItems),
+    [parkingScheduleItems],
+  );
+
+  const myParkingScheduleItemsByDate = useMemo(
+    () => groupScheduleItemsByDate(myParkingScheduleItems),
+    [myParkingScheduleItems],
   );
 
   const scheduler = useReservationScheduler({
     calendarCells,
 
-    // Importante:
-    // Para estacionamientos, los conflictos bloqueantes son TUS reservaciones,
-    // no todas las reservaciones del estacionamiento.
-    spaceReservationsByDate: myParkingReservationsByDate,
+    /**
+     * En parking, los conflictos bloqueantes son contra MIS reservaciones,
+     * no contra todas las reservaciones del estacionamiento.
+     */
+    spaceScheduleItemsByDate: myParkingScheduleItemsByDate,
   });
 
   const bucketsQueryParams = useMemo<
@@ -162,14 +140,14 @@ const myParkingTimelineEvents = useMemo(
     enabled: Boolean(scheduler.activeDayId),
   });
 
-  const parkingReservationsForActiveDay = useMemo(
-    () => parkingReservationsByDate[scheduler.activeDayId] ?? [],
-    [parkingReservationsByDate, scheduler.activeDayId],
+  const parkingScheduleItemsForActiveDay = useMemo(
+    () => parkingScheduleItemsByDate[scheduler.activeDayId] ?? [],
+    [parkingScheduleItemsByDate, scheduler.activeDayId],
   );
 
-  const myParkingReservationsForActiveDay = useMemo(
-    () => myParkingReservationsByDate[scheduler.activeDayId] ?? [],
-    [myParkingReservationsByDate, scheduler.activeDayId],
+  const myParkingScheduleItemsForActiveDay = useMemo(
+    () => myParkingScheduleItemsByDate[scheduler.activeDayId] ?? [],
+    [myParkingScheduleItemsByDate, scheduler.activeDayId],
   );
 
   return {
@@ -179,11 +157,13 @@ const myParkingTimelineEvents = useMemo(
     parkingLot: parkingLotQuery.data ?? null,
     parkingName: parkingLotQuery.data?.name ?? "Estacionamiento",
 
-    parkingReservationsByDate,
-    parkingReservationsForActiveDay,
+    parkingScheduleItems,
+    parkingScheduleItemsByDate,
+    parkingScheduleItemsForActiveDay,
 
-    myParkingReservationsByDate,
-    myParkingReservationsForActiveDay,
+    myParkingScheduleItems,
+    myParkingScheduleItemsByDate,
+    myParkingScheduleItemsForActiveDay,
 
     parkingBuckets: bucketsQuery.data?.buckets ?? [],
 

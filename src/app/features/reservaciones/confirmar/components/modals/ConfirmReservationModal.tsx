@@ -9,7 +9,6 @@ import { InviteSearchPanel } from "./panels/InviteSearchPanel";
 import { SelectedGuestsPanel } from "./panels/SelectedGuestsPanel";
 import { ConfirmReservationFooter } from "./layout/ConfirmReservationFooter";
 import { Message } from "@/app/shared/components/Message/Message";
-import { useEffect } from "react";
 
 type ConfirmReservationModalProps = {
   isOpen: boolean;
@@ -29,21 +28,6 @@ export function ConfirmReservationModal({
     onClose,
     onCompleted,
   });
-
-  const { setLoadError } = actions;
-
-  useEffect(() => {
-    if (!isOpen) return;
-    if (!state.loadError) return;
-
-    const timeoutId = window.setTimeout(() => {
-      setLoadError("");
-    }, 4000);
-
-    return () => {
-      window.clearTimeout(timeoutId);
-    };
-  }, [isOpen, state.loadError, setLoadError]);
 
   if (!isOpen) return null;
 

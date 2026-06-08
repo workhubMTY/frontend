@@ -24,6 +24,8 @@ import type {
 } from "../types/confirmation";
 
 import { useClickOutside } from "./useClickOutside";
+import { useCreateReservationBatch } from "../../crear/data/hooks";
+import { reservationsApi } from "../../crear/data/api";
 
 type UseConfirmReservationViewModelParams = {
   isOpen: boolean;
@@ -39,6 +41,7 @@ export function useConfirmReservationViewModel({
   onCompleted,
 }: UseConfirmReservationViewModelParams) {
   const searchContainerRef = useRef<HTMLDivElement | null>(null);
+  const createReservationBatch = useCreateReservationBatch();
 
   const [people, setPeople] = useState<PersonOption[]>([]);
   const [workGroups, setWorkGroups] = useState<WorkGroupOption[]>([]);
@@ -90,8 +93,8 @@ export function useConfirmReservationViewModel({
 
       try {
         const [users, guests, groups] = await Promise.all([
-          officeSlotsApi.getUsers(),
-          officeSlotsApi.getGuests(),
+          reservationsApi.getUsers(),
+          reservationsApi.getGuests(),
           officeSlotsApi.getWorkGroups(),
         ]);
 
@@ -179,7 +182,6 @@ export function useConfirmReservationViewModel({
     setShouldCreateTeam((currentValue) => !currentValue);
     setTeamNameError("");
   }, []);
-
   const submitReservation = useCallback(async () => {
     if (!reservationDraft) {
       setSubmitError("No hay una reservación para confirmar.");
@@ -191,29 +193,31 @@ export function useConfirmReservationViewModel({
       return;
     }
 
-    setIsSubmitting(true);
     setSubmitError("");
 
     try {
       const { userIds, guestIds, workGroupIds } =
         splitInvitedGuestsForReservation(invitedGuests);
 
-      await officeSlotsApi.createReservationBatch({
-        reservableId: reservationDraft.reservableId,
+      if (guestIds.length > 0 || workGroupIds.length > 0) {
+        setSubmitError(
+          "Por ahora solo se pueden invitar usuarios registrados a la reservación.",
+        );
+        return;
+      }
+
+      await createReservationBatch.mutateAsync({
+        reservable_id: reservationDraft.reservableId,
+        category: "RESERVATION",
         description: "",
-        schedules: reservationDraft.schedules,
-        userIds,
-        guestIds,
-        workGroupIds,
-        canOverlap: false,
+        timestamps: reservationDraft.schedules,
+        participants: userIds,
       });
 
       resetModalState();
       onCompleted();
     } catch {
       setSubmitError("No se pudo finalizar la reservación. Intenta de nuevo.");
-    } finally {
-      setIsSubmitting(false);
     }
   }, [
     invitedGuests,
@@ -222,6 +226,7 @@ export function useConfirmReservationViewModel({
     resetModalState,
     shouldCreateTeam,
     teamName,
+    createReservationBatch,
   ]);
 
   return {
@@ -250,7 +255,7 @@ export function useConfirmReservationViewModel({
       setSearchTerm,
       openDropdown: () => setIsDropdownOpen(true),
       closeDropdown: () => setIsDropdownOpen(false),
-      setLoadError: (errorMsg:string) => setLoadError(errorMsg),
+      setLoadError: (errorMsg: string) => setLoadError(errorMsg),
       closeModal,
       addPerson,
       addWorkGroup,

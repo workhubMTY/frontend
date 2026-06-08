@@ -1,9 +1,10 @@
 import { CalendarCheck, Lock } from "lucide-react";
 
-import type { TimeBlock, TimelineEvent } from "../../types/reservaciones";
+import type { TimeBlock } from "../../types/reservaciones";
 import { cn } from "../../../../../shared/lib/cn";
 import { to24Hour } from "../../lib/time";
 import { TimelineAxis } from "../Timeline/TimelineAxis";
+import { ScheduleItem } from "../../types/schedule";
 
 function createTimelineLanes(ranges: TimelineRange[]): TimelineRange[][] {
   const sortedRanges = [...ranges].sort((a, b) => {
@@ -42,8 +43,8 @@ function getLaneHeightClassName(laneCount: number): string {
 type ReservationTimelineCardProps = {
   activeDayId: string;
   proposedBlocks: TimeBlock[];
-  spaceReservationsForActiveDay: TimelineEvent[];
-  externalTimelineEventsForActiveDay: TimelineEvent[];
+  spaceItems: ScheduleItem[];
+  myItems: ScheduleItem[];
 };
 
 type TimelineRange = {
@@ -58,29 +59,27 @@ type OverlapSegment = {
   left: number;
   width: number;
 };
-
 export function ReservationTimelineCard({
   activeDayId,
   proposedBlocks,
-  spaceReservationsForActiveDay,
-  externalTimelineEventsForActiveDay,
+  spaceItems,
+  myItems,
 }: ReservationTimelineCardProps) {
-  const occupiedRanges = spaceReservationsForActiveDay
-    .map(timelineEventToRange)
+  const occupiedRanges = spaceItems
+    .map(scheduleItemToRange)
     .filter(Boolean) as TimelineRange[];
 
-  const myReservationRanges = externalTimelineEventsForActiveDay
-    .map(timelineEventToRange)
+  const myReservationRanges = myItems
+    .map(scheduleItemToRange)
     .filter(Boolean) as TimelineRange[];
 
   return (
     <div className="overflow-x-auto flex flex-col gap-2">
-      <div className="flex items-top justify-between  items-start">
-        <h2 className="text-lg font-bold text-slate-950">
-          Línea de tiempo
-        </h2>
+      <div className="flex items-top justify-between items-start">
+        <h2 className="text-lg font-bold text-slate-950">Línea de tiempo</h2>
         <TimelineLegend />
       </div>
+
       <div className="min-w-[880px]">
         <div className="mb-3 overflow-hidden rounded-xl border border-slate-200">
           <OccupiedSpaceRow
@@ -91,6 +90,7 @@ export function ReservationTimelineCard({
 
           <MyReservationsRow ranges={myReservationRanges} />
         </div>
+
         <TimelineAxis />
       </div>
     </div>
@@ -426,19 +426,18 @@ function LegendItem({ markerClassName, label }: LegendItemProps) {
 /* -------------------------------------------------------------------------- */
 /* Utils                                                                       */
 /* -------------------------------------------------------------------------- */
-
-function timelineEventToRange(event: TimelineEvent): TimelineRange | null {
-  const startHour = getHourFromTimeLabel(event.start);
-  const endHour = getHourFromTimeLabel(event.end);
+function scheduleItemToRange(item: ScheduleItem): TimelineRange | null {
+  const startHour = getHourFromTimeLabel(item.start);
+  const endHour = getHourFromTimeLabel(item.end);
 
   if (endHour <= startHour) return null;
 
   return {
-    id: String(event.id),
+    id: item.id,
     startHour,
     endHour,
-    label: event.label,
-    title: event.title,
+    label: `${item.start} - ${item.end}`,
+    title: item.location ? `${item.title} · ${item.location}` : item.title,
   };
 }
 

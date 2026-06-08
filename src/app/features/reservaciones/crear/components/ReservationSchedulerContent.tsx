@@ -31,18 +31,14 @@ export function ReservationSchedulerContent() {
               <ReservationTimelineCard
                 activeDayId={state.scheduler.activeDayId}
                 proposedBlocks={state.scheduler.proposedBlocksForActiveDay}
-                spaceReservationsForActiveDay={
-                  state.spaceReservationsForActiveDay
-                }
-                externalTimelineEventsForActiveDay={
-                  state.externalTimelineEventsForActiveDay
-                }
+                spaceItems={state.activeDaySpaceScheduleItems}
+                myItems={state.activeDayMyScheduleItems}
               />
             </Card>
 
             <EventsCard
-              events={state.activeDayExternalEvents}
-              visibleEvents={state.visibleEvents}
+              events={state.activeDayMyScheduleItems}
+              visibleEvents={state.visibleMyScheduleItems}
               conflictCount={state.conflictCount}
               showAllEvents={showAllEvents}
               onToggleShowAllEvents={() => setShowAllEvents((value) => !value)}

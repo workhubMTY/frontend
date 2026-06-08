@@ -1,80 +1,96 @@
 import { useMemo } from "react";
-import { useQuery } from "@tanstack/react-query";
 
 import type { CalendarCell } from "@/app/features/reservaciones/crear/types/reservaciones";
+import type { UserTimelineQuery } from "@/app/features/reservaciones/confirmar/types/confirmation";
 
 import {
-  apiGetExternalEventsInVisibleRange,
-  apiGetTimelineReservationsInVisibleRange,
   getVisibleRange,
-  groupTimelineEventsByDate,
-} from "@/app/features/reservaciones/crear/data/reservationsApi";
+  groupScheduleItemsByDate,
+} from "@/app/features/reservaciones/crear/data/api";
+
+import {
+  useSpaceScheduleItemsInVisibleRange,
+  useUserTimeline,
+} from "@/app/features/reservaciones/crear/data/hooks";
+
+import { myScheduleApiItemToScheduleItem } from "@/app/features/reservaciones/crear/data/myScheduleMappers";
 
 type UseReservationQueriesParams = {
   calendarCells: CalendarCell[];
   reservableId: number | null;
+  userId: string | null;
   enabled: boolean;
+  includeEIds?: string[];
 };
 
 export function useReservationQueries({
   calendarCells,
   reservableId,
+  userId,
   enabled,
+  includeEIds,
 }: UseReservationQueriesParams) {
   const visibleRange = useMemo(
     () => getVisibleRange(calendarCells),
     [calendarCells],
   );
 
-  const spaceReservationsQuery = useQuery({
-    queryKey: [
-      "reservations",
-      "events",
-      "space",
-      reservableId,
-      visibleRange?.firstDateId,
-      visibleRange?.lastDateId,
-    ],
-    enabled: enabled && Boolean(reservableId) && Boolean(visibleRange),
-    queryFn: () =>
-      apiGetTimelineReservationsInVisibleRange({
-        reservableId: reservableId!,
-        calendarCells,
-      }),
+  const timelineQuery = useMemo<UserTimelineQuery | undefined>(() => {
+    if (!visibleRange) return undefined;
+
+    return {
+      from: visibleRange.from,
+      to: visibleRange.to,
+
+      includeOfficeReservations: true,
+      officeCategories: ["MEETING", "RESERVATION"],
+
+      includeParkingReservations: true,
+      includeEvents: true,
+      includeFriends: true,
+
+      includeEIds,
+    };
+  }, [visibleRange, includeEIds]);
+
+  const spaceScheduleItemsQuery = useSpaceScheduleItemsInVisibleRange({
+    reservableId,
+    calendarCells,
+    enabled: enabled && Boolean(visibleRange),
   });
 
-  const externalEventsQuery = useQuery({
-    queryKey: [
-      "reservations",
-      "events",
-      "external",
-      reservableId,
-      visibleRange?.firstDateId,
-      visibleRange?.lastDateId,
-    ],
-    enabled: enabled && Boolean(reservableId) && Boolean(visibleRange),
-    queryFn: () =>
-      apiGetExternalEventsInVisibleRange({
-        reservableId: reservableId!,
-        calendarCells,
-      }),
+  const myTimelineQuery = useUserTimeline(userId, timelineQuery, {
+    enabled: enabled && Boolean(userId && timelineQuery),
   });
 
-  const spaceReservationsByDate = useMemo(
-    () => groupTimelineEventsByDate(spaceReservationsQuery.data ?? []),
-    [spaceReservationsQuery.data],
+  const spaceScheduleItems = spaceScheduleItemsQuery.data ?? [];
+
+  const myScheduleItems = useMemo(
+    () => (myTimelineQuery.data ?? []).map(myScheduleApiItemToScheduleItem),
+    [myTimelineQuery.data],
+  );
+
+  const spaceScheduleItemsByDate = useMemo(
+    () => groupScheduleItemsByDate(spaceScheduleItems),
+    [spaceScheduleItems],
+  );
+
+  const myScheduleItemsByDate = useMemo(
+    () => groupScheduleItemsByDate(myScheduleItems),
+    [myScheduleItems],
   );
 
   return {
-    spaceReservationsByDate,
-    externalEventsForInterval: externalEventsQuery.data ?? [],
+    spaceScheduleItems,
+    myScheduleItems,
 
-    isLoading:
-      spaceReservationsQuery.isLoading || externalEventsQuery.isLoading,
+    spaceScheduleItemsByDate,
+    myScheduleItemsByDate,
 
-    isFetching:
-      spaceReservationsQuery.isFetching || externalEventsQuery.isFetching,
+    isLoading: spaceScheduleItemsQuery.isLoading || myTimelineQuery.isLoading,
 
-    error: spaceReservationsQuery.error ?? externalEventsQuery.error,
+    isFetching: spaceScheduleItemsQuery.isFetching || myTimelineQuery.isFetching,
+
+    error: spaceScheduleItemsQuery.error ?? myTimelineQuery.error,
   };
 }

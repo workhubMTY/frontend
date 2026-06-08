@@ -1,8 +1,9 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
+
 import { officeSlotsApi } from "./api";
-import type { GetEventsQuery } from "./types";
+
 import type { SpaceSearchFilters } from "@/app/features/cubiculos/types/searchFilters";
 
 function parseTimeInput(input: string): string | null {
@@ -79,27 +80,24 @@ export function buildAvailableSlotsFilters(nextFilters: SpaceSearchFilters) {
 
 export const officeSlotKeys = {
   all: ["office", "slots"] as const,
+
   list: () => [...officeSlotKeys.all, "list"] as const,
+
   search: (filters: SpaceSearchFilters) =>
     [...officeSlotKeys.all, "search", filters] as const,
+
   detail: (slotId: number | null) =>
     [...officeSlotKeys.all, "detail", slotId] as const,
 
   reservations: {
-    me: ["reservations", "me"] as const,
-    friends: ["reservations", "friends"] as const,
     slot: (slotId: number | null, dates?: string[], detail = false) =>
       [
-        "office",
-        "slots",
+        ...officeSlotKeys.all,
         slotId,
         "reservations",
         dates ?? [],
         detail,
       ] as const,
-    detail: (id: number | null) => ["reservations", "detail", id] as const,
-    events: (query?: GetEventsQuery) =>
-      ["reservations", "events", query ?? {}] as const,
   },
 };
 
@@ -135,13 +133,6 @@ export function useOfficeSlotDetail(slotId: number | null) {
   });
 }
 
-export function useMyReservations() {
-  return useQuery({
-    queryKey: officeSlotKeys.reservations.me,
-    queryFn: () => officeSlotsApi.getMyReservations(),
-  });
-}
-
 export function useSlotReservations(
   slotId: number | null,
   dates?: string[],
@@ -156,27 +147,5 @@ export function useSlotReservations(
         detail,
       ),
     enabled: slotId !== null,
-  });
-}
-
-export function useFriendsReservations() {
-  return useQuery({
-    queryKey: officeSlotKeys.reservations.friends,
-    queryFn: () => officeSlotsApi.getFriendsReservations(),
-  });
-}
-
-export function useReservationDetail(id: number | null) {
-  return useQuery({
-    queryKey: officeSlotKeys.reservations.detail(id),
-    queryFn: () => officeSlotsApi.getReservationDetail(id as number),
-    enabled: id !== null,
-  });
-}
-
-export function useEvents(query?: GetEventsQuery) {
-  return useQuery({
-    queryKey: officeSlotKeys.reservations.events(query),
-    queryFn: () => officeSlotsApi.getEvents(query),
   });
 }

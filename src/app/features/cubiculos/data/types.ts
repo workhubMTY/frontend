@@ -102,15 +102,6 @@ export type BlockSlotDto = {
 };
 
 
-export type CreateReservationBatchDto = {
-  reservableId: number;
-  description: string;
-  schedules: { start_time: string; end_time: string }[];
-  workGroupIds?: number[];
-  userIds?: string[];
-  guestIds?: number[];
-  canOverlap: boolean;
-};
 
 export type UpdateParticipantStatusDto = {
   status: ParticipantStatus;
@@ -149,7 +140,7 @@ export type GetEventsQuery = {
   end_time?: string;
 };
 
-export type CreateEventDto = {
+export type CreateReservationDto = {
   title: string;
   description: string;
   reservable_id?: number;

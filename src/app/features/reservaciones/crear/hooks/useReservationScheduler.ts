@@ -7,7 +7,6 @@ import type {
   CalendarSelectionAction,
   SelectionMode,
   TimeBlock,
-  TimelineEvent,
 } from "@/app/features/reservaciones/crear/types/reservaciones";
 
 import { getFirstAvailableDateId } from "@/app/features/reservaciones/crear/lib/dates";
@@ -18,39 +17,33 @@ import {
   normalizeTimeInput,
   parseTimeToMinutes,
 } from "@/app/features/reservaciones/crear/lib/time";
-
-type SpaceReservationsByDate = Record<string, TimelineEvent[]>;
+import { ScheduleItem, ScheduleItemsByDate } from "../types/schedule";
 
 type UseReservationSchedulerParams = {
   calendarCells: CalendarCell[];
-  spaceReservationsByDate?: SpaceReservationsByDate;
+  spaceScheduleItemsByDate?: ScheduleItemsByDate;
 };
-
-function blockOverlapsReservation(
-  block: TimeBlock,
-  reservation: TimelineEvent,
-) {
+function blockOverlapsScheduleItem(block: TimeBlock, item: ScheduleItem) {
   const blockStart = parseTimeToMinutes(block.start);
   const blockEnd = parseTimeToMinutes(block.end);
 
-  const reservationStart = parseTimeToMinutes(reservation.start);
-  const reservationEnd = parseTimeToMinutes(reservation.end);
+  const itemStart = parseTimeToMinutes(item.start);
+  const itemEnd = parseTimeToMinutes(item.end);
 
   if (
     blockStart === null ||
     blockEnd === null ||
-    reservationStart === null ||
-    reservationEnd === null
+    itemStart === null ||
+    itemEnd === null
   ) {
     return false;
   }
 
-  return blockStart < reservationEnd && blockEnd > reservationStart;
+  return blockStart < itemEnd && blockEnd > itemStart;
 }
-
 export function useReservationScheduler({
   calendarCells,
-  spaceReservationsByDate = {},
+  spaceScheduleItemsByDate = {},
 }: UseReservationSchedulerParams) {
   const [selectionMode, setSelectionMode] = useState<SelectionMode>("multiple");
   const [selectedDateIds, setSelectedDateIds] = useState<string[]>([]);
@@ -217,14 +210,13 @@ export function useReservationScheduler({
 
   const proposedBlocksHaveInternalConflict =
     hasOverlappingBlocks(proposedBlocks);
-
   const proposedBlocksHaveSpaceConflict = selectableSelectedDateIds.some(
     (dateId) => {
-      const reservationsForDate = spaceReservationsByDate[dateId] ?? [];
+      const scheduleItemsForDate = spaceScheduleItemsByDate[dateId] ?? [];
 
       return proposedBlocks.some((block) =>
-        reservationsForDate.some((reservation) =>
-          blockOverlapsReservation(block, reservation),
+        scheduleItemsForDate.some((item) =>
+          blockOverlapsScheduleItem(block, item),
         ),
       );
     },
@@ -242,16 +234,15 @@ export function useReservationScheduler({
     proposedBlocks.length > 0 &&
     proposedBlocksHaveValidTimes &&
     !hasBlockingConflict;
-
   const conflictDateIds = useMemo(() => {
     const conflictIds = new Set<string>();
 
     selectableSelectedDateIds.forEach((dateId) => {
-      const reservationsForDate = spaceReservationsByDate[dateId] ?? [];
+      const scheduleItemsForDate = spaceScheduleItemsByDate[dateId] ?? [];
 
       const hasSpaceConflict = proposedBlocks.some((block) =>
-        reservationsForDate.some((reservation) =>
-          blockOverlapsReservation(block, reservation),
+        scheduleItemsForDate.some((item) =>
+          blockOverlapsScheduleItem(block, item),
         ),
       );
 
@@ -265,7 +256,7 @@ export function useReservationScheduler({
     selectableSelectedDateIds,
     proposedBlocks,
     proposedBlocksHaveInternalConflict,
-    spaceReservationsByDate,
+    spaceScheduleItemsByDate,
   ]);
 
   function createReservationSchedules() {

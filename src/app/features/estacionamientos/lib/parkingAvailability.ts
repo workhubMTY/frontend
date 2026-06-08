@@ -1,7 +1,4 @@
-import type {
-  TimeBlock,
-  TimelineEvent,
-} from "@/app/features/reservaciones/crear/types/reservaciones";
+import { TimeBlock } from "../../reservaciones/crear/types/reservaciones";
 
 type ParkingAvailabilityResult = {
   status: "available" | "partial" | "conflict";
@@ -17,7 +14,7 @@ type GetParkingAvailabilityParams = {
   highOccupationThreshold: number;
   activeBlocks: TimeBlock[];
   pendingBlocks: TimeBlock[];
-  spaceReservationsForActiveDay: TimelineEvent[];
+  spaceReservationsForActiveDay: TimeBlock[];
 };
 
 export function getParkingAvailability({

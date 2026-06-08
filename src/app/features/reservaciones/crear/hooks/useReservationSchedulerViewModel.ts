@@ -3,7 +3,6 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 
-import { toTimelineEvent } from "@/app/features/reservaciones/crear/data/reservationsApi";
 import { createCalendarCells } from "@/app/features/reservaciones/crear/lib/dates";
 
 import { useSelectedSpace } from "@/app/features/reservaciones/crear/hooks/useSelectedSpace";
@@ -11,6 +10,7 @@ import { useReservationQueries } from "@/app/features/reservaciones/crear/hooks/
 import { useReservationScheduler } from "@/app/features/reservaciones/crear/hooks/useReservationScheduler";
 
 import type { ReservationDraft } from "@/app/features/reservaciones/confirmar/types/confirmation";
+import { useAuth } from "@/app/shared/auth/useAuth";
 
 type UseReservationSchedulerViewModelParams = {
   showAllEvents: boolean;
@@ -20,6 +20,8 @@ export function useReservationSchedulerViewModel({
   showAllEvents,
 }: UseReservationSchedulerViewModelParams) {
   const router = useRouter();
+
+  const { user } = useAuth();
 
   const [confirmationDraft, setConfirmationDraft] =
     useState<ReservationDraft | null>(null);
@@ -34,85 +36,60 @@ export function useReservationSchedulerViewModel({
   const reservationQueries = useReservationQueries({
     calendarCells,
     reservableId: spaceId ? Number(spaceId) : null,
-    enabled: Boolean(spaceId),
+    userId: user?.eId ? String(user.eId) : null,
+    enabled: Boolean(spaceId && user?.eId),
   });
 
   const scheduler = useReservationScheduler({
     calendarCells,
-    spaceReservationsByDate: reservationQueries.spaceReservationsByDate,
+    spaceScheduleItemsByDate: reservationQueries.spaceScheduleItemsByDate,
   });
 
-  const spaceReservationsForActiveDay = useMemo(
+  const activeDaySpaceScheduleItems = useMemo(
     () =>
-      reservationQueries.spaceReservationsByDate[scheduler.activeDayId] ?? [],
-    [reservationQueries.spaceReservationsByDate, scheduler.activeDayId],
+      reservationQueries.spaceScheduleItemsByDate[scheduler.activeDayId] ?? [],
+    [reservationQueries.spaceScheduleItemsByDate, scheduler.activeDayId],
   );
 
-  const activeDayExternalEvents = useMemo(
+  const activeDayMyScheduleItems = useMemo(
+    () => reservationQueries.myScheduleItemsByDate[scheduler.activeDayId] ?? [],
+    [reservationQueries.myScheduleItemsByDate, scheduler.activeDayId],
+  );
+
+  const selectedDaysSpaceScheduleItems = useMemo(
     () =>
-      reservationQueries.externalEventsForInterval.filter(
-        (event) => event.dateId === scheduler.activeDayId,
+      scheduler.selectableSelectedDateIds.flatMap(
+        (dateId) => reservationQueries.spaceScheduleItemsByDate[dateId] ?? [],
       ),
-    [reservationQueries.externalEventsForInterval, scheduler.activeDayId],
+    [
+      scheduler.selectableSelectedDateIds,
+      reservationQueries.spaceScheduleItemsByDate,
+    ],
   );
 
-  const externalTimelineEventsForActiveDay = useMemo(
+  const selectedDaysMyScheduleItems = useMemo(
     () =>
-      activeDayExternalEvents.map((event) =>
-        toTimelineEvent(event, "external"),
+      scheduler.selectableSelectedDateIds.flatMap(
+        (dateId) => reservationQueries.myScheduleItemsByDate[dateId] ?? [],
       ),
-    [activeDayExternalEvents],
+    [
+      scheduler.selectableSelectedDateIds,
+      reservationQueries.myScheduleItemsByDate,
+    ],
   );
 
-  const proposedTimelineEventsForActiveDay = useMemo(
-    () =>
-      scheduler.proposedBlocksForActiveDay.map((block) => ({
-        id: block.id,
-        dateId: scheduler.activeDayId,
-        start: block.start,
-        end: block.end,
-        title: block.label ?? "Horario propuesto",
-        type: "pending",
-        status: "normal",
-      })),
-    [scheduler.proposedBlocksForActiveDay, scheduler.activeDayId],
-  );
+  const visibleMyScheduleItems = useMemo(() => {
+    if (showAllEvents) return activeDayMyScheduleItems;
+
+    return activeDayMyScheduleItems.slice(0, 2);
+  }, [activeDayMyScheduleItems, showAllEvents]);
 
   const conflictCount = useMemo(
     () =>
-      activeDayExternalEvents.filter((event) => event.status !== "normal")
+      activeDayMyScheduleItems.filter((item) => item.status === "conflict")
         .length,
-    [activeDayExternalEvents],
+    [activeDayMyScheduleItems],
   );
-  const selectedDaysSpaceReservations = useMemo(
-    () =>
-      scheduler.selectableSelectedDateIds.flatMap(
-        (dateId) => reservationQueries.spaceReservationsByDate[dateId] ?? [],
-      ),
-    [
-      scheduler.selectableSelectedDateIds,
-      reservationQueries.spaceReservationsByDate,
-    ],
-  );
-
-  const selectedDaysExternalEvents = useMemo(
-    () =>
-      reservationQueries.externalEventsForInterval.filter((event) =>
-        scheduler.selectableSelectedDateIds.includes(event.dateId),
-      ),
-    [
-      reservationQueries.externalEventsForInterval,
-      scheduler.selectableSelectedDateIds,
-    ],
-  );
-
-  const visibleEvents = useMemo(() => {
-    if (showAllEvents) return activeDayExternalEvents;
-
-    return activeDayExternalEvents
-      .filter((event) => event.status !== "normal")
-      .slice(0, 2);
-  }, [activeDayExternalEvents, showAllEvents]);
 
   function openConfirmationModal() {
     if (!selectedSpace) return;
@@ -157,13 +134,20 @@ export function useReservationSchedulerViewModel({
       calendarCells,
       scheduler,
 
-      activeDayExternalEvents,
-      externalTimelineEventsForActiveDay,
-      proposedTimelineEventsForActiveDay,
-      spaceReservationsForActiveDay,
+      spaceScheduleItems: reservationQueries.spaceScheduleItems,
+      myScheduleItems: reservationQueries.myScheduleItems,
 
+      spaceScheduleItemsByDate: reservationQueries.spaceScheduleItemsByDate,
+      myScheduleItemsByDate: reservationQueries.myScheduleItemsByDate,
+
+      activeDaySpaceScheduleItems,
+      activeDayMyScheduleItems,
+
+      selectedDaysSpaceScheduleItems,
+      selectedDaysMyScheduleItems,
+
+      visibleMyScheduleItems,
       conflictCount,
-      visibleEvents,
 
       isLoading: reservationQueries.isLoading,
       isFetching: reservationQueries.isFetching,
@@ -172,9 +156,6 @@ export function useReservationSchedulerViewModel({
       confirmationDraft,
       isConfirmModalOpen,
       isFinishedModalOpen,
-
-      selectedDaysSpaceReservations,
-      selectedDaysExternalEvents,
     },
     actions: {
       openConfirmationModal,

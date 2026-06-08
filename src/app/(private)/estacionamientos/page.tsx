@@ -7,7 +7,6 @@ import { ProposedSchedulesCard } from "@/app/features/reservaciones/crear/compon
 import { ReservationFooter } from "@/app/features/reservaciones/crear/components/ReservationFooter";
 import { SelectionModeCalendarCard } from "@/app/features/reservaciones/crear/components/Calendar/DaysSelection/SelectionModeCalendarCard";
 
-import { AvailabilityIntervalCard } from "@/app/features/estacionamientos/components/Cards/AvailabilityIntervalCard";
 import { ParkingCapacityTimelineCard } from "@/app/features/estacionamientos/components/Timeline/ParkingCapacityTimelineCard";
 import { ParkingReservationConfirmModal } from "@/app/features/estacionamientos/components/ParkingReservationsConfirmModals";
 
@@ -31,7 +30,7 @@ export default function ParkingReservationSchedulerPage() {
             conflictRanges={state.myReservationConflictRanges}
           />
           <EventsCard
-            events={state.activeDayParkingEvents}
+            events={state.activeDayParkingItems}
             visibleEvents={state.visibleEvents}
             conflictCount={state.conflictCount}
             showAllEvents={showAllEvents}
@@ -71,7 +70,6 @@ export default function ParkingReservationSchedulerPage() {
             onDeleteBlock={state.scheduler.deleteProposedBlock}
             onUpdateBlock={state.scheduler.updateProposedBlock}
           />
-
         </aside>
       </div>
 
