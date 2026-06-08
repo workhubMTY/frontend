@@ -14,6 +14,8 @@ export interface ChatApiRequest {
   messages: HistoryMessage[];
   message: string;
   widget_results?: SingleWidgetResult[];
+  /** IANA timezone string (e.g. "America/Monterrey") — lets the backend convert local times to UTC */
+  timezone: string;
 }
 
 export interface ToolStatus {
@@ -32,6 +34,8 @@ export interface ChatUIMessage {
   thinking?: string;
   tools?: ToolStatus[];
   isStreaming?: boolean;
+  /** Transient notice shown while backend is retrying a Gemini 503 — cleared on done */
+  retryNotice?: string;
   /** Multiple widgets can be pending simultaneously in one message */
   widgets?: ChatWidgetInstance[];
 }

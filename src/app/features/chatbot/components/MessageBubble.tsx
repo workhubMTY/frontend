@@ -87,6 +87,10 @@ export default function MessageBubble({ message, onWidgetResult }: Props) {
           <ToolStatusList tools={message.tools} />
         )}
 
+        {message.retryNotice && (
+          <p className="text-xs text-gray-400 italic px-1">{message.retryNotice}</p>
+        )}
+
         {(message.content || message.isStreaming) && (
           <div className="rounded-2xl rounded-bl-sm px-5 py-3 bg-white text-gray-800 text-sm leading-relaxed shadow-sm">
             {message.content ? (

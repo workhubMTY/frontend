@@ -23,6 +23,7 @@ import type {
   ClientToolEventData,
   DoneEventData,
   ErrorEventData,
+  RetryingEventData,
   ThinkingEventData,
   TokenEventData,
   ToolDoneEventData,
@@ -126,6 +127,7 @@ export default function ChatbotPage() {
               : historyRef.current,
             message: userMessage ?? "",
             widget_results: widgetResults,
+            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
           },
           token,
         );
@@ -284,6 +286,7 @@ export default function ChatbotPage() {
             messages: userMessage ? historyRef.current.slice(0, -1) : historyRef.current,
             message: userMessage ?? "",
             widget_results: widgetResults,
+            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
           },
           token,
         );
@@ -331,10 +334,15 @@ export default function ChatbotPage() {
               }
               break;
             }
+            case "retrying": {
+              const d = evt.data as RetryingEventData;
+              patchMsg(aId, (m) => ({ ...m, retryNotice: d.message }));
+              break;
+            }
             case "done": {
               const d = evt.data as DoneEventData;
               finalContent = d.message || finalContent;
-              patchMsg(aId, (m) => ({ ...m, content: finalContent, isStreaming: false }));
+              patchMsg(aId, (m) => ({ ...m, content: finalContent, isStreaming: false, retryNotice: undefined }));
               if (finalContent) {
                 historyRef.current = [...historyRef.current, { role: "assistant", content: finalContent }];
               }

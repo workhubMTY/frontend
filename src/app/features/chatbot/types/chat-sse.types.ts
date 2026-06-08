@@ -4,6 +4,7 @@ export type SSEEventType =
   | "tool_start"
   | "tool_done"
   | "client_tool"
+  | "retrying"
   | "done"
   | "error";
 
@@ -22,6 +23,10 @@ export interface DoneEventData {
   /** widgetIds of CLIENT tools that need user input before continuing */
   pending_widgets?: string[];
 }
+export interface RetryingEventData {
+  attempt: number;
+  message: string;
+}
 export interface ErrorEventData { message: string }
 
 export type SSEPayloadMap = {
@@ -30,6 +35,7 @@ export type SSEPayloadMap = {
   tool_start: ToolStartEventData;
   tool_done: ToolDoneEventData;
   client_tool: ClientToolEventData;
+  retrying: RetryingEventData;
   done: DoneEventData;
   error: ErrorEventData;
 };
