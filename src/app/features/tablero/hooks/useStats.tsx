@@ -44,6 +44,9 @@ export function useStats() {
     const [topUsersLoading, setTopUsersLoading] = useState(false);
     const [topUsersError, setTopUsersError]     = useState<string | null>(null);
 
+    // Export
+    const [exporting, setExporting] = useState(false);
+
     const params = { period, from, to };
 
     const fetchGlobal = useCallback(async () => {
@@ -83,6 +86,18 @@ export function useStats() {
         setTo(todayISO());
     };
 
+    const handleExport = useCallback(async () => {
+        if (exporting) return;
+        setExporting(true);
+        try {
+            await listStats.exportGlobalAttendance({ period, from, to });
+        } catch (err) {
+            console.error("Export error:", err);
+        } finally {
+            setExporting(false);
+        }
+    }, [period, from, to, exporting]);
+
     return {
         statsView,
         setStatsView,
@@ -101,6 +116,8 @@ export function useStats() {
         topUsers,
         topUsersLoading,
         topUsersError,
+        exporting,
+        handleExport,
         refetch: fetchGlobal,
     };
 }
