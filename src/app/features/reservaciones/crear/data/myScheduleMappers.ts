@@ -59,7 +59,7 @@ export function myScheduleApiItemToScheduleItem(
   const kind = getScheduleItemKind(item);
 
   return {
-    id: item.id,
+    id: `${kind}-${item.id}`,
     kind,
 
     dateId: toLocalDateId(item.start_time),
@@ -92,7 +92,7 @@ export function officeReservationToScheduleItem(
     reservation.reservable?.name ?? `Espacio ${reservation.reservable_id}`;
 
   return {
-    id:reservation.id,
+    id: `my-reservation-${reservation.id}`,
     kind: "my_reservation",
 
     dateId: toLocalDateId(reservation.start_time),
@@ -131,7 +131,7 @@ export function parkingReservationToScheduleItem(
   const parkingLot = item.projection?.parking_lot;
 
   return {
-    id: reservation.id,
+    id: `parking-reservation-${reservation.id}`,
     kind: "parking_reservation",
 
     dateId: toLocalDateId(reservation.start_time),
@@ -170,7 +170,7 @@ export function calendarEventToScheduleItem(
   if (!start || !end) return null;
 
   return {
-    id:event.id,
+    id: `calendar-event-${event.id}`,
     kind: "calendar_event",
 
     dateId: toLocalDateId(start),

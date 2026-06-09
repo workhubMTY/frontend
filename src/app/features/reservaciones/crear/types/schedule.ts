@@ -7,7 +7,7 @@ export type ScheduleItemKind =
 export type ScheduleItemStatus = "normal" | "warning" | "partial" | "conflict";
 
 export type ScheduleItem = {
-  id: number;
+  id: string;
   kind: ScheduleItemKind;
 
   dateId: string;

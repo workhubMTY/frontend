@@ -58,7 +58,7 @@ export function myScheduleApiItemToScheduleItem(
   const kind = getScheduleItemKind(item);
 
   return {
-    id: item.id,
+    id: `${kind}-${item.id}`,
     kind,
 
     dateId: toServerDateId(item.start_time),

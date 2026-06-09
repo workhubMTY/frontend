@@ -11,7 +11,7 @@ export type CalendarCell = {
   isWeekend: boolean;
 };
 export type TimeBlock = {
-  id: number;
+  id:  string;
   start: string;
   end: string;
   conflict?: boolean;

@@ -57,13 +57,14 @@ type ReservationTimelineCardProps = {
   myItems: ScheduleItem[];
 };
 type TimelineRange = {
-  id: number;
+  id: string;
   startHour: number;
   endHour: number;
   label?: string;
   title?: string;
   sourceLabel?: string;
   itemTitle?: string;
+  kind:string;
   location?: string | null;
 };
 
@@ -462,6 +463,7 @@ function scheduleItemToRange(item: ScheduleItem): TimelineRange | null {
     ? `${item.sourceLabel} · ${item.title} · ${item.location}`
     : `${item.sourceLabel} · ${item.title}`,
   sourceLabel: item.sourceLabel,
+  kind: item.kind, 
   itemTitle: item.title,
   location: item.location,
 };
