@@ -42,8 +42,12 @@ export default function Login() {
       return;
     }
     try {
-      await authService.login(user);
-      router.push("/home");
+      const response = await authService.login(user);
+      if (response.user?.role === "ACCESS_ATTENDANT") {
+        router.push("/parking-checkin");
+      } else {
+        router.push("/home");
+      }
     } catch (err: any) {
       console.log(err);
       setError(err.message || "Ocurrió un error al iniciar sesión.");
