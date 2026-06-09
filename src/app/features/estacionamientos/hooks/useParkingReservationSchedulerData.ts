@@ -11,7 +11,10 @@ import {
 
 import { createCalendarCells } from "@/app/features/reservaciones/crear/lib/dates";
 
-import { getVisibleRange, groupScheduleItemsByDate } from "@/app/features/reservaciones/crear/data/api";
+import {
+  getVisibleRange,
+  groupScheduleItemsByDate,
+} from "@/app/features/reservaciones/crear/data/api";
 
 import { useReservationScheduler } from "@/app/features/reservaciones/crear/hooks/useReservationScheduler";
 
@@ -22,7 +25,13 @@ import type {
 
 import { getLocalDayRange } from "../lib/parkingAvailability";
 import { parkingReservationToScheduleItem } from "../data/lib";
+import { useAuth } from "@/app/shared/auth/useAuth";
 
+import type { UserTimelineQuery } from "@/app/features/reservaciones/crear/types/timeline";
+
+import { useUserTimeline } from "@/app/features/reservaciones/crear/data/hooks";
+
+import { timelineToScheduleItems } from "@/app/features/reservaciones/crear/data/myScheduleMappers";
 type UseParkingReservationSchedulerPageParams = {
   parkingId: number | null;
 };
@@ -35,6 +44,55 @@ export function useParkingReservationSchedulerData({
   const visibleRange = useMemo(
     () => getVisibleRange(calendarCells),
     [calendarCells],
+  );
+  const timelineQuery = useMemo<UserTimelineQuery | undefined>(() => {
+    if (!visibleRange) return undefined;
+
+    return {
+      from: visibleRange.from,
+      to: visibleRange.to,
+
+      includeOfficeReservations: true,
+      officeCategories: ["MEETING", "RESERVATION"],
+
+      includeParkingReservations: true,
+      includeEvents: true,
+      includeFriends: true,
+    };
+  }, [visibleRange]);
+  const { user } = useAuth();
+
+  const userId = user?.eId ? String(user.eId) : null;
+  const myTimelineQuery = useUserTimeline(userId, timelineQuery, {
+    enabled: Boolean(userId && timelineQuery),
+  });
+  const timeline = myTimelineQuery.data ?? null;
+
+  const myOfficeReservations = useMemo(
+    () => timeline?.user.officeReservations ?? [],
+    [timeline],
+  );
+
+  const myTimelineParkingReservations = useMemo(
+    () => timeline?.user.parkingReservations ?? [],
+    [timeline],
+  );
+
+  const myEvents = useMemo(() => timeline?.user.events ?? [], [timeline]);
+
+  const myScheduleItems = useMemo(
+    () =>
+      timelineToScheduleItems({
+        officeReservations: myOfficeReservations,
+        parkingReservations: myTimelineParkingReservations,
+        events: myEvents,
+      }),
+    [myOfficeReservations, myTimelineParkingReservations, myEvents],
+  );
+
+  const myScheduleItemsByDate = useMemo(
+    () => groupScheduleItemsByDate(myScheduleItems),
+    [myScheduleItems],
   );
 
   const parkingLotQuery = useParkingLotDetail(parkingId ?? 0);
@@ -121,6 +179,10 @@ export function useParkingReservationSchedulerData({
      */
     spaceScheduleItemsByDate: myParkingScheduleItemsByDate,
   });
+  const myScheduleItemsForActiveDay = useMemo(
+    () => myScheduleItemsByDate[scheduler.activeDayId] ?? [],
+    [myScheduleItemsByDate, scheduler.activeDayId],
+  );
 
   const bucketsQueryParams = useMemo<
     ReservationBucketsQuery | undefined
@@ -168,23 +230,34 @@ export function useParkingReservationSchedulerData({
     parkingBuckets: bucketsQuery.data?.buckets ?? [],
 
     createParkingReservation: reservationsQuery.createReservation,
+    timeline,
 
+    myScheduleItems,
+    myScheduleItemsByDate,
+    myScheduleItemsForActiveDay,
+
+    myOfficeReservations,
+    myTimelineParkingReservations,
+    myEvents,
     isLoading:
       parkingLotQuery.isLoading ||
       reservationsQuery.isLoading ||
       myReservationsQuery.isLoading ||
-      bucketsQuery.isLoading,
+      bucketsQuery.isLoading ||
+      myTimelineQuery.isLoading,
 
     isFetching:
       parkingLotQuery.isFetching ||
       reservationsQuery.isFetching ||
       myReservationsQuery.isFetching ||
-      bucketsQuery.isFetching,
+      bucketsQuery.isFetching ||
+      myTimelineQuery.isFetching,
 
     error:
       parkingLotQuery.error ??
       reservationsQuery.error ??
       myReservationsQuery.error ??
-      bucketsQuery.error,
+      bucketsQuery.error ??
+      myTimelineQuery.error,
   };
 }

@@ -95,12 +95,21 @@ export function useParkingReservationSchedulerViewModel({
     () => data.parkingScheduleItemsForActiveDay,
     [data.parkingScheduleItemsForActiveDay],
   );
-
   const activeDayMyParkingItems = useMemo(
     () => data.myParkingScheduleItemsForActiveDay,
     [data.myParkingScheduleItemsForActiveDay],
   );
 
+  const activeDayMyScheduleItems = useMemo(
+    () => data.myScheduleItemsForActiveDay,
+    [data.myScheduleItemsForActiveDay],
+  );
+
+  const visibleEvents = useMemo(() => {
+    if (showAllEvents) return activeDayMyScheduleItems;
+
+    return activeDayMyScheduleItems.slice(0, 2);
+  }, [showAllEvents, activeDayMyScheduleItems]);
   const selectedDaysParkingItems = useMemo(
     () =>
       scheduler.selectableSelectedDateIds.flatMap(
@@ -116,18 +125,12 @@ export function useParkingReservationSchedulerViewModel({
       ),
     [scheduler.selectableSelectedDateIds, data.myParkingScheduleItemsByDate],
   );
+  const conflictCount = useMemo(() => {
+    if (!scheduler.hasBlockingConflict) return 0;
 
-  const conflictCount = useMemo(
-    () => activeDayMyParkingItems.length,
-    [activeDayMyParkingItems],
-  );
-
-  const visibleEvents = useMemo(() => {
-    if (showAllEvents) return activeDayMyParkingItems;
-
-    return activeDayMyParkingItems.slice(0, 2);
-  }, [showAllEvents, activeDayMyParkingItems]);
-
+    return scheduler.conflictDateIds.length;
+  }, [scheduler.hasBlockingConflict, scheduler.conflictDateIds.length]);
+  
   const canSubmitReservation =
     scheduler.canContinue && !data.createParkingReservation.isPending;
 
@@ -182,6 +185,10 @@ export function useParkingReservationSchedulerViewModel({
   return {
     state: {
       parkingId,
+
+      activeDayMyScheduleItems,
+      myScheduleItems: data.myScheduleItems,
+      myScheduleItemsByDate: data.myScheduleItemsByDate,
 
       calendarCells: data.calendarCells,
       scheduler,

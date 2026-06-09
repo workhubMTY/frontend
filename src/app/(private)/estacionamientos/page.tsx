@@ -37,13 +37,12 @@ export default function ParkingReservationSchedulerPage() {
             conflictRanges={state.myReservationConflictRanges}
           />
           <EventsCard
-            events={state.activeDayParkingItems}
+            events={state.activeDayMyScheduleItems}
             visibleEvents={state.visibleEvents}
             conflictCount={state.conflictCount}
             showAllEvents={showAllEvents}
             onToggleShowAllEvents={() => setShowAllEvents((value) => !value)}
           />
-
           <ReservationFooter
             selectedCount={state.scheduler.selectableSelectedDateIds.length}
             proposedBlocksCount={state.scheduler.proposedBlocks.length}
