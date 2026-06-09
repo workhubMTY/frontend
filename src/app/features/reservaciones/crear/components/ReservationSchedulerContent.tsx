@@ -38,6 +38,7 @@ export function ReservationSchedulerContent() {
           <section className="flex min-w-0 flex-col gap-4">
             <Card className="p-4">
               <ReservationTimelineCard
+                title={`Espacio actual: ${state.spaceName} (${state.selectedSpace?.code})`}
                 proposedBlocks={state.scheduler.proposedBlocksForActiveDay}
                 spaceItems={state.activeDayBlockingScheduleItems}
                 myItems={state.activeDayMyScheduleItems}

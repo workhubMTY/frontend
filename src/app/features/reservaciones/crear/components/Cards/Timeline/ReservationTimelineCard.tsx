@@ -44,6 +44,7 @@ function getLaneHeightClassName(laneCount: number): string {
 }
 
 type ReservationTimelineCardProps = {
+  title?:string;
   proposedBlocks: TimeBlock[];
 
   /**
@@ -76,6 +77,7 @@ type OverlapSegment = {
 };
 
 export function ReservationTimelineCard({
+  title = "Línea de tiempo",
   proposedBlocks,
   spaceItems,
   myItems,
@@ -91,7 +93,7 @@ export function ReservationTimelineCard({
   return (
     <div className="flex flex-col gap-2 overflow-x-auto">
       <div className="flex items-start justify-between">
-        <h2 className="text-lg font-bold text-slate-950">Línea de tiempo</h2>
+        <h2 className="text-lg font-bold text-slate-950">{title}</h2>
         <TimelineLegend />
       </div>
 

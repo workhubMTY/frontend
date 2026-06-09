@@ -32,7 +32,7 @@ export function EventsCard({
     <Card className="flex flex-1 flex-col gap-2 p-5">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h2 className="text-lg font-semibold text-slate-950">Tus horarios</h2>
+          <h2 className="text-lg font-bold text-slate-950">Tus horarios</h2>
 
           {hasEvents && (
             <p className="mt-0.5 text-xs text-slate-500">
