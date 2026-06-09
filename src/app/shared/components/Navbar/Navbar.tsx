@@ -9,6 +9,7 @@ import { useAuth } from "../../auth/useAuth";
 
 const baseRoutes = [
   { name: "Inicio", href: "/home" },
+  { name: "Parking Inicio", href: "/parking-checkin" },
   { name: "Cubículos", href: "/cubiculos" },
   { name: "Estacionamientos", href: "/estacionamientos" },
 ];
@@ -51,7 +52,7 @@ export default function Navbar() {
   return (
     <>
       <header className="w-full sticky top-0 h-16 z-40 bg-background flex flex-row items-center gap-2 px-4">
-        <a href="/home" className="shrink-0 pl-1">
+        <a href={isAttendant ? "/parking-checkin" : "/home"} className="shrink-0 pl-1">
           <Image
             src={AccentureLogo}
             alt="Accenture logo"
