@@ -23,6 +23,7 @@ export type ScheduleItem = {
 
   reservableId: number | null;
   reservableName: string | null;
+  reservableCode:string | null;
   floorId: number | null;
   floorName: string | null;
 

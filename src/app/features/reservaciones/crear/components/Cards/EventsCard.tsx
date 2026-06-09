@@ -73,7 +73,7 @@ export function EventsCard({
                   </div>
 
                   <p className="mt-1 text-xs text-slate-500">
-                    {event.location ?? event.sourceLabel}
+                    {event.reservableCode ?? event.sourceLabel}
                   </p>
                 </div>
 

@@ -38,7 +38,8 @@ export type TimelineOfficeReservation = {
     capacity: number | null;
     floor_id: number | null;
     is_blocked: boolean;
-  } | null;
+    code: string
+  };
 
   participants: Array<{
     id: number;

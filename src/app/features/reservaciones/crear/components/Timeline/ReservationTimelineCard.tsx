@@ -281,7 +281,7 @@ function TimelineLegend() {
 
       <LegendItem
         markerClassName="border border-slate-300 bg-slate-100"
-        label="Tus horarios"
+        label="Horarios existentes"
       />
 
       <LegendItem

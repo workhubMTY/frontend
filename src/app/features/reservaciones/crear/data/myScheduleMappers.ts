@@ -23,68 +23,6 @@ function toLocalDateId(value: string) {
   return `${year}-${month}-${day}`;
 }
 
-function getScheduleItemKind(item: MyScheduleApiItem): ScheduleItem["kind"] {
-  if (item.kind === "parking_reservation") return "parking_reservation";
-  if (item.kind === "event") return "calendar_event";
-
-  return "my_reservation";
-}
-
-function getSourceLabel(kind: ScheduleItem["kind"]) {
-  if (kind === "parking_reservation") return "Parking";
-  if (kind === "calendar_event") return "Evento";
-  if (kind === "my_reservation") return "Reservación";
-
-  return "Agenda";
-}
-
-function getDefaultTitle(kind: ScheduleItem["kind"]) {
-  if (kind === "parking_reservation") return "Reservación de estacionamiento";
-  if (kind === "calendar_event") return "Evento";
-
-  return "Mi reservación";
-}
-
-function getDefaultStatus(): ScheduleItem["status"] {
-  return "normal";
-}
-
-/**
- * Mapper legado.
- * Déjalo si alguna llamada vieja todavía regresa MyScheduleApiItem[].
- */
-export function myScheduleApiItemToScheduleItem(
-  item: MyScheduleApiItem,
-): ScheduleItem {
-  const kind = getScheduleItemKind(item);
-
-  return {
-    id: `${kind}-${item.id}`,
-    kind,
-
-    dateId: toLocalDateId(item.start_time),
-    start: toTime(item.start_time),
-    end: toTime(item.end_time),
-
-    title: item.title ?? getDefaultTitle(kind),
-    location: item.location ?? item.reservable_name ?? null,
-
-    status: getDefaultStatus(),
-
-    sourceLabel: getSourceLabel(kind),
-
-    reservableId: item.reservable_id ?? null,
-    reservableName: item.reservable_name ?? null,
-    floorId: item.floor_id ?? null,
-    floorName: item.floor_name ?? null,
-
-    attendanceStatus: item.attendance_status ?? null,
-    lifecycleStatus: item.lifecycle_status ?? null,
-
-    raw: item,
-  };
-}
-
 export function officeReservationToScheduleItem(
   reservation: TimelineOfficeReservation,
 ): ScheduleItem {
@@ -101,15 +39,16 @@ export function officeReservationToScheduleItem(
 
     title:
       reservation.category === "MEETING"
-        ? "Reunión"
-        : "Reservación de espacio",
+        ? `Reunión en ${reservation.reservable?.name ?? "cubículo"}`
+        : `Reservación en ${reservation.reservable?.name ?? "cubículo"}`,
 
-    location: reservableName,
 
     sourceLabel: "Cubículo",
 
     reservableId: reservation.reservable_id,
     reservableName,
+    reservableCode: reservation.reservable.code,
+    location:reservation.reservable.code,
 
     floorId: reservation.reservable?.floor_id ?? null,
     floorName: reservation.reservable?.floor_id
@@ -149,6 +88,7 @@ export function parkingReservationToScheduleItem(
     sourceLabel: "Estacionamiento",
 
     reservableId: parkingLot?.id ?? null,
+    reservableCode: null,
     reservableName: parkingLot?.name ?? null,
 
     floorId: null,
@@ -184,6 +124,7 @@ export function calendarEventToScheduleItem(
 
     reservableId: null,
     reservableName: null,
+    reservableCode:null,
     floorId: null,
     floorName: null,
 
@@ -214,8 +155,6 @@ export function timelineToScheduleItems(params: {
 
   return [...officeItems, ...parkingItems, ...eventItems];
 }
-
-
 
 function getStatus(
   lifecycleStatus?: string | null,
