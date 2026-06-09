@@ -8,7 +8,7 @@ import { ReservationFooter } from "@/app/features/reservaciones/crear/components
 import { SelectionModeCalendarCard } from "@/app/features/reservaciones/crear/components/Calendar/DaysSelection/SelectionModeCalendarCard";
 
 import { ParkingCapacityTimelineCard } from "@/app/features/estacionamientos/components/Timeline/ParkingCapacityTimelineCard";
-import { ParkingReservationConfirmModal } from "@/app/features/estacionamientos/components/ParkingReservationsConfirmModals";
+import { ParkingReservationConfirmModal } from "@/app/features/estacionamientos/components/Modals/ParkingReservationsConfirmModals";
 
 import { useParkingReservationSchedulerViewModel } from "@/app/features/estacionamientos/hooks/useParkingReservationSchedulerViewModel";
 import { dateToId } from "@/app/features/reservaciones/crear/lib/dates";

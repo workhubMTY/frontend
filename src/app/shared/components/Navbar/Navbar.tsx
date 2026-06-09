@@ -14,13 +14,17 @@ const baseRoutes = [
 ];
 
 const adminRoutes = [
-  {name: "Estadísticas", href: "/estadisticas"},
   {name: "Tablero", href: "/tablero" },
 ]
 
 export default function Navbar() {
-  const { user, logout } = useAuth();  
-  const routes = user?.role === "ADMIN" ? [...baseRoutes, ...adminRoutes] : baseRoutes;
+  const { user, logout } = useAuth();
+  const isAttendant = user?.role === "ACCESS_ATTENDANT";
+  const routes = isAttendant
+    ? []
+    : user?.role === "ADMIN"
+    ? [...baseRoutes, ...adminRoutes]
+    : baseRoutes;
   const pathname = usePathname();
   const route = useRouter();
   const [open, setOpen] = useState(false);
@@ -94,24 +98,28 @@ export default function Navbar() {
         </nav>
 
         <div className="ml-auto flex items-center gap-1.5">
-          <label className="hidden sm:flex gap-2 bg-background-page self-center px-4 py-2 rounded-full text-xs text-on-background-2 cursor-pointer">
-            <span className="material-symbols-outlined">chat_bubble</span>
-            <button
-              onClick={() => route.push("/chatbot")}
-              className="cursor-pointer whitespace-nowrap"
-            >
-              Pide al chatbot
-            </button>
-          </label>
-          <NotificationsPanel />
-          <Link
-            href="/perfil"
-            className="bg-background-page self-center select-none rounded-full text-on-background-2 font-semibold"
-          >
-            <label className="bg-background-page self-center p-2 select-none rounded-full text-on-background-2 font-semibold material-symbols-outlined cursor-pointer">
-              person
+          {!isAttendant && (
+            <label className="hidden sm:flex gap-2 bg-background-page self-center px-4 py-2 rounded-full text-xs text-on-background-2 cursor-pointer">
+              <span className="material-symbols-outlined">chat_bubble</span>
+              <button
+                onClick={() => route.push("/chatbot")}
+                className="cursor-pointer whitespace-nowrap"
+              >
+                Pide al chatbot
+              </button>
             </label>
-          </Link>
+          )}
+          {!isAttendant && <NotificationsPanel />}
+          {!isAttendant && (
+            <Link
+              href="/perfil"
+              className="bg-background-page self-center select-none rounded-full text-on-background-2 font-semibold"
+            >
+              <label className="bg-background-page self-center p-2 select-none rounded-full text-on-background-2 font-semibold material-symbols-outlined cursor-pointer">
+                person
+              </label>
+            </Link>
+          )}
           <button
             onClick={async () => {
               await logout();
@@ -173,19 +181,21 @@ export default function Navbar() {
               );
             })}
             <div className="mt-2 pt-2 border-t border-background-page sm:hidden">
-              <button
-                onClick={() => {
-                  route.push("/chatbot");
-                  setOpen(false);
-                }}
-                className="flex items-center gap-3 px-4 py-3 w-full rounded-xl transition-colors text-left"
-                style={{ color: "var(--color-on-background-2, #555)" }}
-              >
-                <span className="material-symbols-outlined text-[18px]">
-                  chat_bubble
-                </span>
-                <span className="text-sm">Pide al chatbot</span>
-              </button>
+              {!isAttendant && (
+                <button
+                  onClick={() => {
+                    route.push("/chatbot");
+                    setOpen(false);
+                  }}
+                  className="flex items-center gap-3 px-4 py-3 w-full rounded-xl transition-colors text-left"
+                  style={{ color: "var(--color-on-background-2, #555)" }}
+                >
+                  <span className="material-symbols-outlined text-[18px]">
+                    chat_bubble
+                  </span>
+                  <span className="text-sm">Pide al chatbot</span>
+                </button>
+              )}
             </div>
           </nav>
         </div>

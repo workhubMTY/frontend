@@ -6,5 +6,6 @@ import Navbar from "./Navbar";
 export default function NavbarWrapper() {
   const pathname = usePathname();
   if (pathname.startsWith("/chatbot")) return null;
+  if (pathname.startsWith("/parking-checkin")) return null;
   return <Navbar />;
 }
