@@ -53,13 +53,14 @@ import { UpdateTeamPayload } from "./types";
 
 export const perfilApi = {
   getProfile: () => authFetch<UserProfile>("/users/profile/me"),
-
-  getUsers: (query?: string, excludeId?: string, excludeTeamId?: string) => {
+  getUsers: (query?: string, excludeIds: string[] = []) => {
     const params = new URLSearchParams();
 
     if (query) params.set("query", query);
-    if (excludeId) params.set("excludeId", excludeId);
-    if (excludeTeamId) params.set("excludeTeamId", excludeTeamId);
+
+    excludeIds.forEach((id) => {
+      params.append("excludeId", id);
+    });
 
     return authFetch<User[]>(`/users?${params.toString()}`);
   },

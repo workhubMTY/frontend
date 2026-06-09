@@ -18,8 +18,14 @@ import { ProfilePageMessage } from "@/app/features/perfil/components/feedback/Pr
 import { useProfile } from "@/app/features/perfil/data/hooks/useProfile";
 import { useTeams } from "@/app/features/perfil/data/hooks/useTeams";
 import { useUserSearchSuggestions } from "@/app/features/perfil/data/hooks/useUsers";
-import { usePotentialFriendsSearchSuggestions, useFriends } from "@/app/features/perfil/data/hooks/useFriends";
-import { useAchievements, useSelectedFriendAchievements } from "@/app/features/perfil/data/hooks/useAchievements";
+import {
+  usePotentialFriendsSearchSuggestions,
+  useFriends,
+} from "@/app/features/perfil/data/hooks/useFriends";
+import {
+  useAchievements,
+  useSelectedFriendAchievements,
+} from "@/app/features/perfil/data/hooks/useAchievements";
 
 export default function UserProfilePage() {
   const { user, isLoading: authLoading } = useAuth();
@@ -84,9 +90,10 @@ export default function UserProfilePage() {
     friends,
   });
 
-  const handleSearchUserSuggestions = useUserSearchSuggestions(user?.eId);
+  const handleSearchUserSuggestions = useUserSearchSuggestions(
+    user?.eId ? [user.eId] : [],
+  );
   const handleSearchPotentialFriends = usePotentialFriendsSearchSuggestions();
-
 
   if (authLoading || profileLoading) {
     return <ProfilePageSkeleton />;
@@ -180,7 +187,6 @@ export default function UserProfilePage() {
         initialOpenTeamId={initialOpenTeamId}
         initialTeamDrawerMode={initialTeamDrawerMode}
         getUsers={handleSearchUserSuggestions}
-
       />
 
       <AchievementComparisonDrawer

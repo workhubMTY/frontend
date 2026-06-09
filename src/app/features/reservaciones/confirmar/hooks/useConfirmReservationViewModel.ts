@@ -70,6 +70,15 @@ export function useConfirmReservationViewModel({
     () => mapDraftToSessions(reservationDraft),
     [reservationDraft],
   );
+  const excludedUserIds = useMemo(
+    () =>
+      invitedGuests
+        .filter((guest) => guest.source === "user")
+        .map((guest) => guest.sourceId),
+    [invitedGuests],
+  );
+  
+  const searchUserSuggestions = useUserSearchSuggestions(excludedUserIds);
 
   const {
     results: filteredPeople,
@@ -77,7 +86,7 @@ export function useConfirmReservationViewModel({
     hasSearched: hasSearchedMembers,
   } = useDebouncedSearch<User>({
     searchTerm,
-    searchFn: useUserSearchSuggestions(),
+    searchFn: searchUserSuggestions,
     delay: 350,
     enabled: isOpen,
   });

@@ -39,8 +39,8 @@ export function officeReservationToScheduleItem(
 
     title:
       reservation.category === "MEETING"
-        ? `Reunión en ${reservation.reservable?.name ?? "cubículo"}`
-        : `Reservación en ${reservation.reservable?.name ?? "cubículo"}`,
+        ? `Reunión en ${reservation.reservable?.name ?? reservation.reservable.code}`
+        : `Reservación en ${reservation.reservable?.name ?? reservation.reservable.code}`,
 
 
     sourceLabel: "Cubículo",
@@ -77,7 +77,9 @@ export function parkingReservationToScheduleItem(
     start: toTime(reservation.start_time),
     end: toTime(reservation.end_time),
 
-    title: "Reservación de estacionamiento",
+    title: parkingLot?.name
+      ? `Estacionamiento ${parkingLot.name}`
+      : "Estacionamiento",
 
     location: parkingLot?.name
       ? `Estacionamiento ${parkingLot.name}`

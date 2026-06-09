@@ -1,17 +1,30 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import { perfilApi } from "../api";
 
 export function useUsers(query?: string, excludeId?: string) {
   return useQuery({
     queryKey: ["users", query, excludeId],
-    queryFn: () => perfilApi.getUsers(query, excludeId),
+    queryFn: () => perfilApi.getUsers(query, excludeId ? [excludeId] : []),
   });
 }
 
-
-export function useUserSearchSuggestions(excludeId?: string | number | null) {
+export function useUserSearchSuggestions(
+  excludeIds: Array<string | number | null | undefined> = [],
+) {
   const queryClient = useQueryClient();
+
+  const normalizedExcludeIds = useMemo(
+    () =>
+      Array.from(
+        new Set(
+          excludeIds
+            .filter((id): id is string | number => id !== null && id !== undefined)
+            .map(String),
+        ),
+      ).sort(),
+    [excludeIds],
+  );
 
   return useCallback(
     async (query: string) => {
@@ -22,11 +35,16 @@ export function useUserSearchSuggestions(excludeId?: string | number | null) {
       }
 
       return queryClient.fetchQuery({
-        queryKey: ["users", "suggestions", normalizedQuery, excludeId],
+        queryKey: [
+          "users",
+          "suggestions",
+          normalizedQuery,
+          normalizedExcludeIds,
+        ],
         queryFn: () =>
-          perfilApi.getUsers(normalizedQuery, excludeId ? String(excludeId) : undefined),
+          perfilApi.getUsers(normalizedQuery, normalizedExcludeIds),
       });
     },
-    [queryClient, excludeId],
+    [queryClient, normalizedExcludeIds],
   );
 }
