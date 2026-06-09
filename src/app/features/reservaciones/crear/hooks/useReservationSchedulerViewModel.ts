@@ -72,21 +72,6 @@ export function useReservationSchedulerViewModel({
     () => reservationQueries.myScheduleItemsByDate[scheduler.activeDayId] ?? [],
     [reservationQueries.myScheduleItemsByDate, scheduler.activeDayId],
   );
-  console.table(stateDebugByDate(reservationQueries.myScheduleItemsByDate));
-
-  function stateDebugByDate(
-    itemsByDate: Record<string, { kind: string; sourceLabel: string }[]>,
-  ) {
-    return Object.entries(itemsByDate).map(([dateId, items]) => ({
-      dateId,
-      total: items.length,
-      cubiculos: items.filter((item) => item.kind === "my_reservation").length,
-      parking: items.filter((item) => item.kind === "parking_reservation")
-        .length,
-      eventos: items.filter((item) => item.kind === "calendar_event").length,
-    }));
-  }
-
   const activeDayMyOfficeScheduleItems = useMemo(() => {
     const items =
       reservationQueries.myOfficeScheduleItemsByDate[scheduler.activeDayId] ??

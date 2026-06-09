@@ -137,11 +137,7 @@ export function useReservationQueries({
   );
 
   const myOfficeScheduleItemsByDate = useMemo(
-    () => {
-      console.log("SIN MAPEAR", myOfficeScheduleItems)
-      console.log("YA MAPEADOS A DIA", groupScheduleItemsByDate(myOfficeScheduleItems))
-      return groupScheduleItemsByDate(myOfficeScheduleItems)
-    },
+    () => groupScheduleItemsByDate(myOfficeScheduleItems),
     [myOfficeScheduleItems],
   );
 
