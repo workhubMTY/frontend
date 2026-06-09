@@ -1,5 +1,6 @@
 "use client";
 
+import { Download } from "lucide-react";
 import type { Period, GlobalAttendanceSummary, GlobalReservationSummary, TopUser } from "../data/stats.types";
 import { PeriodTabs } from "./stats/PeriodTabs";
 import { DateRangePicker } from "./stats/DateRangePicker";
@@ -17,6 +18,8 @@ type StatsViewProps = {
     onFromChange: (v: string) => void;
     onToChange: (v: string) => void;
     onApply: () => void;
+    onExport: () => void;
+    exporting: boolean;
     globalAttendance: GlobalAttendanceSummary | null;
     globalAttendanceLoading: boolean;
     globalAttendanceError: string | null;
@@ -31,6 +34,7 @@ type StatsViewProps = {
 export function StatsView({
     period, onPeriodChange,
     from, to, onFromChange, onToChange, onApply,
+    onExport, exporting,
     globalAttendance, globalAttendanceLoading, globalAttendanceError,
     globalReservations, globalReservationsLoading, globalReservationsError,
     topUsers, topUsersLoading, topUsersError,
@@ -50,6 +54,15 @@ export function StatsView({
                     onToChange={onToChange}
                     onApply={onApply}
                 />
+                {/* Botón exportar */}
+                <button
+                    onClick={onExport}
+                    disabled={exporting}
+                    className="flex items-center gap-2 px-3 py-1.5 text-xs font-semibold border border-slate-200 text-slate-600 bg-white rounded-lg hover:border-violet-300 hover:text-violet-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed ml-auto"
+                >
+                    <Download size={13} />
+                    {exporting ? "Descargando..." : "Exportar XLSX"}
+                </button>
             </div>
 
             {/* ── KPI cards ── */}
