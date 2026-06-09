@@ -2,289 +2,473 @@
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import {
-  Search,
-  CalendarPlus,
-  Users,
-  CalendarRange,
-  Bot,
-  Send,
-} from "lucide-react";
-const AccentureLogo = "/accenture_logo_purple1.png";
+import { Search, CalendarPlus, Users, CalendarRange, Bot, Send, Car } from "lucide-react";
 import Image from "next/image";
 import DownTransition from "@/app/shared/components/PageTransition/DownTransition";
+import { useAuth } from "@/app/shared/auth/useAuth";
+import { sendChatMessage } from "@/app/features/chatbot/data/chat.api";
+import MessageBubble from "@/app/features/chatbot/components/MessageBubble";
+import {
+  ChatUIMessage,
+  ChatWidgetInstance,
+  HistoryMessage,
+  SingleWidgetResult,
+  ChatWidget,
+} from "@/app/features/chatbot/types/chat-api.types";
+import {
+  ShowSpaceCarouselArgs,
+  OpenParticipantPickerArgs,
+} from "@/app/features/chatbot/types/chat-tools.types";
+import type {
+  ClientToolEventData,
+  DoneEventData,
+  ErrorEventData,
+  RetryingEventData,
+  ThinkingEventData,
+  TokenEventData,
+  ToolDoneEventData,
+  ToolStartEventData,
+} from "@/app/features/chatbot/types/chat-sse.types";
 
-// ─── Tipos ────────────────────────────────────────────────────────────────────
-
-interface Message {
-  id: string;
-  role: "user" | "assistant";
-  content: string;
-  toolUse?: string[];   // herramientas MCP usadas (se muestran discretamente)
-}
-
-// ─── Config API ───────────────────────────────────────────────────────────────
-
-const API_URL = process.env.NEXT_PUBLIC_CHATBOT_API_URL ?? "http://localhost:3000";
-
-// sessionId se mantiene en memoria mientras la página esté abierta
-let sessionId: string | null = null;
-
-async function* streamChat(message: string): AsyncGenerator<{
-  type: string;
-  text?: string;
-  sessionId?: string;
-}> {
-  const res = await fetch(`${API_URL}/chat`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ message, sessionId }),
-  });
-
-  if (!res.ok || !res.body) throw new Error(`Error del servidor: ${res.status}`);
-
-  const reader = res.body.getReader();
-  const decoder = new TextDecoder();
-  let buffer = "";
-
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    buffer += decoder.decode(value, { stream: true });
-    const lines = buffer.split("\n");
-    buffer = lines.pop() ?? "";
-    for (const line of lines) {
-      if (!line.trim()) continue;
-      try { yield JSON.parse(line); } catch { /* ignorar líneas malformadas */ }
-    }
-  }
-}
-
-// ─── Quick actions ────────────────────────────────────────────────────────────
+const AccentureLogo = "/accenture_logo_purple1.png";
 
 const QUICK_ACTIONS = [
-  {
-    id: "search",
-    icon: Search,
-    label: "Busca salas\ndisponibles",
-    prompt: "¿Qué salas de juntas tienen disponibles?",
-  },
-  {
-    id: "reserve",
-    icon: CalendarPlus,
-    label: "Reserva un\nespacio",
-    prompt: "Quiero reservar una sala",
-  },
-  {
-    id: "friends",
-    icon: Users,
-    label: "¿Qué amigos van\nhoy a la oficina?",
-    prompt: "¿Qué amigos van hoy a la oficina?",
-  },
-  {
-    id: "multiple",
-    icon: CalendarRange,
-    label: "Realiza una\nagenda múltiple",
-    prompt: "Quiero realizar una agenda múltiple",
-  },
+  { id: "search", icon: Search, label: "Busca salas\ndisponibles", prompt: "¿Qué salas tienen disponibles para hoy?" },
+  { id: "reserve", icon: CalendarPlus, label: "Reserva un\nespacio", prompt: "Quiero reservar una sala" },
+  { id: "parking", icon: Car, label: "Reservar\nestacionamiento", prompt: "Quiero reservar un cajón de estacionamiento" },
+  { id: "calendar", icon: CalendarRange, label: "Ver mis\nreservaciones", prompt: "Muéstrame mis reservaciones de hoy" },
 ];
 
-// ─── Componente principal ─────────────────────────────────────────────────────
+let _seq = 0;
+const uid = () => `m${++_seq}-${Date.now()}`;
+
+function toWidgetInstance(
+  widgetId: string,
+  name: string,
+  args: Record<string, unknown>,
+): ChatWidgetInstance | null {
+  let widget: ChatWidget | null = null;
+
+  if (name === "showSpaceCarousel") {
+    widget = { type: "space_carousel", args: args as unknown as ShowSpaceCarouselArgs };
+  } else if (name === "openParticipantPicker") {
+    widget = { type: "participant_picker", args: args as unknown as OpenParticipantPickerArgs };
+  }
+
+  if (!widget) return null;
+
+  return { widgetId, toolName: name, widget, resolved: false };
+}
 
 export default function ChatbotPage() {
   const router = useRouter();
-  const [messages, setMessages] = useState<Message[]>([]);
+  const { accessToken, silentRefresh } = useAuth();
+
+  const [uiMessages, setUiMessages] = useState<ChatUIMessage[]>([]);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
+
+  const historyRef = useRef<HistoryMessage[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const hasMessages = messages.length > 0;
-
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, isTyping]);
+  }, [uiMessages]);
 
-  const sendMessage = useCallback(async (text: string) => {
-    if (!text.trim() || isTyping) return;
+  const getToken = useCallback(async (): Promise<string | null> => {
+    if (accessToken) return accessToken;
+    return silentRefresh();
+  }, [accessToken, silentRefresh]);
 
-    const userMsg: Message = {
-      id: Date.now().toString(),
-      role: "user",
-      content: text.trim(),
-    };
+  const patchMsg = useCallback(
+    (id: string, updater: (m: ChatUIMessage) => ChatUIMessage) => {
+      setUiMessages((prev) => prev.map((m) => (m.id === id ? updater(m) : m)));
+    },
+    [],
+  );
 
-    // Primera vez: agrega el saludo del asistente + el mensaje del usuario
-    if (messages.length === 0) {
-      setMessages([
-        { id: "greeting", role: "assistant", content: "Hola! ¿Cómo puedo asistirle hoy?" },
-        userMsg,
-      ]);
-    } else {
-      setMessages((prev) => [...prev, userMsg]);
-    }
+  const runStream = useCallback(
+    async (opts: {
+      userMessage?: string;
+      widgetResults?: SingleWidgetResult[];
+    }) => {
+      const { userMessage, widgetResults } = opts;
+      const token = await getToken();
+      if (!token) { router.push("/login"); return; }
 
-    setInput("");
-    inputRef.current?.focus();
-    setIsTyping(true);
-
-    // Agrega burbuja vacía del asistente (se irá llenando con el stream)
-    const assistantId = (Date.now() + 1).toString();
-    setMessages((prev) => [
-      ...prev,
-      { id: assistantId, role: "assistant", content: "", toolUse: [] },
-    ]);
-
-    try {
-      for await (const chunk of streamChat(text.trim())) {
-        // Guarda el sessionId para mantener contexto
-        if (chunk.type === "session" && chunk.sessionId) {
-          sessionId = chunk.sessionId;
-        }
-        // Muestra qué herramienta MCP se está usando
-        else if (chunk.type === "tool_use" && chunk.text) {
-          setMessages((prev) =>
-            prev.map((m) =>
-              m.id === assistantId
-                ? { ...m, toolUse: [...(m.toolUse ?? []), chunk.text!] }
-                : m
-            )
-          );
-        }
-        // Acumula el texto de la respuesta (streaming)
-        else if (chunk.type === "content" && chunk.text) {
-          setMessages((prev) =>
-            prev.map((m) =>
-              m.id === assistantId
-                ? { ...m, content: m.content + chunk.text }
-                : m
-            )
-          );
-        }
-        // Error del backend
-        else if (chunk.type === "error") {
-          setMessages((prev) =>
-            prev.map((m) =>
-              m.id === assistantId
-                ? { ...m, content: "Lo siento, ocurrió un error. Intenta de nuevo." }
-                : m
-            )
-          );
-        }
+      // Push user bubble
+      if (userMessage) {
+        const userBubble: ChatUIMessage = { id: uid(), role: "user", content: userMessage };
+        setUiMessages((prev) =>
+          prev.length === 0
+            ? [{ id: "greeting", role: "assistant", content: "¡Hola! ¿En qué puedo ayudarte hoy?" }, userBubble]
+            : [...prev, userBubble],
+        );
+        historyRef.current = [...historyRef.current, { role: "user", content: userMessage }];
       }
-    } catch {
-      setMessages((prev) =>
-        prev.map((m) =>
-          m.id === assistantId
-            ? { ...m, content: "No pude conectarme al servidor. Verifica tu conexión." }
-            : m
-        )
-      );
-    } finally {
-      setIsTyping(false);
-      inputRef.current?.focus();
-    }
-  }, [isTyping, messages.length]);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    sendMessage(input);
-  };
+      // Push empty assistant bubble
+      const aId = uid();
+      setUiMessages((prev) => [
+        ...prev,
+        { id: aId, role: "assistant", content: "", thinking: "", tools: [], widgets: [], isStreaming: true },
+      ]);
+
+      setInput("");
+      inputRef.current?.focus();
+      setIsTyping(true);
+
+      try {
+        const stream = sendChatMessage(
+          {
+            messages: userMessage
+              ? historyRef.current.slice(0, -1)
+              : historyRef.current,
+            message: userMessage ?? "",
+            widget_results: widgetResults,
+            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+          },
+          token,
+        );
+
+        let finalContent = "";
+        // Collect widgets emitted during this stream
+        const streamWidgets = new Map<string, ChatWidgetInstance>();
+
+        for await (const evt of stream) {
+          switch (evt.event) {
+            case "thinking": {
+              const d = evt.data as ThinkingEventData;
+              patchMsg(aId, (m) => ({ ...m, thinking: (m.thinking ?? "") + d.text }));
+              break;
+            }
+            case "token": {
+              const d = evt.data as TokenEventData;
+              finalContent += d.text;
+              patchMsg(aId, (m) => ({ ...m, content: m.content + d.text }));
+              break;
+            }
+            case "tool_start": {
+              const d = evt.data as ToolStartEventData;
+              patchMsg(aId, (m) => ({
+                ...m,
+                tools: [...(m.tools ?? []), { name: d.name, label: d.label, status: "running" as const }],
+              }));
+              break;
+            }
+            case "tool_done": {
+              const d = evt.data as ToolDoneEventData;
+              patchMsg(aId, (m) => ({
+                ...m,
+                tools: (m.tools ?? []).map((t) =>
+                  t.name === d.name
+                    ? { ...t, status: d.ok ? ("done" as const) : ("error" as const), error: d.error }
+                    : t,
+                ),
+              }));
+              break;
+            }
+            case "client_tool": {
+              const d = evt.data as ClientToolEventData;
+              const instance = toWidgetInstance(d.widgetId, d.name, d.args);
+              if (instance) {
+                streamWidgets.set(d.widgetId, instance);
+                patchMsg(aId, (m) => ({
+                  ...m,
+                  widgets: [...(m.widgets ?? []), instance],
+                }));
+              } else {
+                console.warn("[chat] Unknown client tool, auto-cancelling:", d.name);
+              }
+              break;
+            }
+            case "done": {
+              const d = evt.data as DoneEventData;
+              finalContent = d.message || finalContent;
+              patchMsg(aId, (m) => ({ ...m, content: finalContent, isStreaming: false }));
+              if (finalContent) {
+                historyRef.current = [...historyRef.current, { role: "assistant", content: finalContent }];
+              }
+              break;
+            }
+            case "error": {
+              const d = evt.data as ErrorEventData;
+              patchMsg(aId, (m) => ({ ...m, content: `⚠️ ${d.message}`, isStreaming: false }));
+              break;
+            }
+          }
+        }
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : "Error de conexión";
+        patchMsg(aId, (m) => ({ ...m, content: `⚠️ ${msg}`, isStreaming: false }));
+      } finally {
+        setIsTyping(false);
+        patchMsg(aId, (m) => ({ ...m, isStreaming: false }));
+      }
+    },
+    [getToken, router, patchMsg],
+  );
+
+  const pendingWidgetResultsRef = useRef<Map<string, SingleWidgetResult>>(new Map());
+  const pendingWidgetIdsRef = useRef<Set<string>>(new Set());
+
+  const handleWidgetResult = useCallback(
+    (widgetId: string, toolName: string, result: Record<string, unknown>, cancelled?: boolean) => {
+      setUiMessages((prev) =>
+        prev.map((m) => ({
+          ...m,
+          widgets: m.widgets?.map((w) =>
+            w.widgetId === widgetId ? { ...w, resolved: true, result, cancelled } : w,
+          ),
+        })),
+      );
+
+      const singleResult: SingleWidgetResult = { widget_id: widgetId, tool_name: toolName, args: result, cancelled };
+      pendingWidgetResultsRef.current.set(widgetId, singleResult);
+
+      const allResolved = [...pendingWidgetIdsRef.current].every(
+        (id) => pendingWidgetResultsRef.current.has(id),
+      );
+
+      if (allResolved && pendingWidgetIdsRef.current.size > 0) {
+        const results = [...pendingWidgetResultsRef.current.values()];
+        // Reset accumulators
+        pendingWidgetResultsRef.current = new Map();
+        pendingWidgetIdsRef.current = new Set();
+        // Resume conversation with all results
+        runStream({ widgetResults: results });
+      }
+    },
+    [runStream],
+  );
+
+  const setPendingWidgetIds = useCallback((ids: string[]) => {
+    pendingWidgetIdsRef.current = new Set(ids);
+    pendingWidgetResultsRef.current = new Map();
+  }, []);
+
+  const setPendingRef = useRef(setPendingWidgetIds);
+  setPendingRef.current = setPendingWidgetIds;
+
+  // Re-create runStream with access to setPendingRef
+  const runStreamFull = useCallback(
+    async (opts: {
+      userMessage?: string;
+      widgetResults?: SingleWidgetResult[];
+    }) => {
+      const { userMessage, widgetResults } = opts;
+      const token = await getToken();
+      if (!token) { router.push("/login"); return; }
+
+      if (userMessage) {
+        const userBubble: ChatUIMessage = { id: uid(), role: "user", content: userMessage };
+        setUiMessages((prev) =>
+          prev.length === 0
+            ? [{ id: "greeting", role: "assistant", content: "¡Hola! ¿En qué puedo ayudarte hoy?" }, userBubble]
+            : [...prev, userBubble],
+        );
+        historyRef.current = [...historyRef.current, { role: "user", content: userMessage }];
+      }
+
+      const aId = uid();
+      setUiMessages((prev) => [
+        ...prev,
+        { id: aId, role: "assistant", content: "", thinking: "", tools: [], widgets: [], isStreaming: true },
+      ]);
+      setInput("");
+      inputRef.current?.focus();
+      setIsTyping(true);
+
+      try {
+        const stream = sendChatMessage(
+          {
+            messages: userMessage ? historyRef.current.slice(0, -1) : historyRef.current,
+            message: userMessage ?? "",
+            widget_results: widgetResults,
+            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+          },
+          token,
+        );
+
+        let finalContent = "";
+
+        for await (const evt of stream) {
+          switch (evt.event) {
+            case "thinking": {
+              const d = evt.data as ThinkingEventData;
+              patchMsg(aId, (m) => ({ ...m, thinking: (m.thinking ?? "") + d.text }));
+              break;
+            }
+            case "token": {
+              const d = evt.data as TokenEventData;
+              finalContent += d.text;
+              patchMsg(aId, (m) => ({ ...m, content: m.content + d.text }));
+              break;
+            }
+            case "tool_start": {
+              const d = evt.data as ToolStartEventData;
+              patchMsg(aId, (m) => ({
+                ...m,
+                tools: [...(m.tools ?? []), { name: d.name, label: d.label, status: "running" as const }],
+              }));
+              break;
+            }
+            case "tool_done": {
+              const d = evt.data as ToolDoneEventData;
+              patchMsg(aId, (m) => ({
+                ...m,
+                tools: (m.tools ?? []).map((t) =>
+                  t.name === d.name
+                    ? { ...t, status: d.ok ? ("done" as const) : ("error" as const), error: d.error }
+                    : t,
+                ),
+              }));
+              break;
+            }
+            case "client_tool": {
+              const d = evt.data as ClientToolEventData;
+              const instance = toWidgetInstance(d.widgetId, d.name, d.args);
+              if (instance) {
+                patchMsg(aId, (m) => ({ ...m, widgets: [...(m.widgets ?? []), instance] }));
+              }
+              break;
+            }
+            case "retrying": {
+              const d = evt.data as RetryingEventData;
+              patchMsg(aId, (m) => ({ ...m, retryNotice: d.message }));
+              break;
+            }
+            case "done": {
+              const d = evt.data as DoneEventData;
+              finalContent = d.message || finalContent;
+              patchMsg(aId, (m) => ({ ...m, content: finalContent, isStreaming: false, retryNotice: undefined }));
+              if (finalContent) {
+                historyRef.current = [...historyRef.current, { role: "assistant", content: finalContent }];
+              }
+              // Register pending widgets so handleWidgetResult knows when all are done
+              if (d.pending_widgets?.length) {
+                setPendingRef.current(d.pending_widgets);
+              }
+              break;
+            }
+            case "error": {
+              const d = evt.data as ErrorEventData;
+              patchMsg(aId, (m) => ({ ...m, content: `⚠️ ${d.message}`, isStreaming: false }));
+              break;
+            }
+          }
+        }
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : "Error de conexión";
+        patchMsg(aId, (m) => ({ ...m, content: `⚠️ ${msg}`, isStreaming: false }));
+      } finally {
+        setIsTyping(false);
+        patchMsg(aId, (m) => ({ ...m, isStreaming: false }));
+      }
+    },
+    [getToken, router, patchMsg],
+  );
+
+  const sendUserMessage = useCallback(
+    (text: string) => {
+      if (!text.trim() || isTyping) return;
+      runStreamFull({ userMessage: text.trim() });
+    },
+    [runStreamFull, isTyping],
+  );
+
+  const runStreamRef = useRef(runStreamFull);
+  runStreamRef.current = runStreamFull;
+
+  const handleWidgetResultFull = useCallback(
+    (widgetId: string, toolName: string, result: Record<string, unknown>, cancelled?: boolean) => {
+      setUiMessages((prev) =>
+        prev.map((m) => ({
+          ...m,
+          widgets: m.widgets?.map((w) =>
+            w.widgetId === widgetId ? { ...w, resolved: true, result, cancelled } : w,
+          ),
+        })),
+      );
+
+      const singleResult: SingleWidgetResult = { widget_id: widgetId, tool_name: toolName, args: result, cancelled };
+      pendingWidgetResultsRef.current.set(widgetId, singleResult);
+
+      const allResolved =
+        pendingWidgetIdsRef.current.size > 0 &&
+        [...pendingWidgetIdsRef.current].every((id) => pendingWidgetResultsRef.current.has(id));
+
+      if (allResolved) {
+        const results = [...pendingWidgetResultsRef.current.values()];
+        pendingWidgetResultsRef.current = new Map();
+        pendingWidgetIdsRef.current = new Set();
+        runStreamRef.current({ widgetResults: results });
+      }
+    },
+    [],
+  );
+
+  const hasMessages = uiMessages.length > 0;
 
   return (
     <DownTransition>
-      <div className="w-screen h-screen flex flex-col bg-[#e8e8e8] overflow-hidden">
+      <div className="flex flex-col h-screen bg-[#e8e8e8]">
         {/* Header */}
-        <div className="flex items-center gap-3 px-8 py-5">
-          <a href="/home">
-            <Image src={AccentureLogo} alt="accenture logo" width={40} height={40} />
-          </a>
-          <span className="text-2xl font-semibold text-gray-800 tracking-wide">
-            Chatbot
-          </span>
+        <div className="flex items-center px-8 pt-6 pb-4 gap-4">
+          <Image src={AccentureLogo} alt="Logo" width={32} height={32} className="opacity-80" />
+          <div>
+            <h1 className="text-base font-semibold text-gray-800 leading-tight">Asistente virtual</h1>
+            <p className="text-xs text-gray-500">WorkHub · Reservaciones y más</p>
+          </div>
+          <div className="ml-auto flex items-center gap-2">
+            <span className={`w-2 h-2 rounded-full ${isTyping ? "bg-amber-400 animate-pulse" : "bg-emerald-400"}`} />
+            <span className="text-xs text-gray-500">{isTyping ? "Procesando..." : "En línea"}</span>
+          </div>
         </div>
 
-        {/* Área de mensajes */}
-        <div className="flex-1 overflow-y-auto flex flex-col">
+        {/* Messages */}
+        <div className="flex-1 overflow-y-auto">
           {!hasMessages ? (
-            /* ── Estado vacío: quick actions ── */
-            <div className="flex-1 flex flex-col items-center justify-center px-12 gap-10">
-              <h1 className="text-2xl font-normal text-gray-700 text-center">
-                ¡Hola! ¿Cómo puedo asistirle hoy?
-              </h1>
-              <div className="grid grid-cols-4 gap-4 w-full max-w-5xl">
+            <div className="flex flex-col items-center justify-center h-full gap-8 px-8">
+              <div className="text-center">
+                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-violet-400 to-violet-600 flex items-center justify-center mx-auto mb-4 shadow-lg">
+                  <Bot size={32} className="text-white" strokeWidth={1.5} />
+                </div>
+                <h2 className="text-lg font-semibold text-gray-700">¿En qué te ayudo hoy?</h2>
+                <p className="text-sm text-gray-500 mt-1">
+                  Reserva espacios de oficina, estacionamiento y gestiona tu agenda.
+                </p>
+              </div>
+              <div className="grid grid-cols-2 gap-3 w-full max-w-md">
                 {QUICK_ACTIONS.map(({ id, icon: Icon, label, prompt }) => (
                   <button
                     key={id}
-                    onClick={() => sendMessage(prompt)}
-                    className="flex flex-col items-center justify-center gap-3 bg-[#d0d0d0] hover:bg-[#c8c8c8] active:scale-95 rounded-2xl p-7 min-h-[140px] transition-all duration-150 text-center"
+                    onClick={() => sendUserMessage(prompt)}
+                    disabled={isTyping}
+                    className="flex flex-col items-center justify-center gap-3 bg-[#d0d0d0] hover:bg-[#c8c8c8] active:scale-95 rounded-2xl p-7 min-h-[140px] transition-all duration-150 text-center disabled:opacity-50"
                   >
                     <Icon size={34} className="text-gray-700" strokeWidth={1.3} />
-                    <span className="text-sm text-gray-700 leading-snug font-medium whitespace-pre-line">
-                      {label}
-                    </span>
+                    <span className="text-sm text-gray-700 leading-snug font-medium whitespace-pre-line">{label}</span>
                   </button>
                 ))}
               </div>
             </div>
           ) : (
-            /* ── Historial de mensajes ── */
-            <div className="flex-1 flex flex-col px-12 py-6 gap-4 max-w-5xl mx-auto w-full">
-              {messages.map((msg) => (
-                <div
+            <div className="flex flex-col px-6 md:px-12 py-6 gap-5 max-w-3xl mx-auto w-full">
+              {uiMessages.map((msg) => (
+                <MessageBubble
                   key={msg.id}
-                  className={`flex items-end gap-3 ${
-                    msg.role === "user" ? "justify-end" : "justify-start"
-                  }`}
-                >
-                  {msg.role === "assistant" && (
-                    <div className="w-10 h-10 rounded-full bg-gray-400 flex items-center justify-center flex-shrink-0">
-                      <Bot size={20} className="text-white" />
-                    </div>
-                  )}
-                  <div className="flex flex-col gap-1 max-w-[55%]">
-                    {msg.role === "assistant" && (
-                      <div className="flex items-center gap-2 ml-1">
-                        <span className="text-xs text-gray-500 font-medium">
-                          Asistente virtual
-                        </span>
-                        {/* Badges de herramientas MCP (discretos) */}
-                        {msg.toolUse?.map((t, i) => (
-                          <span
-                            key={i}
-                            className="text-[10px] text-gray-400 bg-gray-200 rounded-full px-2 py-0.5"
-                          >
-                            {t.replace("🔧 Consultando: ", "")}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-                    <div
-                      className={`rounded-2xl px-5 py-3 text-sm leading-relaxed whitespace-pre-wrap ${
-                        msg.role === "user"
-                          ? "bg-[#1a1a2e] text-white rounded-br-sm"
-                          : "bg-white text-gray-800 rounded-bl-sm shadow-sm"
-                      }`}
-                    >
-                      {/* Burbuja vacía mientras llega el stream */}
-                      {msg.content || (msg.role === "assistant" && isTyping && (
-                        <span className="flex gap-2 items-center py-0.5">
-                          <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:0ms]" />
-                          <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:150ms]" />
-                          <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:300ms]" />
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                </div>
+                  message={msg}
+                  onWidgetResult={handleWidgetResultFull}
+                />
               ))}
-
               <div ref={messagesEndRef} />
             </div>
           )}
         </div>
 
-        {/* Input bar — idéntico al original */}
+        {/* Input bar */}
         <div className="w-full bg-[#e8e8e8]">
           <svg width="0" height="0" style={{ position: "absolute" }}>
             <defs>
@@ -297,16 +481,16 @@ export default function ChatbotPage() {
             <button
               onClick={() => router.back()}
               style={{ clipPath: "url(#tab-shape)" }}
-              className="flex-shrink-0 bg-[#d4d4d4] hover:bg-[#cacaca] active:bg-[#c0c0c0] transition-colors duration-150 text-sm font-medium text-gray-700 w-[110px] h-[52px] whitespace-nowrap"
+              className="flex-shrink-0 bg-[#d4d4d4] hover:bg-[#cacaca] active:bg-[#c0c0c0] transition-colors text-sm font-medium text-gray-700 w-[110px] h-[52px]"
             >
               Volver
             </button>
-            <form onSubmit={handleSubmit} className="flex-1 ml-3 mb-1">
+            <form
+              onSubmit={(e) => { e.preventDefault(); sendUserMessage(input); }}
+              className="flex-1 ml-3 mb-1"
+            >
               <div className="flex items-center bg-[#d4d4d4] rounded-full px-4 py-0.5">
-                <svg
-                  width="20" height="20" viewBox="0 0 24 24" fill="none"
-                  stroke="#6b7280" strokeWidth="1.8" className="flex-shrink-0"
-                >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6b7280" strokeWidth="1.8" className="flex-shrink-0">
                   <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
                 </svg>
                 <input
@@ -314,7 +498,7 @@ export default function ChatbotPage() {
                   type="text"
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
-                  placeholder="Solicita al chatbot..."
+                  placeholder="Escribe tu mensaje..."
                   className="flex-1 bg-transparent px-3 py-3 text-sm text-gray-600 placeholder-gray-500 outline-none"
                   disabled={isTyping}
                   autoFocus
