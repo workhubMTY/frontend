@@ -105,7 +105,7 @@ export function useWeekReservations({ weekOffset, userId }: Params): WeekReserva
         console.warn("Office fetch failed:", oResult.reason?.message);
       }
 
-      console.log(`[${userId ?? "me"}] parking:`, parsedParking.length, "office:", parsedOffice.length);
+      // console.log(`[${userId ?? "me"}] parking:`, parsedParking.length, "office:", parsedOffice.length);
       setParking(parsedParking);
       setOffice(parsedOffice);
       setLoading(false);

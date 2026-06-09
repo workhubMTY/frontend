@@ -26,7 +26,7 @@ export function EventsCard({
     <Card className="flex flex-1 flex-col gap-2 p-5">
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-semibold text-slate-950">
-          Reservaciones y eventos
+          Tus horarios
         </h2>
 
         {hasEvents && conflictCount > 0 && (

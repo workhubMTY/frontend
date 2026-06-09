@@ -1,10 +1,11 @@
 import { CalendarCheck, Lock } from "lucide-react";
 
 import type { TimeBlock } from "../../types/reservaciones";
+import type { ScheduleItem } from "../../types/schedule";
+
 import { cn } from "../../../../../shared/lib/cn";
 import { to24Hour } from "../../lib/time";
 import { TimelineAxis } from "../Timeline/TimelineAxis";
-import { ScheduleItem } from "../../types/schedule";
 
 function createTimelineLanes(ranges: TimelineRange[]): TimelineRange[][] {
   const sortedRanges = [...ranges].sort((a, b) => {
@@ -41,26 +42,37 @@ function getLaneHeightClassName(laneCount: number): string {
 }
 
 type ReservationTimelineCardProps = {
-  activeDayId: string;
   proposedBlocks: TimeBlock[];
+
+  /**
+   * Reservaciones del espacio actual.
+   * Estas son las únicas bloqueantes.
+   */
   spaceItems: ScheduleItem[];
+
+  /**
+   * Agenda del usuario.
+   * Es informativa y puede repetir elementos que también estén en spaceItems.
+   */
   myItems: ScheduleItem[];
 };
-
 type TimelineRange = {
-  id: string;
+  id: number;
   startHour: number;
   endHour: number;
   label?: string;
   title?: string;
+  sourceLabel?: string;
+  itemTitle?: string;
+  location?: string | null;
 };
 
 type OverlapSegment = {
   left: number;
   width: number;
 };
+
 export function ReservationTimelineCard({
-  activeDayId,
   proposedBlocks,
   spaceItems,
   myItems,
@@ -74,8 +86,8 @@ export function ReservationTimelineCard({
     .filter(Boolean) as TimelineRange[];
 
   return (
-    <div className="overflow-x-auto flex flex-col gap-2">
-      <div className="flex items-top justify-between items-start">
+    <div className="flex flex-col gap-2 overflow-x-auto">
+      <div className="flex items-start justify-between">
         <h2 className="text-lg font-bold text-slate-950">Línea de tiempo</h2>
         <TimelineLegend />
       </div>
@@ -85,7 +97,7 @@ export function ReservationTimelineCard({
           <OccupiedSpaceRow
             ranges={occupiedRanges}
             selectedBlocks={proposedBlocks}
-            conflictRanges={[...occupiedRanges, ...myReservationRanges]}
+            conflictRanges={occupiedRanges}
           />
 
           <MyReservationsRow ranges={myReservationRanges} />
@@ -100,9 +112,15 @@ export function ReservationTimelineCard({
 /* -------------------------------------------------------------------------- */
 /* Espacio ocupado                                                             */
 /* -------------------------------------------------------------------------- */
+
 type OccupiedSpaceRowProps = {
   ranges: TimelineRange[];
   selectedBlocks: TimeBlock[];
+
+  /**
+   * Ranges contra los que la selección sí marca empalme.
+   * Deben ser solamente del espacio actual.
+   */
   conflictRanges: TimelineRange[];
 };
 
@@ -137,15 +155,9 @@ function OccupiedSpaceRow({
 }
 
 /* -------------------------------------------------------------------------- */
-/* Tus reservaciones + selección                                               */
+/* Tus horarios                                                                */
 /* -------------------------------------------------------------------------- */
 
-type MySelectionRowProps = {
-  activeDayId: string;
-  blocks: TimeBlock[];
-  myReservationRanges: TimelineRange[];
-  occupiedRanges: TimelineRange[];
-};
 type MyReservationsRowProps = {
   ranges: TimelineRange[];
 };
@@ -157,12 +169,12 @@ function MyReservationsRow({ ranges }: MyReservationsRowProps) {
     <TimelineRow
       icon={<CalendarCheck className="h-4 w-4" />}
       labelTop="Tus"
-      labelBottom="reservaciones"
+      labelBottom="horarios"
       isLast
       heightClassName={getLaneHeightClassName(lanes.length)}
     >
       {ranges.length === 0 ? (
-        <EmptyRowMessage>No tienes reservaciones en este día.</EmptyRowMessage>
+        <EmptyRowMessage>No tienes horarios en este día.</EmptyRowMessage>
       ) : null}
 
       {lanes.map((lane, laneIndex) =>
@@ -183,6 +195,7 @@ function MyReservationsRow({ ranges }: MyReservationsRowProps) {
 /* -------------------------------------------------------------------------- */
 /* Bloques existentes                                                          */
 /* -------------------------------------------------------------------------- */
+
 type ExistingRangeBlockProps = {
   range: TimelineRange;
   variant: "occupied" | "mine";
@@ -231,6 +244,7 @@ function ExistingRangeBlock({
     </div>
   );
 }
+
 /* -------------------------------------------------------------------------- */
 /* Nueva selección                                                             */
 /* -------------------------------------------------------------------------- */
@@ -281,7 +295,7 @@ function SelectedReservationBlock({
             left: `${segment.left}%`,
             width: `${segment.width}%`,
           }}
-          title="Empalme con una reservación existente"
+          title="Empalme con una reservación del espacio"
         />
       ))}
 
@@ -317,6 +331,7 @@ function SelectionBoundaryLine({ side }: SelectionBoundaryLineProps) {
 /* -------------------------------------------------------------------------- */
 /* Shared row                                                                  */
 /* -------------------------------------------------------------------------- */
+
 type TimelineRowProps = {
   icon: React.ReactNode;
   labelTop: string;
@@ -332,7 +347,7 @@ function TimelineRow({
   labelBottom,
   children,
   isLast = false,
-  heightClassName = "min-h-[76px]",
+  heightClassName = "min-h-[70px]",
 }: TimelineRowProps) {
   return (
     <div
@@ -390,10 +405,15 @@ function EmptyRowMessage({ children }: EmptyRowMessageProps) {
 
 function TimelineLegend() {
   return (
-    <div className=" flex flex-wrap items-start gap-5 text-xs text-slate-600">
+    <div className="flex flex-wrap items-start gap-5 text-xs text-slate-600">
+      <LegendItem
+        markerClassName="border border-slate-300 bg-slate-200"
+        label="Espacio ocupado"
+      />
+
       <LegendItem
         markerClassName="border border-slate-300 bg-slate-100"
-        label="Reservación existente"
+        label="Tus horarios"
       />
 
       <LegendItem
@@ -403,7 +423,7 @@ function TimelineLegend() {
 
       <LegendItem
         markerClassName="border border-orange-300 bg-[repeating-linear-gradient(135deg,#f97316_0px,#f97316_4px,transparent_4px,transparent_8px)]"
-        label="Empalme"
+        label="Empalme con espacio"
       />
     </div>
   );
@@ -426,6 +446,7 @@ function LegendItem({ markerClassName, label }: LegendItemProps) {
 /* -------------------------------------------------------------------------- */
 /* Utils                                                                       */
 /* -------------------------------------------------------------------------- */
+
 function scheduleItemToRange(item: ScheduleItem): TimelineRange | null {
   const startHour = getHourFromTimeLabel(item.start);
   const endHour = getHourFromTimeLabel(item.end);
@@ -433,12 +454,17 @@ function scheduleItemToRange(item: ScheduleItem): TimelineRange | null {
   if (endHour <= startHour) return null;
 
   return {
-    id: item.id,
-    startHour,
-    endHour,
-    label: `${item.start} - ${item.end}`,
-    title: item.location ? `${item.title} · ${item.location}` : item.title,
-  };
+  id: item.id,
+  startHour,
+  endHour,
+  label: `${item.start} - ${item.end}`,
+  title: item.location
+    ? `${item.sourceLabel} · ${item.title} · ${item.location}`
+    : `${item.sourceLabel} · ${item.title}`,
+  sourceLabel: item.sourceLabel,
+  itemTitle: item.title,
+  location: item.location,
+};
 }
 
 function getOverlappingSegments({

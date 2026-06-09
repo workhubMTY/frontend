@@ -98,7 +98,7 @@ export type MyScheduleApiItemKind =
   | "event";
 
 export type MyScheduleApiItem = {
-  id: string | number;
+  id: number;
   kind: MyScheduleApiItemKind;
 
   title: string | null;
@@ -113,6 +113,5 @@ export type MyScheduleApiItem = {
   floor_name: string | null;
 
   attendance_status: string | null;
-
-  raw?: unknown;
+  lifecycle_status: "ACTIVE" | "FINALIZED" | "CANCELED"
 };

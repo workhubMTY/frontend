@@ -22,8 +22,8 @@ export type UpdateParkingLot = Partial<CreateParkingLot>;
 export type ParkingReservation = {
   id: number;
   user_id: string;
-  start_time: Date;
-  end_time: Date;
+  start_time: string;
+  end_time: string;
   lifecycle_status: LifecycleStatus;
   attendance_status: AttendanceStatus;
   allocation_state: AllocationState;
@@ -43,8 +43,8 @@ export type StepMinutes = "15" | "30" | "60";
 
 export type ListReservationsQuery = {
   user_id?: string;
-  start_time?: Date;
-  end_time?: Date;
+  start_time?: string;
+  end_time?: string;
   lifecycle_status?: LifecycleStatus;
   attendance_status?: AttendanceStatus;
   allocation_state?: AllocationState;

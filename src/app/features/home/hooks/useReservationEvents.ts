@@ -30,9 +30,9 @@ export function useReservationEvents({ weekOffset, selectedFriendId, agendaFilte
 
     const all = [...ownParking, ...ownOffice, ...frdParking, ...frdOffice];
     
-    console.log("all events before filter:", all.length);
+    // console.log("all events before filter:", all.length);
     const filtered = filterEvents(all, agendaFilter);
-    console.log("filtered events:", filtered.length);
+    // console.log("filtered events:", filtered.length);
     
     return filtered;
   }, [own.parking, own.office, friend.parking, friend.office, selectedFriendId, agendaFilter, weekOffset]);

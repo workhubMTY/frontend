@@ -165,6 +165,7 @@ export type ReservationSummary = {
   start_time: string;
   end_time: string;
   attendance_status: SpaceStatus;
+  lifecycle_status: "ACTIVE" | "FINALIZED" | "CANCELED"
   reservable_name: string;
   floor_id: number;
   floor_name: string;

@@ -4,14 +4,10 @@ export type ScheduleItemKind =
   | "calendar_event"
   | "parking_reservation";
 
-export type ScheduleItemStatus =
-  | "normal"
-  | "warning"
-  | "partial"
-  | "conflict";
+export type ScheduleItemStatus = "normal" | "warning" | "partial" | "conflict";
 
 export type ScheduleItem = {
-  id: string;
+  id: number;
   kind: ScheduleItemKind;
 
   dateId: string;
@@ -31,6 +27,7 @@ export type ScheduleItem = {
   floorName: string | null;
 
   attendanceStatus: string | null;
+  lifecycleStatus: "ACTIVE" | "FINALIZED" | "CANCELED";
 
   raw?: unknown;
 };

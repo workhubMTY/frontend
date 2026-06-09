@@ -1,7 +1,8 @@
 import { useMemo } from "react";
 
 import type { CalendarCell } from "@/app/features/reservaciones/crear/types/reservaciones";
-import type { UserTimelineQuery } from "@/app/features/reservaciones/confirmar/types/confirmation";
+
+import type { UserTimelineQuery } from "@/app/features/reservaciones/crear/types/timeline";
 
 import {
   getVisibleRange,
@@ -13,7 +14,7 @@ import {
   useUserTimeline,
 } from "@/app/features/reservaciones/crear/data/hooks";
 
-import { myScheduleApiItemToScheduleItem } from "@/app/features/reservaciones/crear/data/myScheduleMappers";
+import { timelineToScheduleItems } from "@/app/features/reservaciones/crear/data/myScheduleMappers";
 
 type UseReservationQueriesParams = {
   calendarCells: CalendarCell[];
@@ -53,21 +54,76 @@ export function useReservationQueries({
     };
   }, [visibleRange, includeEIds]);
 
+  /**
+   * Reservaciones del espacio actual.
+   * Estas son las únicas bloqueantes.
+   */
   const spaceScheduleItemsQuery = useSpaceScheduleItemsInVisibleRange({
     reservableId,
     calendarCells,
-    enabled: enabled && Boolean(visibleRange),
+    enabled: enabled && Boolean(reservableId && visibleRange),
   });
 
+  /**
+   * Super endpoint del usuario.
+   * Incluye agenda propia: office, parking y eventos.
+   */
   const myTimelineQuery = useUserTimeline(userId, timelineQuery, {
     enabled: enabled && Boolean(userId && timelineQuery),
   });
 
-  const spaceScheduleItems = spaceScheduleItemsQuery.data ?? [];
+  const timeline = myTimelineQuery.data ?? null;
+
+  const spaceScheduleItems = useMemo(
+    () => spaceScheduleItemsQuery.data ?? [],
+    [spaceScheduleItemsQuery.data],
+  );
+
+  const myOfficeReservations = useMemo(
+    () => timeline?.user.officeReservations ?? [],
+    [timeline],
+  );
+
+  const myParkingReservations = useMemo(
+    () => timeline?.user.parkingReservations ?? [],
+    [timeline],
+  );
+
+  const myEvents = useMemo(() => timeline?.user.events ?? [], [timeline]);
+
+  /**
+   * NO deduplicar contra spaceScheduleItems.
+   *
+   * Si una reservación propia también ocupa el espacio actual,
+   * debe aparecer en ambas hileras:
+   *
+   * - Espacio ocupado
+   * - Tus horarios
+   */
 
   const myScheduleItems = useMemo(
-    () => (myTimelineQuery.data ?? []).map(myScheduleApiItemToScheduleItem),
-    [myTimelineQuery.data],
+    () =>
+      timelineToScheduleItems({
+        officeReservations: myOfficeReservations,
+        parkingReservations: myParkingReservations,
+        events: myEvents,
+      }),
+    [myOfficeReservations, myParkingReservations, myEvents],
+  );
+
+  const myOfficeScheduleItems = useMemo(
+    () => myScheduleItems.filter((item) => item.kind === "my_reservation"),
+    [myScheduleItems],
+  );
+
+  const myParkingScheduleItems = useMemo(
+    () => myScheduleItems.filter((item) => item.kind === "parking_reservation"),
+    [myScheduleItems],
+  );
+
+  const myEventScheduleItems = useMemo(
+    () => myScheduleItems.filter((item) => item.kind === "calendar_event"),
+    [myScheduleItems],
   );
 
   const spaceScheduleItemsByDate = useMemo(
@@ -80,16 +136,49 @@ export function useReservationQueries({
     [myScheduleItems],
   );
 
+  const myOfficeScheduleItemsByDate = useMemo(
+    () => {
+      console.log("SIN MAPEAR", myOfficeScheduleItems)
+      console.log("YA MAPEADOS A DIA", groupScheduleItemsByDate(myOfficeScheduleItems))
+      return groupScheduleItemsByDate(myOfficeScheduleItems)
+    },
+    [myOfficeScheduleItems],
+  );
+
+  const myParkingScheduleItemsByDate = useMemo(
+    () => groupScheduleItemsByDate(myParkingScheduleItems),
+    [myParkingScheduleItems],
+  );
+
+  const myEventScheduleItemsByDate = useMemo(
+    () => groupScheduleItemsByDate(myEventScheduleItems),
+    [myEventScheduleItems],
+  );
+
   return {
+    timeline,
+
     spaceScheduleItems,
+
     myScheduleItems,
+    myOfficeScheduleItems,
+    myParkingScheduleItems,
+    myEventScheduleItems,
+
+    myOfficeReservations,
+    myParkingReservations,
+    myEvents,
 
     spaceScheduleItemsByDate,
     myScheduleItemsByDate,
+    myOfficeScheduleItemsByDate,
+    myParkingScheduleItemsByDate,
+    myEventScheduleItemsByDate,
 
     isLoading: spaceScheduleItemsQuery.isLoading || myTimelineQuery.isLoading,
 
-    isFetching: spaceScheduleItemsQuery.isFetching || myTimelineQuery.isFetching,
+    isFetching:
+      spaceScheduleItemsQuery.isFetching || myTimelineQuery.isFetching,
 
     error: spaceScheduleItemsQuery.error ?? myTimelineQuery.error,
   };

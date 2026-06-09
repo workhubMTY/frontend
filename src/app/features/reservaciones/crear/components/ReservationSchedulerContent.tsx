@@ -29,9 +29,8 @@ export function ReservationSchedulerContent() {
           <section className="flex min-w-0 flex-col gap-4">
             <Card className="p-4">
               <ReservationTimelineCard
-                activeDayId={state.scheduler.activeDayId}
                 proposedBlocks={state.scheduler.proposedBlocksForActiveDay}
-                spaceItems={state.activeDaySpaceScheduleItems}
+                spaceItems={state.activeDayBlockingScheduleItems}
                 myItems={state.activeDayMyScheduleItems}
               />
             </Card>
@@ -47,8 +46,8 @@ export function ReservationSchedulerContent() {
             <ReservationFooter
               selectedCount={state.scheduler.selectableSelectedDateIds.length}
               proposedBlocksCount={state.scheduler.proposedBlocks.length}
-              hasBlockingConflict={state.scheduler.hasBlockingConflict}
-              canContinue={state.scheduler.canContinue}
+              hasBlockingConflict={state.hasBlockingConflict}
+              canContinue={state.canContinue}
               onCancel={actions.cancelReservation}
               onContinue={actions.openConfirmationModal}
             />

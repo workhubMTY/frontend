@@ -33,30 +33,88 @@ export function useReservationSchedulerViewModel({
 
   const calendarCells = useMemo(() => createCalendarCells(), []);
 
+  const userId = user?.eId ? String(user.eId) : null;
+
   const reservationQueries = useReservationQueries({
     calendarCells,
     reservableId: spaceId ? Number(spaceId) : null,
-    userId: user?.eId ? String(user.eId) : null,
-    enabled: Boolean(spaceId && user?.eId),
+    userId,
+    enabled: Boolean(spaceId && userId),
   });
 
+  /**
+   * El scheduler SOLO debe conocer las reservaciones del espacio actual.
+   * Estas son las únicas que bloquean la selección.
+   */
   const scheduler = useReservationScheduler({
     calendarCells,
     spaceScheduleItemsByDate: reservationQueries.spaceScheduleItemsByDate,
   });
 
-  const activeDaySpaceScheduleItems = useMemo(
+  /**
+   * Día activo: espacio actual.
+   * Estos datos sí bloquean.
+   */
+  const activeDayBlockingScheduleItems = useMemo(
     () =>
       reservationQueries.spaceScheduleItemsByDate[scheduler.activeDayId] ?? [],
     [reservationQueries.spaceScheduleItemsByDate, scheduler.activeDayId],
   );
 
+  const activeDaySpaceScheduleItems = activeDayBlockingScheduleItems;
+
+  /**
+   * Día activo: agenda del usuario.
+   * Estos datos son informativos.
+   * Pueden incluir una reservación que también aparece en el espacio ocupado.
+   */
   const activeDayMyScheduleItems = useMemo(
     () => reservationQueries.myScheduleItemsByDate[scheduler.activeDayId] ?? [],
     [reservationQueries.myScheduleItemsByDate, scheduler.activeDayId],
   );
+  console.table(stateDebugByDate(reservationQueries.myScheduleItemsByDate));
 
-  const selectedDaysSpaceScheduleItems = useMemo(
+  function stateDebugByDate(
+    itemsByDate: Record<string, { kind: string; sourceLabel: string }[]>,
+  ) {
+    return Object.entries(itemsByDate).map(([dateId, items]) => ({
+      dateId,
+      total: items.length,
+      cubiculos: items.filter((item) => item.kind === "my_reservation").length,
+      parking: items.filter((item) => item.kind === "parking_reservation")
+        .length,
+      eventos: items.filter((item) => item.kind === "calendar_event").length,
+    }));
+  }
+
+  const activeDayMyOfficeScheduleItems = useMemo(() => {
+    const items =
+      reservationQueries.myOfficeScheduleItemsByDate[scheduler.activeDayId] ??
+      [];
+
+    return items.filter((item) => item.lifecycleStatus === "ACTIVE");
+  }, [reservationQueries.myOfficeScheduleItemsByDate, scheduler.activeDayId]);
+
+  const activeDayMyParkingScheduleItems = useMemo(() =>{
+    const items = reservationQueries.myParkingScheduleItemsByDate[scheduler.activeDayId] ??
+      []
+      return items.filter(item => item.lifecycleStatus ==="ACTIVE")
+  },
+    [reservationQueries.myParkingScheduleItemsByDate, scheduler.activeDayId]
+  );
+
+  const activeDayMyEventScheduleItems = useMemo(
+    () =>
+      reservationQueries.myEventScheduleItemsByDate[scheduler.activeDayId] ??
+      [],
+    [reservationQueries.myEventScheduleItemsByDate, scheduler.activeDayId],
+  );
+
+  /**
+   * Días seleccionados: espacio actual.
+   * Estos datos sí bloquean continuar.
+   */
+  const selectedDaysBlockingScheduleItems = useMemo(
     () =>
       scheduler.selectableSelectedDateIds.flatMap(
         (dateId) => reservationQueries.spaceScheduleItemsByDate[dateId] ?? [],
@@ -67,6 +125,12 @@ export function useReservationSchedulerViewModel({
     ],
   );
 
+  const selectedDaysSpaceScheduleItems = selectedDaysBlockingScheduleItems;
+
+  /**
+   * Días seleccionados: agenda del usuario.
+   * Estos datos NO bloquean.
+   */
   const selectedDaysMyScheduleItems = useMemo(
     () =>
       scheduler.selectableSelectedDateIds.flatMap(
@@ -78,21 +142,65 @@ export function useReservationSchedulerViewModel({
     ],
   );
 
+  const selectedDaysMyOfficeScheduleItems = useMemo(
+    () =>
+      scheduler.selectableSelectedDateIds.flatMap(
+        (dateId) =>
+          reservationQueries.myOfficeScheduleItemsByDate[dateId] ?? [],
+      ),
+    [
+      scheduler.selectableSelectedDateIds,
+      reservationQueries.myOfficeScheduleItemsByDate,
+    ],
+  );
+
+  const selectedDaysMyParkingScheduleItems = useMemo(
+    () =>
+      scheduler.selectableSelectedDateIds.flatMap(
+        (dateId) =>
+          reservationQueries.myParkingScheduleItemsByDate[dateId] ?? [],
+      ),
+    [
+      scheduler.selectableSelectedDateIds,
+      reservationQueries.myParkingScheduleItemsByDate,
+    ],
+  );
+
+  const selectedDaysMyEventScheduleItems = useMemo(
+    () =>
+      scheduler.selectableSelectedDateIds.flatMap(
+        (dateId) => reservationQueries.myEventScheduleItemsByDate[dateId] ?? [],
+      ),
+    [
+      scheduler.selectableSelectedDateIds,
+      reservationQueries.myEventScheduleItemsByDate,
+    ],
+  );
+
   const visibleMyScheduleItems = useMemo(() => {
     if (showAllEvents) return activeDayMyScheduleItems;
 
     return activeDayMyScheduleItems.slice(0, 2);
   }, [activeDayMyScheduleItems, showAllEvents]);
 
-  const conflictCount = useMemo(
-    () =>
-      activeDayMyScheduleItems.filter((item) => item.status === "conflict")
-        .length,
-    [activeDayMyScheduleItems],
+  const blockingConflictCount = useMemo(
+    () => scheduler.conflictDateIds.length,
+    [scheduler.conflictDateIds],
   );
+
+  const conflictCount = blockingConflictCount;
+
+  const hasBlockingConflict = scheduler.hasBlockingConflict;
+  const canContinue = scheduler.canContinue;
 
   function openConfirmationModal() {
     if (!selectedSpace) return;
+
+    /**
+     * Solo bloquea si empalma con reservaciones del espacio actual.
+     * Si empalma con mi agenda personal, sí puede continuar.
+     */
+    if (hasBlockingConflict) return;
 
     const schedules = scheduler.createReservationSchedules();
 
@@ -134,20 +242,52 @@ export function useReservationSchedulerViewModel({
       calendarCells,
       scheduler,
 
+      timeline: reservationQueries.timeline,
+
       spaceScheduleItems: reservationQueries.spaceScheduleItems,
+
       myScheduleItems: reservationQueries.myScheduleItems,
+      myOfficeScheduleItems: reservationQueries.myOfficeScheduleItems,
+      myParkingScheduleItems: reservationQueries.myParkingScheduleItems,
+      myEventScheduleItems: reservationQueries.myEventScheduleItems,
+
+      myOfficeReservations: reservationQueries.myOfficeReservations,
+      myParkingReservations: reservationQueries.myParkingReservations,
+      myEvents: reservationQueries.myEvents,
 
       spaceScheduleItemsByDate: reservationQueries.spaceScheduleItemsByDate,
+      blockingScheduleItemsByDate: reservationQueries.spaceScheduleItemsByDate,
+
       myScheduleItemsByDate: reservationQueries.myScheduleItemsByDate,
+      myOfficeScheduleItemsByDate:
+        reservationQueries.myOfficeScheduleItemsByDate,
+      myParkingScheduleItemsByDate:
+        reservationQueries.myParkingScheduleItemsByDate,
+      myEventScheduleItemsByDate: reservationQueries.myEventScheduleItemsByDate,
 
       activeDaySpaceScheduleItems,
+      activeDayBlockingScheduleItems,
+
       activeDayMyScheduleItems,
+      activeDayMyOfficeScheduleItems,
+      activeDayMyParkingScheduleItems,
+      activeDayMyEventScheduleItems,
 
       selectedDaysSpaceScheduleItems,
+      selectedDaysBlockingScheduleItems,
+
       selectedDaysMyScheduleItems,
+      selectedDaysMyOfficeScheduleItems,
+      selectedDaysMyParkingScheduleItems,
+      selectedDaysMyEventScheduleItems,
 
       visibleMyScheduleItems,
+
       conflictCount,
+      blockingConflictCount,
+
+      hasBlockingConflict,
+      canContinue,
 
       isLoading: reservationQueries.isLoading,
       isFetching: reservationQueries.isFetching,

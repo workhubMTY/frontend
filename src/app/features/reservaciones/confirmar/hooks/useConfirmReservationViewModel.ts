@@ -64,7 +64,7 @@ export function useConfirmReservationViewModel({
     hasSearched: hasSearchedMembers,
   } = useDebouncedSearch<User>({
     searchTerm,
-    searchFn: useUserSearchSuggestions(user?.eId),
+    searchFn: useUserSearchSuggestions(),
     delay: 350,
     enabled: isOpen,
   });
@@ -165,7 +165,13 @@ export function useConfirmReservationViewModel({
           "Por ahora solo se pueden invitar usuarios registrados a la reservación.",
         );
         return;
-      }
+      } 
+      console.log("creating reservation", { reservable_id: reservationDraft.reservableId,
+        category: "RESERVATION",
+        description: "",
+        timestamps: reservationDraft.schedules,
+        participants: userIds,
+        teamIds: workGroupIds.map(id => String(id))})
 
       await createReservationBatch.mutateAsync({
         reservable_id: reservationDraft.reservableId,

@@ -22,7 +22,7 @@ export function useFriends() {
           ? data
           : (data?.items ?? []);
         setFriends(items);
-        console.log("datos: ",data);
+        // console.log("datos: ",data);
         setStatus("success");
       })
       .catch((err: any) => {

@@ -366,9 +366,46 @@ export function useMyParkingReservations(
   query?: ListReservationsQuery,
   options?: { enabled?: boolean },
 ) {
-  return useQuery({
+  const queryClient = useQueryClient();
+  const socket = useSocket();
+
+  useJoinParkingRoom();
+
+  const queryResult = useQuery({
     queryKey: parkingKeys.myReservations(query),
     queryFn: () => parkingReservationsApi.getMyReservations(query),
     enabled: Boolean(query) && (options?.enabled ?? true),
+    staleTime: 1000 * 30,
   });
+
+  useEffect(() => {
+    if (!query) return;
+
+    const key = parkingKeys.myReservations(query);
+
+    function onParkingUpdate(msg: ParkingUpdateMessage) {
+      if (msg.type === "reservation.created") {
+        queryClient.invalidateQueries({ queryKey: key });
+        return;
+      }
+
+      if (
+        msg.type === "reservation.canceled" ||
+        msg.type === "reservation.attendance_updated" ||
+        msg.type === "reservation.no_show"
+      ) {
+        queryClient.setQueryData<ListReservationsResponse>(key, (prev) => {
+          if (!prev) return prev;
+          return patchReservationInList(prev, msg.payload);
+        });
+      }
+    }
+
+    socket.on("parkingUpdate", onParkingUpdate);
+    return () => {
+      socket.off("parkingUpdate", onParkingUpdate);
+    };
+  }, [socket, queryClient, query]);
+
+  return queryResult;
 }

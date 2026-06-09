@@ -46,8 +46,8 @@ export function useParkingReservationSchedulerData({
 
     return {
       parking_lot_id: parkingId,
-      start_time: new Date(`${visibleRange.firstDateId}T00:00:00.000`),
-      end_time: new Date(`${visibleRange.lastDateId}T23:59:59.999`),
+      start_time: `${visibleRange.firstDateId}T00:00:00.000`,
+      end_time: `${visibleRange.lastDateId}T23:59:59.999`,
     };
   }, [parkingId, visibleRange]);
 
@@ -57,8 +57,8 @@ export function useParkingReservationSchedulerData({
     if (!visibleRange) return undefined;
 
     return {
-      start_time: new Date(`${visibleRange.firstDateId}T00:00:00.000`),
-      end_time: new Date(`${visibleRange.lastDateId}T23:59:59.999`),
+      start_time: `${visibleRange.firstDateId}T00:00:00.000`,
+      end_time: `${visibleRange.lastDateId}T23:59:59.999`,
     };
   }, [visibleRange]);
 

@@ -7,7 +7,7 @@ import type {
   CreateReservationBatchDto,
 } from "@/app/features/reservaciones/crear/types/reservaciones";
 
-import type { UserTimelineQuery } from "@/app/features/reservaciones/confirmar/types/confirmation";
+import type { UserTimelineQuery } from "@/app/features/reservaciones/crear/types/timeline";
 
 export const reservationKeys = {
   all: ["reservations"] as const,
@@ -22,6 +22,8 @@ export const reservationKeys = {
   users: () => [...reservationKeys.all, "users"] as const,
 
   guests: () => [...reservationKeys.all, "guests"] as const,
+
+  events: () => [...reservationKeys.all, "events"] as const,
 
   userTimeline: (userId: string | null, query: UserTimelineQuery | undefined) =>
     [
@@ -47,19 +49,6 @@ export const reservationKeys = {
       "space-schedule-items-visible-range",
       reservableId,
       calendarCells.map((cell) => cell.id).join(","),
-    ] as const,
-
-  myScheduleItemsInVisibleRange: (
-    userId: string | null,
-    calendarCells: CalendarCell[],
-    includeEIds?: string[],
-  ) =>
-    [
-      ...reservationKeys.all,
-      "my-schedule-items-visible-range",
-      userId,
-      calendarCells.map((cell) => cell.id).join(","),
-      includeEIds?.join(","),
     ] as const,
 };
 
@@ -108,8 +97,15 @@ export function useUserTimeline(
 ) {
   return useQuery({
     queryKey: reservationKeys.userTimeline(userId, query),
+    queryFn: () => {
+      if (!userId || !query) {
+        throw new Error("userId y query son requeridos para timeline");
+      }
+
+      return reservationsApi.getUserTimeline(userId, query);
+    },
     enabled: Boolean(userId && query) && (options?.enabled ?? true),
-    queryFn: () => reservationsApi.getUserTimeline(userId!, query!),
+    staleTime: 1000 * 30,
   });
 }
 
@@ -132,33 +128,6 @@ export function useSpaceScheduleItemsInVisibleRange({
       reservationsApi.getSpaceScheduleItemsInVisibleRange({
         reservableId: reservableId!,
         calendarCells,
-      }),
-  });
-}
-
-export function useMyScheduleItemsInVisibleRange({
-  userId,
-  calendarCells,
-  includeEIds,
-  enabled = true,
-}: {
-  userId: string | null;
-  calendarCells: CalendarCell[];
-  includeEIds?: string[];
-  enabled?: boolean;
-}) {
-  return useQuery({
-    queryKey: reservationKeys.myScheduleItemsInVisibleRange(
-      userId,
-      calendarCells,
-      includeEIds,
-    ),
-    enabled: Boolean(userId) && enabled,
-    queryFn: () =>
-      reservationsApi.getMyScheduleItemsInVisibleRange({
-        userId: userId!,
-        calendarCells,
-        includeEIds,
       }),
   });
 }

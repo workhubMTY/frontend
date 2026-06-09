@@ -12,9 +12,9 @@ import type {
 } from "@/app/features/cubiculos/data/types";
 
 import type {
-  MyScheduleApiItem,
+  UserTimelineData,
   UserTimelineQuery,
-} from "@/app/features/reservaciones/confirmar/types/confirmation";
+} from "@/app/features/reservaciones/crear/types/timeline";
 
 import type {
   CalendarCell,
@@ -30,8 +30,6 @@ import {
   groupScheduleItemsByDate,
   toTime,
 } from "@/app/features/reservaciones/crear/data/scheduleItems";
-
-import { myScheduleApiItemToScheduleItem } from "./myScheduleMappers";
 
 const RESERVATIONS_BASE = `/office/reservations`;
 
@@ -110,7 +108,7 @@ export function reservationSummaryToScheduleItem(
   reservation: ReservationSummary,
 ): ScheduleItem {
   return {
-    id: `space_reservation-${reservation.id}`,
+    id: reservation.id,
     kind: "space_reservation",
 
     dateId: dateToId(new Date(reservation.start_time)),
@@ -130,6 +128,7 @@ export function reservationSummaryToScheduleItem(
     floorName: reservation.floor_name ?? null,
 
     attendanceStatus: reservation.attendance_status ?? null,
+    lifecycleStatus : reservation.lifecycle_status ?? null,
 
     raw: reservation,
   };
@@ -167,7 +166,7 @@ export const reservationsApi = {
   getUserTimeline: (userId: string, query: UserTimelineQuery) => {
     const search = buildUserTimelineSearchParams(query);
 
-    return authFetch<MyScheduleApiItem[]>(
+    return authFetch<UserTimelineData>(
       `/users/${userId}/timeline?${search}`,
       {
         method: "GET",
@@ -193,37 +192,5 @@ export const reservationsApi = {
     });
 
     return reservations.map(reservationSummaryToScheduleItem);
-  },
-
-  getMyScheduleItemsInVisibleRange: async ({
-    userId,
-    calendarCells,
-    includeEIds,
-  }: {
-    userId: string;
-    calendarCells: CalendarCell[];
-    includeEIds?: string[];
-  }): Promise<ScheduleItem[]> => {
-    const visibleRange = getVisibleRange(calendarCells);
-
-    if (!visibleRange) return [];
-
-    const query: UserTimelineQuery = {
-      from: visibleRange.from,
-      to: visibleRange.to,
-
-      includeOfficeReservations: true,
-      officeCategories: ["MEETING", "RESERVATION"],
-
-      includeParkingReservations: true,
-      includeEvents: true,
-      includeFriends: true,
-
-      includeEIds,
-    };
-
-    const items = await reservationsApi.getUserTimeline(userId, query);
-
-    return items.map(myScheduleApiItemToScheduleItem);
   },
 };

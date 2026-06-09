@@ -25,10 +25,10 @@ export function HomeAgendaPanel({
     agendaFilter,
   });
 
-  console.log("weekOffset:", weekOffset);
-  console.log("agendaFilter:", agendaFilter);
-  console.log("events:", events);
-  console.log("loading:", loading);
+  // console.log("weekOffset:", weekOffset);
+  // console.log("agendaFilter:", agendaFilter);
+  // console.log("events:", events);
+  // console.log("loading:", loading);
 
   const containerClass =
     variant === "mobile"

@@ -14,6 +14,14 @@ export function toTime(value: Date | string) {
   });
 }
 
+function toServerDateId(value: string) {
+  return value.slice(0, 10);
+}
+
+function toServerTime(value: string) {
+  return value.slice(11, 16);
+}
+
 function getScheduleItemKind(
   item: MyScheduleApiItem,
 ): ScheduleItem["kind"] {
@@ -50,12 +58,12 @@ export function myScheduleApiItemToScheduleItem(
   const kind = getScheduleItemKind(item);
 
   return {
-    id: `${kind}-${item.id}`,
+    id: item.id,
     kind,
 
-    dateId: toDateId(item.start_time),
-    start: toTime(item.start_time),
-    end: toTime(item.end_time),
+    dateId: toServerDateId(item.start_time),
+    start: toServerTime(item.start_time),
+    end: toServerTime(item.end_time),
 
     title: item.title ?? getDefaultTitle(kind),
     location: item.location ?? item.reservable_name ?? null,
@@ -70,6 +78,7 @@ export function myScheduleApiItemToScheduleItem(
     floorName: item.floor_name ?? null,
 
     attendanceStatus: item.attendance_status ?? null,
+    lifecycleStatus: item.lifecycle_status,
 
     raw: item,
   };
