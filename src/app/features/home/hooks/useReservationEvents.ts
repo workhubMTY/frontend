@@ -23,10 +23,10 @@ export function useReservationEvents({ weekOffset, selectedFriendId, agendaFilte
   });
 
   const events = useMemo<ExternalEvent[]>(() => {
-    const ownParking = parkingToEvents(own.parking, false, weekOffset);
-    const ownOffice  = officeToEvents(own.office,   false, weekOffset);
-    const frdParking = selectedFriendId ? parkingToEvents(friend.parking, true, weekOffset) : [];
-    const frdOffice  = selectedFriendId ? officeToEvents(friend.office,   true, weekOffset) : [];
+    const ownParking = parkingToEvents(own.parking, false);
+    const ownOffice  = officeToEvents(own.office, false);
+    const frdParking = selectedFriendId ? parkingToEvents(friend.parking, true) : [];
+    const frdOffice  = selectedFriendId ? officeToEvents(friend.office, true) : [];
 
     const all = [...ownParking, ...ownOffice, ...frdParking, ...frdOffice];
     

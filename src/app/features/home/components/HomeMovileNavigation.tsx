@@ -32,12 +32,6 @@ export function HomeMobileNavigation({
       icon: <Users size={18} />,
       badge: selectedPerson !== null,
     },
-    {
-      key: "invitaciones",
-      label: "Invitaciones",
-      icon: <MailOpen size={18} />,
-      badge: selectedInvitationId !== null,
-    },
   ];
 
   return (
