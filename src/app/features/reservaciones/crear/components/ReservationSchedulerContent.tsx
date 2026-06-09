@@ -14,6 +14,7 @@ import { ConfirmReservationModal } from "@/app/features/reservaciones/confirmar/
 import { ReservationFinishedModal } from "@/app/features/reservaciones/confirmar/components/ReservationFinishedModal";
 
 import { useReservationSchedulerViewModel } from "@/app/features/reservaciones/crear/hooks/useReservationSchedulerViewModel";
+import { dateToId } from "../lib/dates";
 
 export function ReservationSchedulerContent() {
   const [showAllEvents, setShowAllEvents] = useState(false);
@@ -21,6 +22,11 @@ export function ReservationSchedulerContent() {
   const { state, actions } = useReservationSchedulerViewModel({
     showAllEvents,
   });
+
+  const todayId = dateToId(new Date());
+
+  const hasTodaySelected =
+    state.scheduler.selectableSelectedDateIds.includes(todayId);
 
   return (
     <>
@@ -74,6 +80,7 @@ export function ReservationSchedulerContent() {
               hasSelectedDates={
                 state.scheduler.selectableSelectedDateIds.length > 0
               }
+              hasTodaySelected={hasTodaySelected}
               onAddBlock={state.scheduler.addProposedBlock}
               onDeleteBlock={state.scheduler.deleteProposedBlock}
               onUpdateBlock={state.scheduler.updateProposedBlock}
