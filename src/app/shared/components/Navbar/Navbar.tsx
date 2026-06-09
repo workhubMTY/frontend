@@ -14,7 +14,6 @@ const baseRoutes = [
 ];
 
 const adminRoutes = [
-  {name: "Estadísticas", href: "/estadisticas"},
   {name: "Tablero", href: "/tablero" },
 ]
 
