@@ -1,8 +1,8 @@
-import type { TimeBlock } from "../../types/reservaciones";
+import type { TimeBlock } from "@/app/features/reservaciones/crear/types/reservaciones";
 import type { TimelineRange } from "./ReservationTimelineCard";
 
 import { cn } from "@/app/shared/lib/cn";
-import { to24Hour } from "../../lib/time";
+import { to24Hour } from "@/app/features/reservaciones/crear/lib/time";
 
 type SelectedReservationBlockProps = {
   block: TimeBlock;

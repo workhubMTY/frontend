@@ -7,7 +7,7 @@ import { Card } from "@/app/shared/components/Card";
 import { EventsCard } from "@/app/features/reservaciones/crear/components/Cards/EventsCard";
 import { ProposedSchedulesCard } from "@/app/features/reservaciones/crear/components/Cards/ProposedSchedulesCard";
 import { ReservationFooter } from "@/app/features/reservaciones/crear/components/ReservationFooter";
-import { ReservationTimelineCard } from "@/app/features/reservaciones/crear/components/Timeline/ReservationTimelineCard";
+import { ReservationTimelineCard } from "@/app/features/reservaciones/crear/components/Cards/Timeline/ReservationTimelineCard";
 import { SelectionModeCalendarCard } from "@/app/features/reservaciones/crear/components/Calendar/DaysSelection/SelectionModeCalendarCard";
 
 import { ConfirmReservationModal } from "@/app/features/reservaciones/confirmar/components/modals/ConfirmReservationModal";

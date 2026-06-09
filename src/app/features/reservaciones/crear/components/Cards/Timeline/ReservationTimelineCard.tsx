@@ -1,10 +1,10 @@
 import { CalendarCheck, Lock } from "lucide-react";
 
-import type { TimeBlock } from "../../types/reservaciones";
-import type { ScheduleItem } from "../../types/schedule";
+import type { TimeBlock } from "@/app/features/reservaciones/crear/types/reservaciones";
+import type { ScheduleItem } from "@/app/features/reservaciones/crear/types/schedule";
 
-import { cn } from "../../../../../shared/lib/cn";
-import { to24Hour } from "../../lib/time";
+import { cn } from "@/app/shared/lib/cn";
+import { to24Hour } from "@/app/features/reservaciones/crear/lib/time";
 import { TimelineAxis } from "./TimelineAxis";
 import { ExistingRangeBlock } from "./ExistingRangeBlock";
 import { SelectedReservationBlock } from "./SelectedReservationBlock";

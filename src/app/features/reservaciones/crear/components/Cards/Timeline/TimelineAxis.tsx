@@ -1,6 +1,6 @@
-import { timelineHours } from "../../constants/reservaciones";
-import { cn } from "../../../../../shared/lib/cn";
-import { timeToPercent } from "../../lib/time";
+import { timelineHours } from "@/app/features/reservaciones/crear/constants/reservaciones";
+import { cn } from "@/app/shared/lib/cn";
+import { timeToPercent } from "@/app/features/reservaciones/crear/lib/time";
 
 export function TimelineAxis() {
   return (
