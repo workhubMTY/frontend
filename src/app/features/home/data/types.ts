@@ -5,28 +5,10 @@ export type Parking = {
     priority: number;
 };
 
-export type ParkingReservations = {
-    id: number;
-    user_id: string;
-    start_time: string;
-    end_time: string;
-    lifecycle_status: string;
-    attendance_status: string;
-    allocation_state: string;
-    canceled_at?: string | null;
-    created_at: string;
-    updated_at: string;
-};
-
 export type ParkingProjection = {
     parking_lot: Parking;
     slot_index: number;
     fifo_position: number;
-};
-
-export type ParkingReservationData = {
-    reservation: ParkingReservations;
-    projection: ParkingProjection;
 };
 
 export type GetParkingReservationsParams = {
@@ -51,21 +33,6 @@ export type Participants = {
     created_at: string;
     updated_at: string;
 };
- 
-export type OfficeReservations = {
-    id: number;
-    reservavle_id: number;
-    category: string;
-    start_time: string;
-    end_time: string;
-    description: string;
-    attendance_status: string;
-    created_at: string;
-    updated_at: string;
-    lifecycle_status: string;
-    reservable: Office;
-    participants: Participants[];
-};
 
 export type Users = {
     eId: string;
@@ -80,3 +47,59 @@ export type Friends = Users;
 export type Guests = {};
 
 export type GuestsInvitatiosn = {}; 
+
+export type ParkingReservation = {
+  id: number;
+  user_id: string;
+  start_time: string;
+  end_time: string;
+  attendance_status: string;
+  canceled_at: string | null;
+  created_at: string;
+  updated_at: string;
+  lifecycle_status: string;
+  parking_lot?: { id: number; name: string; capacity: number; priority: number };
+};
+
+export type OfficeReservable = {
+  id: number;
+  name: string;
+  capacity: number;
+  floor_id: number;
+  is_blocked: boolean;
+};
+
+export type OfficeParticipant = {
+  id: number;
+  reservations_id: number;
+  user_id: string | null;
+  ownership_priority: number | null;
+  attendance_status: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type OfficeReservation = {
+  id: number;
+  reservable_id: number;
+  category: string;
+  start_time: string;
+  end_time: string;
+  description: string;
+  attendance_status: string;
+  created_at: string;
+  updated_at: string;
+  lifecycle_status: string;
+  reservable: OfficeReservable;
+  participants: OfficeParticipant[];
+};
+
+export type BackendListResponse<T> = {
+  success: boolean;
+  message: string;
+  data: T[];
+  cursor: { nextCursor: string | null; hasNext: boolean };
+};
+
+export type ParkingReservationData = ParkingReservation;
+export type OfficeReservations = OfficeReservation;
