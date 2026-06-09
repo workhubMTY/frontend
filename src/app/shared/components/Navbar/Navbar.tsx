@@ -9,7 +9,6 @@ import { useAuth } from "../../auth/useAuth";
 
 const baseRoutes = [
   { name: "Inicio", href: "/home" },
-  { name: "Parking Inicio", href: "/parking-checkin" },
   { name: "Cubículos", href: "/cubiculos" },
   { name: "Estacionamientos", href: "/estacionamientos" },
 ];
