@@ -13,21 +13,21 @@ const timelineKindStyles: Record<TimelineKind, TimelineKindStyle> = {
   parking_reservation: {
     label: "Espacio ocupado",
     blockClassName:
-      "border-slate-300 bg-slate-100 border-l-blue-500 text-slate-700 shadow-[0_1px_2px_rgba(15,23,42,0.08)]",
+      "border-slate-300 bg-red-500 border-l-blue-500 text-slate-700 shadow-[0_1px_2px_rgba(15,23,42,0.08)]",
     textClassName: "text-slate-700",
   },
 
   my_reservation: {
     label: "Mi reservación",
     blockClassName:
-      "border-slate-300 border-l-primary-2 bg-container text-slate-600 shadow-[0_1px_2px_rgba(15,23,42,0.06)]",
+      "border-slate-300 border-l-primary-2 text-slate-600 shadow-[0_1px_2px_rgba(15,23,42,0.06)]",
     textClassName: "text-slate-600",
   },
 
   calendar_event: {
     label: "Evento de calendario",
     blockClassName:
-      "border-sky-100 bg-sky-50/70 text-slate-700 shadow-[0_1px_2px_rgba(15,23,42,0.04)]",
+      "border-sky-100 text-slate-700 shadow-[0_1px_2px_rgba(15,23,42,0.04)]",
     textClassName: "text-slate-600",
   },
 };
@@ -35,7 +35,7 @@ const timelineKindStyles: Record<TimelineKind, TimelineKindStyle> = {
 const fallbackKindStyle: TimelineKindStyle = {
   label: "Horario",
   blockClassName:
-    "border-slate-200 bg-white text-slate-600 shadow-[0_1px_2px_rgba(15,23,42,0.04)]",
+    "border-slate-200 text-slate-600 shadow-[0_1px_2px_rgba(15,23,42,0.04)]",
   textClassName: "text-slate-600",
 };
 
@@ -93,7 +93,7 @@ export function ExistingRangeBlock({
   return (
     <div
       className={cn(
-        "absolute z-20 flex items-center overflow-hidden rounded-[6px] border px-2",
+        "bg-slate-100 absolute z-20 flex items-center overflow-hidden rounded-[6px] border px-2",
         "transition-[box-shadow,background-color,border-color] duration-150",
         "hover:shadow-[0_2px_6px_rgba(15,23,42,0.10)]",
 
@@ -103,7 +103,7 @@ export function ExistingRangeBlock({
         kindStyle.blockClassName,
 
         variant === "occupied" && "ring-1 ring-inset ring-slate-900/[0.03]",
-        variant === "mine" && "border-dashed bg-white/90 border-l-10",
+        variant === "mine" && "border-dashed border-l-10",
       )}
       style={{
         left: `${left}%`,
