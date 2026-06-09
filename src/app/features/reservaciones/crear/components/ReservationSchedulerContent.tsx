@@ -34,7 +34,7 @@ export function ReservationSchedulerContent() {
   return (
     <>
       <main className="min-h-full bg-background-page p-4 text-slate-950 sm:p-6 lg:p-8">
-        <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_340px] 2xl:grid-cols-[minmax(0,1fr)_380px]">
+        <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_340px] 2xl:grid-cols-[minmax(0,1fr)_380px]">
           <section className="flex min-w-0 flex-col gap-4">
             <Card className="p-4">
               <ReservationTimelineCard
@@ -62,7 +62,7 @@ export function ReservationSchedulerContent() {
             />
           </section>
 
-          <aside className="flex h-full flex-col gap-5 self-start xl:sticky xl:top-6">
+          <aside className="flex min-w-0 flex-col gap-5 self-stretch xl:sticky xl:top-6">
             <SelectionModeCalendarCard
               calendarCells={state.calendarCells}
               activeDayId={state.scheduler.activeDayId}
@@ -74,10 +74,11 @@ export function ReservationSchedulerContent() {
               onClearSelection={state.scheduler.clearSelection}
               onActivateDay={state.scheduler.setActiveDayId}
             />
-
             <ProposedSchedulesCard
               proposedBlocks={state.scheduler.proposedBlocks}
-              selectedDateCount={state.scheduler.selectableSelectedDateIds.length}
+              selectedDateCount={
+                state.scheduler.selectableSelectedDateIds.length
+              }
               hasSelectedDates={
                 state.scheduler.selectableSelectedDateIds.length > 0
               }

@@ -45,7 +45,6 @@ function parseTimeToMinutes(time: string) {
 function getCurrentMinutes(now: Date) {
   return now.getHours() * 60 + now.getMinutes();
 }
-
 export function ProposedSchedulesCard({
   proposedBlocks,
   selectedDateCount,
@@ -65,7 +64,7 @@ export function ProposedSchedulesCard({
   };
 
   return (
-    <Card className="flex flex-1 flex-col p-4">
+    <Card className="flex flex-col p-4">
       <div className="mb-3 flex items-start justify-between gap-3">
         <div className="min-w-0">
           <h2 className="text-base font-semibold text-slate-950">Horarios</h2>
@@ -88,7 +87,7 @@ export function ProposedSchedulesCard({
           type="button"
           onClick={handleAddBlock}
           className={cn(
-            "inline-flex h-8 shrink-0 items-center gap-1.5 px-2.5 text-xs font-semibold shadow-sm transition",
+            "inline-flex h-8 shrink-0 items-center gap-1.5 rounded-md px-2.5 text-xs font-semibold transition",
             hasSelectedDates
               ? "bg-primary-2 text-white hover:bg-primary-1"
               : "cursor-not-allowed bg-slate-100 text-slate-400",
@@ -105,17 +104,17 @@ export function ProposedSchedulesCard({
       </div>
 
       {proposedBlocks.length === 0 ? (
-        <div className="flex flex-1 flex-col justify-center rounded-lg border border-dashed border-slate-300 bg-slate-50 px-3 py-4 text-center">
+        <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50 px-3 py-4 text-center">
           <p className="text-sm font-medium text-slate-700">
             No hay horarios agregados
           </p>
 
-          <p className="text-xs leading-5 text-slate-500">
-            Los horarios que agregues se aplicarán a los días seleccionados.
+          <p className="mt-0.5 text-xs leading-5 text-slate-500">
+            Se aplicarán a los días seleccionados.
           </p>
         </div>
       ) : (
-        <div className="space-y-2">
+        <div className="max-h-[280px] space-y-2 overflow-y-auto pr-1">
           {proposedBlocks.map((block) => {
             const blockConflict = blockHasConflict(block, proposedBlocks);
 
@@ -139,10 +138,10 @@ export function ProposedSchedulesCard({
               <div
                 key={block.id}
                 className={cn(
-                  "border bg-white px-2.5 py-2 transition",
+                  "rounded-lg border px-2.5 py-2 transition",
                   hasError
                     ? "border-red-200 bg-red-50/70"
-                    : "border-slate-200 hover:border-slate-300",
+                    : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50/50",
                 )}
               >
                 <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_32px] items-end gap-2">
