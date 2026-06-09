@@ -11,13 +11,20 @@ import { ParkingCapacityTimelineCard } from "@/app/features/estacionamientos/com
 import { ParkingReservationConfirmModal } from "@/app/features/estacionamientos/components/ParkingReservationsConfirmModals";
 
 import { useParkingReservationSchedulerViewModel } from "@/app/features/estacionamientos/hooks/useParkingReservationSchedulerViewModel";
+import { dateToId } from "@/app/features/reservaciones/crear/lib/dates";
+import { useCurrentMinute } from "@/app/features/reservaciones/crear/hooks/useCurrentMinute";
 
 export default function ParkingReservationSchedulerPage() {
   const [showAllEvents, setShowAllEvents] = useState(false);
+  const now = useCurrentMinute();
+
+  const todayId = dateToId(now);
 
   const { state, actions } = useParkingReservationSchedulerViewModel({
     showAllEvents,
   });
+  const hasTodaySelected =
+    state.scheduler.selectableSelectedDateIds.includes(todayId);
 
   return (
     <main className="min-h-full bg-background-page p-4 text-slate-950 sm:p-6 lg:p-8">
@@ -66,6 +73,8 @@ export default function ParkingReservationSchedulerPage() {
             hasSelectedDates={
               state.scheduler.selectableSelectedDateIds.length > 0
             }
+            hasTodaySelected={hasTodaySelected}
+            now={now}
             onAddBlock={state.scheduler.addProposedBlock}
             onDeleteBlock={state.scheduler.deleteProposedBlock}
             onUpdateBlock={state.scheduler.updateProposedBlock}
