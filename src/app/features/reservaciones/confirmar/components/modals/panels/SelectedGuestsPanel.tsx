@@ -56,7 +56,7 @@ function SelectedGuestItem({
 }) {
   return (
     <div className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-3 py-3">
-      <Avatar name={guest.name} kind={guest.kind} />
+      <Avatar name={guest.name} />
 
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-semibold text-slate-900">
@@ -64,13 +64,10 @@ function SelectedGuestItem({
         </p>
 
         <p className="truncate text-xs text-slate-500">{guest.email}</p>
+        {guest.helperText && <p className="truncate text-xs text-slate-500">{guest.helperText}</p>}
+
       </div>
 
-      {guest.kind === "invitado" && (
-        <span className="rounded-full bg-sky-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-sky-700">
-          Invitado
-        </span>
-      )}
 
       <button
         type="button"

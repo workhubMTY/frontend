@@ -26,18 +26,11 @@ export function HomeAgendaPanel({
     agendaFilter,
   });
 
-<<<<<<< HEAD
-  // console.log("weekOffset:", weekOffset);
-  // console.log("agendaFilter:", agendaFilter);
-  // console.log("events:", events);
-  // console.log("loading:", loading);
-=======
   // Obtener nombre del amigo para la leyenda
   const { friends } = useFriends();
   const friendName = selectedFriendId
     ? (friends.find((f) => (f.eId ?? (f as any).e_id) === selectedFriendId)?.name ?? null)
     : null;
->>>>>>> a6230e462562de8c5c9f37de4e5a1d52e3a7d7ac
 
   const containerClass =
     variant === "mobile"

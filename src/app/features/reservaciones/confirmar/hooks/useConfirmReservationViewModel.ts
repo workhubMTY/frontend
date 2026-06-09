@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { useCreateReservationBatch } from "../../crear/data/hooks";
 
@@ -38,6 +38,7 @@ export function useConfirmReservationViewModel({
   const createReservationBatch = useCreateReservationBatch();
 
   const [invitedGuests, setInvitedGuests] = useState<InvitedGuest[]>([]);
+
   const [searchTerm, setSearchTerm] = useState("");
 
   const [shouldCreateTeam, setShouldCreateTeam] = useState(false);
@@ -46,7 +47,19 @@ export function useConfirmReservationViewModel({
 
   const [loadError, setLoadError] = useState("");
   const [submitError, setSubmitError] = useState("");
+  useEffect(() => {
+    if (!user) return;
 
+    setInvitedGuests([
+      {
+        id: `user:${user.eId}`,
+        source: "user",
+        name: user.name,
+        sourceId: user.eId,
+        helperText: "Eres tú, no te elimines!",
+      },
+    ]);
+  }, [user]);
   const {
     data: teams = [],
     isLoading: teamsLoading,
@@ -159,19 +172,20 @@ export function useConfirmReservationViewModel({
       const { userIds, guestIds, workGroupIds } =
         splitInvitedGuestsForReservation(invitedGuests);
 
-
       if (guestIds.length > 0) {
         setSubmitError(
           "Por ahora solo se pueden invitar usuarios registrados a la reservación.",
         );
         return;
-      } 
-      console.log("creating reservation", { reservable_id: reservationDraft.reservableId,
+      }
+      console.log("creating reservation", {
+        reservable_id: reservationDraft.reservableId,
         category: "RESERVATION",
         description: "",
         timestamps: reservationDraft.schedules,
         participants: userIds,
-        teamIds: workGroupIds.map(id => String(id))})
+        teamIds: workGroupIds.map((id) => String(id)),
+      });
 
       await createReservationBatch.mutateAsync({
         reservable_id: reservationDraft.reservableId,
@@ -179,7 +193,7 @@ export function useConfirmReservationViewModel({
         description: "",
         timestamps: reservationDraft.schedules,
         participants: userIds,
-        teamIds: workGroupIds.map(id => String(id))
+        teamIds: workGroupIds.map((id) => String(id)),
       });
 
       resetModalState();
@@ -207,7 +221,8 @@ export function useConfirmReservationViewModel({
       teamName,
       teamNameError,
 
-      loadError: loadError || (teamsError ? "No se pudieron cargar los equipos." : ""),
+      loadError:
+        loadError || (teamsError ? "No se pudieron cargar los equipos." : ""),
       submitError,
 
       isLoadingOptions,

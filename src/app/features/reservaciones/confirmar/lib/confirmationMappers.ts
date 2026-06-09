@@ -14,7 +14,6 @@ export function mapUserToInvitedGuest(user: User): InvitedGuest {
 
     name: user.name,
     email: user.email,
-    kind: "colaborador",
   };
 }
 
@@ -28,16 +27,11 @@ export function mapTeamToInvitedGuest(team: Team): InvitedGuest {
     email: `${team.memberCount} ${
       team.memberCount === 1 ? "integrante" : "integrantes"
     }`,
-    kind: "colaborador",
 
     memberCount: team.memberCount,
   };
 }
 
-/**
- * Para cuando tengas invitados externos reales.
- * Necesitas que el backend te regrese un id de invitado.
- */
 export function mapGuestToInvitedGuest(guest: {
   id: string | number;
   name: string;
@@ -50,7 +44,6 @@ export function mapGuestToInvitedGuest(guest: {
 
     name: guest.name,
     email: guest.email,
-    kind: "invitado",
   };
 }
 

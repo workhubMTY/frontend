@@ -44,13 +44,14 @@ export type InvitedGuest = {
   sourceId: string;
 
   name: string;
-  email: string;
-  kind: GuestKind;
+  email?: string;
 
   /**
    * Solo aplica para equipos.
    */
   memberCount?: number;
+
+  helperText?:string;
 };
 
 export type CreateReservationGuestsPayload = {
