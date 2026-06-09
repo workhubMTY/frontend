@@ -14,16 +14,19 @@ import { ConfirmReservationModal } from "@/app/features/reservaciones/confirmar/
 import { ReservationFinishedModal } from "@/app/features/reservaciones/confirmar/components/ReservationFinishedModal";
 
 import { useReservationSchedulerViewModel } from "@/app/features/reservaciones/crear/hooks/useReservationSchedulerViewModel";
-import { dateToId } from "../lib/dates";
+import { useCurrentMinute } from "@/app/features/reservaciones/crear/hooks/useCurrentMinute";
+import { dateToId } from "@/app/features/reservaciones/crear/lib/dates";
 
 export function ReservationSchedulerContent() {
   const [showAllEvents, setShowAllEvents] = useState(false);
+
+  const now = useCurrentMinute();
 
   const { state, actions } = useReservationSchedulerViewModel({
     showAllEvents,
   });
 
-  const todayId = dateToId(new Date());
+  const todayId = dateToId(now);
 
   const hasTodaySelected =
     state.scheduler.selectableSelectedDateIds.includes(todayId);
@@ -74,13 +77,12 @@ export function ReservationSchedulerContent() {
 
             <ProposedSchedulesCard
               proposedBlocks={state.scheduler.proposedBlocks}
-              selectedDateCount={
-                state.scheduler.selectableSelectedDateIds.length
-              }
+              selectedDateCount={state.scheduler.selectableSelectedDateIds.length}
               hasSelectedDates={
                 state.scheduler.selectableSelectedDateIds.length > 0
               }
               hasTodaySelected={hasTodaySelected}
+              now={now}
               onAddBlock={state.scheduler.addProposedBlock}
               onDeleteBlock={state.scheduler.deleteProposedBlock}
               onUpdateBlock={state.scheduler.updateProposedBlock}

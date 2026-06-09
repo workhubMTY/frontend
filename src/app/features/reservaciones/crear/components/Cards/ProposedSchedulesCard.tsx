@@ -1,6 +1,6 @@
 "use client";
 
-import { Info, Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
 
 import type { TimeBlock } from "../../types/reservaciones";
 import { blockHasConflict } from "../../lib/conflicts";
@@ -11,27 +11,12 @@ import {
   normalizeTimeInput,
 } from "@/app/features/reservaciones/crear/lib/time";
 
-function parseTimeToMinutes(time: string) {
-  const [hours, minutes] = time.split(":").map(Number);
-
-  if (Number.isNaN(hours) || Number.isNaN(minutes)) {
-    return null;
-  }
-
-  return hours * 60 + minutes;
-}
-
-function getCurrentMinutes() {
-  const now = new Date();
-
-  return now.getHours() * 60 + now.getMinutes();
-}
-
 type ProposedSchedulesCardProps = {
   proposedBlocks: TimeBlock[];
   selectedDateCount: number;
   hasSelectedDates: boolean;
   hasTodaySelected: boolean;
+  now: Date;
   onAddBlock: () => void;
   onDeleteBlock: (blockId: string) => void;
   onUpdateBlock: (
@@ -41,22 +26,46 @@ type ProposedSchedulesCardProps = {
   ) => void;
 };
 
+function parseTimeToMinutes(time: string) {
+  const normalizedTime = normalizeTimeInput(time.trim());
+
+  if (!normalizedTime) {
+    return null;
+  }
+
+  const [hours, minutes] = normalizedTime.split(":").map(Number);
+
+  if (Number.isNaN(hours) || Number.isNaN(minutes)) {
+    return null;
+  }
+
+  return hours * 60 + minutes;
+}
+
+function getCurrentMinutes(now: Date) {
+  return now.getHours() * 60 + now.getMinutes();
+}
+
 export function ProposedSchedulesCard({
   proposedBlocks,
   selectedDateCount,
   hasSelectedDates,
   hasTodaySelected,
+  now,
   onAddBlock,
   onDeleteBlock,
   onUpdateBlock,
 }: ProposedSchedulesCardProps) {
+  const currentMinutes = getCurrentMinutes(now);
+
   const handleAddBlock = () => {
     if (!hasSelectedDates) return;
+
     onAddBlock();
   };
 
   return (
-    <Card className="flex flex-col flex-1 p-4">
+    <Card className="flex flex-1 flex-col p-4">
       <div className="mb-3 flex items-start justify-between gap-3">
         <div className="min-w-0">
           <h2 className="text-base font-semibold text-slate-950">Horarios</h2>
@@ -67,9 +76,10 @@ export function ProposedSchedulesCard({
               hasSelectedDates ? "text-slate-500" : "text-red-500",
             )}
           >
-            {" "}
             {hasSelectedDates
-              ? `${selectedDateCount} día${selectedDateCount === 1 ? "" : "s"} seleccionado${selectedDateCount === 1 ? "" : "s"}`
+              ? `${selectedDateCount} día${
+                  selectedDateCount === 1 ? "" : "s"
+                } seleccionado${selectedDateCount === 1 ? "" : "s"}`
               : "Selecciona al menos un día"}
           </p>
         </div>
@@ -94,15 +104,8 @@ export function ProposedSchedulesCard({
         </button>
       </div>
 
-      {/* {!hasSelectedDates && (
-        <div className="mb-3 flex gap-2 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
-          <Info className=" h-3.5 w-3.5 shrink-0" />
-          <p>Selecciona uno o más días en el calendario antes de agregar horarios.</p>
-        </div>
-      )} */}
-
       {proposedBlocks.length === 0 ? (
-        <div className="rounded-lg flex-1 flex flex-col justify-center border border-dashed border-slate-300 bg-slate-50 px-3 py-4 text-center">
+        <div className="flex flex-1 flex-col justify-center rounded-lg border border-dashed border-slate-300 bg-slate-50 px-3 py-4 text-center">
           <p className="text-sm font-medium text-slate-700">
             No hay horarios agregados
           </p>
@@ -120,20 +123,23 @@ export function ProposedSchedulesCard({
               block.start.trim().length > 0 &&
               block.end.trim().length > 0 &&
               !isValidTimeRange(block.start, block.end);
+
             const startMinutes = parseTimeToMinutes(block.start);
-            const currentMinutes = getCurrentMinutes();
 
             const hasPastStartTime =
               hasTodaySelected &&
+              block.start.trim().length > 0 &&
               startMinutes !== null &&
               startMinutes < currentMinutes;
+
             const hasError =
               blockConflict || hasInvalidRange || hasPastStartTime;
+
             return (
               <div
                 key={block.id}
                 className={cn(
-                  " border bg-white px-2.5 py-2 transition",
+                  "border bg-white px-2.5 py-2 transition",
                   hasError
                     ? "border-red-200 bg-red-50/70"
                     : "border-slate-200 hover:border-slate-300",
@@ -215,6 +221,7 @@ export function ProposedSchedulesCard({
                     La hora final debe ser mayor que la inicial.
                   </p>
                 )}
+
                 {hasPastStartTime && (
                   <p className="mt-1.5 text-[11px] font-medium text-red-600">
                     No puedes seleccionar una hora anterior a la actual.
