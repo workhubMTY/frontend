@@ -65,7 +65,7 @@ export function useReservableSpacesSearchViewModel() {
     isLoading: isLoadingSelectedSpaceReservations,
     isFetching: isFetchingSelectedSpaceReservations,
     error: selectedSpaceReservationsError,
-  } = useSlotReservations(selectedSpaceId, selectedDateIds, false, true);
+  } = useSlotReservations(selectedSpaceId, selectedDateIds);
 
   const selectedSpaceReservationsForActiveDate = useMemo(
     () =>
