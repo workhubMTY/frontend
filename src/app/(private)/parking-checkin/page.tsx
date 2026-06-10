@@ -2,7 +2,7 @@
 
 import { ScanLine, QrCode } from "lucide-react";
 import PageTransition from "@/app/shared/components/PageTransition/PageTransition";
-import { QrScanner } from "@/app/features/guard-checkin/components/QrScanner";
+import { QrScannerComponent } from "@/app/features/guard-checkin/components/QrScanner";
 import { CheckinResultModal } from "@/app/features/guard-checkin/components/CheckinResultModal";
 import { useGuardCheckin } from "@/app/features/guard-checkin/hooks/useGuardCheckin";
 
@@ -58,7 +58,7 @@ export default function ParkingCheckinPage() {
             <p className="text-sm font-medium text-on-background-2">Esperando escaneo de QR…</p>
           </div>
           <div className="w-full border-t border-neutral-1" />
-          <QrScanner onScan={handleScan} active={!isProcessing} />
+          <QrScannerComponent onScan={handleScan} active={!isProcessing} />
         </div>
       </div>
 
