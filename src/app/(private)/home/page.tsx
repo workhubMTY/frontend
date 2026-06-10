@@ -2,6 +2,41 @@
 import { HomeAgendaPeopleCard } from "@/app/features/home/components/FriendsCard";
 import { HomeAgendaTimeline } from "@/app/features/home/components/HomeAgendaTimeline";
 import { useHomeAgendaViewModel } from "@/app/features/home/hooks/useHomeAgendaViewModel";
+import { HomeAgendaFilter } from "@/app/features/home/types/homeAgenda";
+import { Calendar, Car, Monitor, Users } from "lucide-react";
+
+
+const FILTERS: Array<{
+  value: HomeAgendaFilter;
+  label: string;
+  icon: React.ReactNode;
+}> = [
+  {
+    value: "all",
+    label: "Todos",
+    icon: <Users className="size-3.5" />,
+  },
+  {
+    value: "meeting",
+    label: "Juntas",
+    icon: <Users className="size-3.5" />,
+  },
+  {
+    value: "coworking",
+    label: "Coworking",
+    icon: <Monitor className="size-3.5" />,
+  },
+  {
+    value: "parking",
+    label: "Estaciona.",
+    icon: <Car className="size-3.5" />,
+  },
+  {
+    value: "events",
+    label: "Eventos",
+    icon: <Calendar className="size-3.5" />,
+  },
+];
 
 export default function HomePage() {
   const { state, actions } = useHomeAgendaViewModel();
@@ -19,7 +54,29 @@ export default function HomePage() {
           </p>
         </div>
 
-        {/* Aquí van tus filtros */}
+
+        <div className="flex items-center gap-2">
+          {FILTERS.map((filter) => {
+            const isActive = state.activeFilter === filter.value;
+
+            return (
+              <button
+                key={filter.value}
+                type="button"
+                onClick={() => actions.setFilter(filter.value)}
+                className={[
+                  "inline-flex h-8 items-center gap-2 rounded-full border px-3 text-xs font-medium transition",
+                  isActive
+                    ? "border-violet-200 bg-violet-50 text-violet-700 shadow-sm"
+                    : "border-slate-200 bg-white text-slate-500 hover:border-slate-300 hover:text-slate-800",
+                ].join(" ")}
+              >
+                {filter.icon}
+                {filter.label}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       <section className="grid min-h-0 flex-1 grid-cols-[280px_minmax(0,1fr)] gap-5">
