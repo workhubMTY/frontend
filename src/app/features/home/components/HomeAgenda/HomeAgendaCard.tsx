@@ -1,8 +1,12 @@
 "use client";
 
 import type { ScheduleItem } from "@/app/features/reservaciones/crear/types/schedule";
-import type { HomeAgendaDay } from "../../types/homeAgenda";
+import type {
+  HomeAgendaDay,
+  HomeAgendaViewMode,
+} from "../../types/homeAgenda";
 
+import { HomeAgendaList } from "./HomeAgendaList";
 import { HomeAgendaTimeline } from "./HomeAgendaTimeline";
 import { HomeAgendaToolbar } from "./HomeAgendaToolbar";
 
@@ -10,6 +14,9 @@ type HomeAgendaCardProps = {
   title: string;
   subtitle: string;
   rangeLabel: string;
+
+  viewMode: HomeAgendaViewMode;
+  onChangeViewMode: (view: HomeAgendaViewMode) => void;
 
   days: HomeAgendaDay[];
   itemsByDate: Record<string, ScheduleItem[]>;
@@ -29,6 +36,9 @@ export function HomeAgendaCard({
   subtitle,
   rangeLabel,
 
+  viewMode,
+  onChangeViewMode,
+
   days,
   itemsByDate,
   disabledDateIds,
@@ -44,21 +54,30 @@ export function HomeAgendaCard({
   return (
     <section className="flex min-h-0 flex-col border border-grid-lines bg-container">
       <HomeAgendaToolbar
-        title={title}
-        subtitle={subtitle}
         rangeLabel={rangeLabel}
+        viewMode={viewMode}
+        onChangeViewMode={onChangeViewMode}
         canGoPrevious={canGoPrevious}
         canGoNext={canGoNext}
         onPrevious={onPrevious}
         onNext={onNext}
       />
 
-      <HomeAgendaTimeline
-        days={days}
-        itemsByDate={itemsByDate}
-        disabledDateIds={disabledDateIds}
-        isLoading={isLoading}
-      />
+      {viewMode === "agenda" ? (
+        <HomeAgendaTimeline
+          days={days}
+          itemsByDate={itemsByDate}
+          disabledDateIds={disabledDateIds}
+          isLoading={isLoading}
+        />
+      ) : (
+        <HomeAgendaList
+          days={days}
+          itemsByDate={itemsByDate}
+          disabledDateIds={disabledDateIds}
+          isLoading={isLoading}
+        />
+      )}
     </section>
   );
 }

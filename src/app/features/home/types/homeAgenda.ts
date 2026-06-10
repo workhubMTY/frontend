@@ -7,6 +7,8 @@ export type HomeAgendaFilter =
   | "parking"
   | "events";
 
+export type HomeAgendaViewMode = "agenda" | "list";
+
 export type HomeAgendaDay = {
   id: string;
   date: Date;

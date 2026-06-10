@@ -14,6 +14,7 @@ import type { ScheduleItem } from "@/app/features/reservaciones/crear/types/sche
 import type {
   HomeAgendaFilter,
   HomeAgendaOwner,
+  HomeAgendaViewMode,
 } from "../types/homeAgenda";
 
 import {
@@ -53,6 +54,7 @@ export function useHomeAgendaViewModel() {
 
   const [windowStartDate, setWindowStartDate] = useState(firstVisibleWeekStart);
   const [activeFilter, setActiveFilter] = useState<HomeAgendaFilter>("all");
+  const [viewMode, setViewMode] = useState<HomeAgendaViewMode>("agenda");
 
   /**
    * null significa "yo".
@@ -178,7 +180,7 @@ export function useHomeAgendaViewModel() {
         day.id >= toDateId(today) && day.id <= toDateId(maxAllowedDate);
 
       acc[day.id] = isInsideAllowedRange
-        ? scheduleItemsByDate[day.id] ?? []
+        ? (scheduleItemsByDate[day.id] ?? [])
         : [];
 
       return acc;
@@ -240,7 +242,6 @@ export function useHomeAgendaViewModel() {
 
     selectFriend(ownerId);
   }
-
   return {
     state: {
       user,
@@ -257,6 +258,7 @@ export function useHomeAgendaViewModel() {
       friendsError: friendsQuery.error,
 
       activeFilter,
+      viewMode,
 
       today,
       maxAllowedDate,
@@ -281,6 +283,7 @@ export function useHomeAgendaViewModel() {
 
     actions: {
       setFilter,
+      setViewMode,
 
       selectMe,
       selectFriend,

@@ -46,6 +46,8 @@ export default function HomePage() {
           title="Agenda rápida"
           subtitle={agendaSubtitle}
           rangeLabel={formatAgendaRangeLabel(state.visibleDays)}
+          viewMode={state.viewMode}
+          onChangeViewMode={actions.setViewMode}
           days={state.visibleDays}
           itemsByDate={state.visibleScheduleItemsByDate}
           disabledDateIds={state.disabledDateIds}
