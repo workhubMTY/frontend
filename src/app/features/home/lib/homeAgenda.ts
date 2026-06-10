@@ -1,5 +1,3 @@
-// src/app/features/home/lib/homeAgenda.ts
-
 import type { ScheduleItem } from "@/app/features/reservaciones/crear/types/schedule";
 import type {
   TimelineOfficeReservationCategory,
@@ -131,8 +129,6 @@ export function filterHomeAgendaItems(
   return activeItems;
 }
 
-// src/app/features/home/lib/homeAgenda.ts
-
 export function getMondayOfWeek(date: Date) {
   const current = startOfLocalDay(date);
 
@@ -147,4 +143,13 @@ export function getMondayOfWeek(date: Date) {
   const diffToMonday = day === 0 ? -6 : 1 - day;
 
   return addDays(current, diffToMonday);
+}
+
+export function formatAgendaRangeLabel(days: { id: string }[]) {
+  if (days.length === 0) return "";
+
+  const first = days[0]?.id;
+  const last = days[days.length - 1]?.id;
+
+  return `${first} - ${last}`;
 }
