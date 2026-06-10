@@ -29,20 +29,12 @@ export function HomeAgendaListItem({ item, onClick }: HomeAgendaListItemProps) {
       className="w-full rounded-md border border-slate-200 bg-white px-2.5 py-2 text-left shadow-sm transition hover:border-slate-300 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-2/20"
     >
       <div className="flex min-w-0 items-start gap-2">
-        <div
-          className={cn(
-            "mt-0.5 grid size-6 shrink-0 place-items-center rounded border",
-            styles.className,
-          )}
-        >
-          <Icon className="size-3" />
-        </div>
 
         <div className="min-w-0 flex-1">
           <div className="flex min-w-0 items-center gap-1.5">
-            <span className="shrink-0 text-[11px] font-semibold text-slate-500">
+            {/* <span className="shrink-0 text-[11px] font-semibold text-slate-500">
               {item.start}
-            </span>
+            </span> */}
 
             <h4 className="truncate text-xs font-semibold text-slate-800">
               {item.title}
