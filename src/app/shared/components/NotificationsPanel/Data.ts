@@ -3,9 +3,9 @@ import { FriendRequest} from './notificationInterfaces'
 
 export const api = {
   getFriendRequests: () =>
-    authFetch<FriendRequest[]>("/friendships/requests/received"),
+    authFetch<FriendRequest[]>("/friendships/requests/received/"),
   acceptRequest: (fromUser: string) =>
-    authFetch("friendships/requests/received", {
+    authFetch("/friendships/requests/received", {
       method: "POST",
       body: JSON.stringify({ fromUser }),
     }),
