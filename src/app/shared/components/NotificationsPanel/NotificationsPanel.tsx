@@ -9,6 +9,7 @@ import {
   useUserReservationInvitations,
 } from "@/app/features/reservaciones/crear/data/useActiveReservations";
 import type { ReservationInvitation } from "@/app/features/reservaciones/crear/types/activeReservations";
+import { useUsers } from "../../data/users/hooks";
 
 type NotificationTab = "requests" | "invites";
 
@@ -27,11 +28,13 @@ function timeAgo(dateStr: string): string {
 
 function FriendRequestItem({
   req,
+  displayName,
   onAccept,
   onReject,
   pending,
 }: {
   req: FriendRequest;
+  displayName: string;
   onAccept: (fromUser: string) => void;
   onReject: (fromUser: string) => void;
   pending?: boolean;
@@ -46,7 +49,7 @@ function FriendRequestItem({
 
       <div className="min-w-0 flex-1">
         <div className="truncate text-[13px] font-semibold text-slate-950">
-          {req.fromUser}
+          {displayName}
         </div>
 
         <div className="mt-0.5 text-xs leading-5 text-slate-600">
@@ -101,21 +104,21 @@ function ReservationInviteItem({
 
   const dateLabel = startTime
     ? new Intl.DateTimeFormat("es-MX", {
-        weekday: "short",
-        day: "numeric",
-        month: "short",
-      }).format(new Date(startTime))
+      weekday: "short",
+      day: "numeric",
+      month: "short",
+    }).format(new Date(startTime))
     : "Fecha pendiente";
 
   const timeLabel =
     startTime && endTime
       ? `${new Intl.DateTimeFormat("es-MX", {
-          hour: "2-digit",
-          minute: "2-digit",
-        }).format(new Date(startTime))} - ${new Intl.DateTimeFormat("es-MX", {
-          hour: "2-digit",
-          minute: "2-digit",
-        }).format(new Date(endTime))}`
+        hour: "2-digit",
+        minute: "2-digit",
+      }).format(new Date(startTime))} - ${new Intl.DateTimeFormat("es-MX", {
+        hour: "2-digit",
+        minute: "2-digit",
+      }).format(new Date(endTime))}`
       : "Horario pendiente";
 
   return (
@@ -179,6 +182,12 @@ export default function NotificationsPanel() {
 
   const friendRequestsQuery = useReceivedFriendRequests();
   const invitedReservationsQuery = useUserReservationInvitations(myUserId ?? "");
+
+  const usersQuery = useUsers();
+  const users = usersQuery.data ?? [];
+  const usersByEId = new Map(
+    users.map((u) => [u.eId, u.name])
+  );
 
   const requests = friendRequestsQuery.data ?? [];
   const invitedReservations = invitedReservationsQuery.invitations;
@@ -272,11 +281,10 @@ export default function NotificationsPanel() {
               <button
                 type="button"
                 onClick={() => setActiveTab("requests")}
-                className={`flex-1 rounded-lg px-2.5 py-[7px] text-xs font-semibold transition-all ${
-                  activeTab === "requests"
+                className={`flex-1 rounded-lg px-2.5 py-[7px] text-xs font-semibold transition-all ${activeTab === "requests"
                     ? "bg-white text-slate-950 shadow-sm"
                     : "text-slate-600 hover:bg-white/60 hover:text-slate-950"
-                }`}
+                  }`}
               >
                 Solicitudes
                 {requests.length > 0 ? ` (${requests.length})` : ""}
@@ -285,11 +293,10 @@ export default function NotificationsPanel() {
               <button
                 type="button"
                 onClick={() => setActiveTab("invites")}
-                className={`flex-1 rounded-lg px-2.5 py-[7px] text-xs font-semibold transition-all ${
-                  activeTab === "invites"
+                className={`flex-1 rounded-lg px-2.5 py-[7px] text-xs font-semibold transition-all ${activeTab === "invites"
                     ? "bg-white text-slate-950 shadow-sm"
                     : "text-slate-600 hover:bg-white/60 hover:text-slate-950"
-                }`}
+                  }`}
               >
                 Invitaciones
                 {invitedReservations.length > 0
@@ -312,6 +319,7 @@ export default function NotificationsPanel() {
                   <FriendRequestItem
                     key={r.id}
                     req={r}
+                    displayName={usersByEId.get(r.fromUser) ?? r.fromUser}
                     onAccept={handleAccept}
                     onReject={handleReject}
                     pending={friendRequestPending}
