@@ -5,14 +5,23 @@ import {
   CheckCircle2,
   Clock,
   Loader2,
+  LogOut,
   MapPin,
   ShieldCheck,
+  Trash2,
   Users,
   X,
 } from "lucide-react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+
+import { useAuth } from "@/app/shared/auth/useAuth";
+import { reservationsApi } from "@/app/features/reservaciones/crear/data/api";
+import { reservationKeys } from "@/app/features/reservaciones/crear/data/hooks";
 
 import { cn } from "@/app/shared/lib/cn";
 import { useReservationDetail } from "@/app/features/reservaciones/crear/data/hooks";
+import { userTimelineKeys } from "@/app/features/reservaciones/crear/hooks/useUserTimeline";
+import { officeSlotKeys } from "@/app/features/cubiculos/data/hooks";
 
 type OfficeReservationDetail = {
   id: number;
@@ -163,12 +172,91 @@ export function HomeAgendaReservationDetailModal({
   onClose,
 }: HomeAgendaReservationDetailModalProps) {
   const detailQuery = useReservationDetail(open ? reservationId : null);
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+
+  const cancelReservationMutation = useMutation({
+    mutationFn: (id: number) => reservationsApi.cancelReservation(id),
+    onSuccess: async () => {
+      if (reservationId) {
+        await queryClient.invalidateQueries({
+          queryKey: reservationKeys.detail(reservationId),
+        });
+      }
+
+      await queryClient.invalidateQueries({
+        queryKey: ["user-timeline"],
+      });
+
+      onClose();
+    },
+  });
+
+  const checkoutMutation = useMutation({
+    mutationFn: ({
+      reservationId,
+      participantId,
+    }: {
+      reservationId: number;
+      participantId: number;
+    }) =>
+      reservationsApi.patchParticipantAttendance(reservationId, participantId, {
+        attendance_status: "CHECKED_OUT",
+      }),
+
+    onSuccess: async () => {
+      if (reservationId) {
+        await queryClient.invalidateQueries({
+          queryKey: reservationKeys.detail(reservationId),
+        });        
+      }
+        await queryClient.invalidateQueries({queryKey:userTimelineKeys.all})
+        await queryClient.invalidateQueries({queryKey:officeSlotKeys.all})
+
+    },
+  });
 
   if (!open) return null;
 
   const reservation = detailQuery.data as OfficeReservationDetail | undefined;
   const reservable = reservation?.reservable ?? null;
+  const currentUserId = user?.eId ? String(user.eId) : null;
 
+  const currentParticipant =
+    reservation?.participants?.find(
+      (participant) =>
+        currentUserId !== null && String(participant.user_id) === currentUserId,
+    ) ?? null;
+
+  const canCheckout =
+    reservation?.lifecycle_status === "ACTIVE" &&
+    currentParticipant?.attendance_status === "CHECKED_IN";
+
+  const canCancel = reservation?.lifecycle_status === "ACTIVE";
+
+  const isMutating =
+    cancelReservationMutation.isPending || checkoutMutation.isPending;
+
+  function handleCancelReservation() {
+    if (!reservation) return;
+
+    const confirmed = window.confirm(
+      "¿Seguro que quieres cancelar esta reservación?",
+    );
+
+    if (!confirmed) return;
+
+    cancelReservationMutation.mutate(reservation.id);
+  }
+
+  function handleCheckout() {
+    if (!reservation || !currentParticipant) return;
+
+    checkoutMutation.mutate({
+      reservationId: reservation.id,
+      participantId: currentParticipant.id,
+    });
+  }
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/35 px-3 py-4 backdrop-blur-sm sm:px-4 sm:py-6"
@@ -233,19 +321,59 @@ export function HomeAgendaReservationDetailModal({
                   </aside>
                 </div>
               </main>
-
               <footer className="flex shrink-0 flex-col gap-3 border-t border-slate-200 px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
                 <p className="text-sm text-slate-500">
                   Revisa participantes, estado y datos del espacio reservado.
                 </p>
 
-                <button
-                  type="button"
-                  onClick={onClose}
-                  className="rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
-                >
-                  Cerrar
-                </button>
+                <div className="flex flex-col-reverse gap-2 sm:flex-row sm:items-center">
+                  <button
+                    type="button"
+                    onClick={handleCancelReservation}
+                    disabled={!canCancel || isMutating}
+                    className={cn(
+                      "inline-flex items-center justify-center gap-2  border px-4 py-2.5 text-sm font-semibold transition",
+                      "disabled:cursor-not-allowed disabled:opacity-50",
+                      "border-rose-200 bg-white text-rose-700 hover:bg-rose-50",
+                    )}
+                  >
+                    {cancelReservationMutation.isPending ? (
+                      <Loader2 className="size-4 animate-spin" />
+                    ) : (
+                      <Trash2 className="size-4" />
+                    )}
+                    Borrar reservación
+                  </button>
+
+                  {canCheckout ? (
+                    <button
+                      type="button"
+                      onClick={handleCheckout}
+                      disabled={isMutating}
+                      className={cn(
+                        "inline-flex items-center justify-center gap-2 border px-4 py-2.5 text-sm font-semibold transition",
+                        "disabled:cursor-not-allowed disabled:opacity-50",
+                        "border-slate-800 bg-slate-900 text-white hover:bg-slate-800",
+                      )}
+                    >
+                      {checkoutMutation.isPending ? (
+                        <Loader2 className="size-4 animate-spin" />
+                      ) : (
+                        <LogOut className="size-4" />
+                      )}
+                      Hacer check-out
+                    </button>
+                  ) : null}
+
+                  <button
+                    type="button"
+                    onClick={onClose}
+                    disabled={isMutating}
+                    className="border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    Cerrar
+                  </button>
+                </div>
               </footer>
             </div>
           </>

@@ -137,6 +137,18 @@ export function reservationSummaryToScheduleItem(
   };
 }
 
+type PatchParticipantAttendanceDto = {
+  attendance_status:
+    | "INVITED"
+    | "NOT_ARRIVED"
+    | "CHECKED_IN"
+    | "CHECKED_OUT"
+    | "NO_SHOW"
+    | "NOT_ACCEPTED"
+    | "REJECTED"
+    | "CANCELED";
+};
+
 export const reservationsApi = {
   getReservationDetail: (id: number) =>
     authFetch<ReservationDetail>(`${RESERVATIONS_BASE}/${id}`),
@@ -199,5 +211,25 @@ export const reservationsApi = {
     });
 
     return reservations.map(reservationSummaryToScheduleItem);
+  },
+
+  cancelReservation: (reservationId: number) => {
+    return authFetch(`${RESERVATIONS_BASE}/${reservationId}`, {
+      method: "DELETE",
+    });
+  },
+
+  patchParticipantAttendance: (
+    reservationId: number,
+    participantId: number,
+    body: PatchParticipantAttendanceDto,
+  ) => {
+    return authFetch(
+      `${RESERVATIONS_BASE}/${reservationId}/participants/${participantId}/attendance`,
+      {
+        method: "PATCH",
+        body: JSON.stringify(body),
+      },
+    );
   },
 };
