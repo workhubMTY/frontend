@@ -24,21 +24,8 @@ export function HomeAgendaListItem({ item }: HomeAgendaListItemProps) {
   return (
     <article className="rounded-md border border-slate-200 bg-white px-2.5 py-2 shadow-sm transition hover:border-slate-300 hover:bg-slate-50">
       <div className="flex min-w-0 items-start gap-2">
-        <div
-          className={cn(
-            "mt-0.5 grid size-6 shrink-0 place-items-center rounded border",
-            styles.className,
-          )}
-        >
-          <Icon className="size-3" />
-        </div>
-
         <div className="min-w-0 flex-1">
           <div className="flex min-w-0 items-center gap-1.5">
-            {/* <span className="shrink-0 text-[11px] font-semibold text-slate-500">
-              {item.start}
-            </span> */}
-
             <h4 className="truncate text-xs font-semibold text-slate-800">
               {item.title}
             </h4>
@@ -65,14 +52,6 @@ export function HomeAgendaListItem({ item }: HomeAgendaListItemProps) {
           {item.sourceLabel}
         </span>
       </div>
-
-      {/* {item.reservableName ? (
-        <div className="mt-1 flex min-w-0 items-center gap-1 text-[10px] text-slate-400">
-          <CalendarDays className="size-2.5 shrink-0" />
-
-          <span className="truncate">{item.reservableName}</span>
-        </div>
-      ) : null} */}
     </article>
   );
 }
