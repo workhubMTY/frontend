@@ -34,7 +34,7 @@ export function PeriodFilter({ value, onChange }: PeriodFilterProps) {
         isActive={periodFilter.hasActivePeriodFilter}
         onToggle={periodFilter.openPeriodFilter}
       >
-        <div className="w-[360px]">
+        <div className="w-full">
           <div className="mb-4">
             <p className="text-sm font-semibold text-neutral-900">
               Selecciona periodo

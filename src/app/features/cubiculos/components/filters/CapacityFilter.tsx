@@ -25,9 +25,10 @@ export function CapacityFilter({ value, onChange }: CapacityFilterProps) {
         label={getCapacityButtonLabel(value.minCapacity, value.maxCapacity)}
         isOpen={capacityFilter.isOpen}
         isActive={capacityFilter.hasActiveCapacityFilter}
+        align="right"
         onToggle={capacityFilter.openCapacityFilter}
       >
-        <div className="w-[360px]">
+        <div className="w-full">
           <div className="mb-3">
             <p className="text-sm font-semibold text-neutral-900">
               Selecciona capacidad
