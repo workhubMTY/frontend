@@ -18,13 +18,18 @@ import type {
 import type { UserTimelineQuery } from "@/app/features/reservaciones/crear/types/timeline";
 import type { ReservationDetail } from "@/app/features/cubiculos/data/types";
 
+export type UserReservationScope = "all" | "without_invites" | "invites_only";
+
 export const reservationKeys = {
   all: ["reservations"] as const,
 
   detail: (id: number | null) =>
     [...reservationKeys.all, "detail", id] as const,
 
-  me: () => [...reservationKeys.all, "me"] as const,
+  meBase: () => ["reservations", "me"] as const,
+
+  me: (scope: UserReservationScope = "without_invites") =>
+    [...reservationKeys.meBase(), scope] as const,
 
   friends: () => [...reservationKeys.all, "friends"] as const,
 
@@ -122,8 +127,7 @@ export function useReservationDetail(id: number | null) {
 
         queryClient.setQueryData<ReservationDetail>(
           reservationKeys.detail(id),
-          (prev) =>
-            prev ? patchReservationDetail(prev, msg.payload) : prev,
+          (prev) => (prev ? patchReservationDetail(prev, msg.payload) : prev),
         );
       }
     }
@@ -137,15 +141,17 @@ export function useReservationDetail(id: number | null) {
   return query;
 }
 
-export function useMyReservations() {
+export function useMyReservations(
+  scope: UserReservationScope = "without_invites",
+) {
   const queryClient = useQueryClient();
   const socket = useSocket();
 
   useJoinOfficeRoom();
 
   const query = useQuery({
-    queryKey: reservationKeys.me(),
-    queryFn: () => reservationsApi.getMyReservations(),
+    queryKey: reservationKeys.me(scope),
+    queryFn: () => reservationsApi.getMyReservations(scope),
   });
 
   useEffect(() => {
@@ -159,11 +165,14 @@ export function useMyReservations() {
         msg.type === "reservation.attendance_updated" ||
         msg.type === "participant.updated"
       ) {
-        queryClient.invalidateQueries({ queryKey: reservationKeys.me() });
+        queryClient.invalidateQueries({
+          queryKey: reservationKeys.meBase(),
+        });
       }
     }
 
     socket.on("officeUpdate", onOfficeUpdate);
+
     return () => {
       socket.off("officeUpdate", onOfficeUpdate);
     };

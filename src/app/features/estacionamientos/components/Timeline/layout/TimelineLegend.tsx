@@ -7,11 +7,6 @@ export function TimelineLegend() {
       />
 
       <LegendItem
-        markerClassName="bg-orange-400"
-        label="Alta ocupación"
-      />
-
-      <LegendItem
         markerClassName="bg-violet-700"
         label="Mi selección"
       />
