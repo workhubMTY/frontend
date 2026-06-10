@@ -19,7 +19,7 @@ type MonthCalendarProps = {
   calendarCells: CalendarCell[];
   variant?: "default" | "compact";
   onSelect: (action: CalendarSelectionAction) => void;
-  onActivateDay: (dayId: string) => void;
+  onActivateDay?: (dayId: string) => void;
 };
 
 const WEEKDAY_LABELS = ["D", "L", "M", "M", "J", "V", "S"];

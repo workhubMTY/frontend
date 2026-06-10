@@ -1,9 +1,9 @@
 "use client";
 
 import { useCallback, useRef, useState } from "react";
-import { normalizeCapacityInput } from "../lib/capacity";
-import { useCloseOnOutsideClick } from "./useCloseOnOutsideClick";
-import type { CapacityFilterValue } from "../types/searchFilters";
+import { normalizeCapacityInput } from "../../lib/capacity";
+import { useCloseOnOutsideClick } from "../useCloseOnOutsideClick";
+import type { CapacityFilterValue } from "../../types/searchFilters";
 
 type UseCapacityFilterParams = {
   value: CapacityFilterValue;

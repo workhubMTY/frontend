@@ -1,7 +1,7 @@
 "use client";
 
 import { Clock3 } from "lucide-react";
-import { useTimeFilter } from "../../hooks/useTimeFilter";
+import { useTimeFilter } from "../../hooks/filters/useTimeFilter";
 import { getTimeButtonLabel } from "../../lib/filterLabels";
 import type { TimeFilterValue } from "../../types/searchFilters";
 import { FilterFlyout } from "./FilterFlyout";
@@ -26,7 +26,7 @@ export function TimeFilter({ value, onChange }: TimeFilterProps) {
         isActive={timeFilter.hasActiveTimeFilter}
         onToggle={timeFilter.openTimeFilter}
       >
-        <div className="w-[430px]">
+        <div className="w-full">
           <div className="mb-3">
             <p className="text-sm font-semibold text-neutral-900">
               Selecciona un horario

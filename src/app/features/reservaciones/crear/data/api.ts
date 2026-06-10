@@ -108,7 +108,7 @@ export function reservationSummaryToScheduleItem(
   reservation: ReservationSummary,
 ): ScheduleItem {
   return {
-    id: reservation.id,
+    id: `space_reservation-${reservation.id}`,
     kind: "space_reservation",
 
     dateId: dateToId(new Date(reservation.start_time)),

@@ -1,8 +1,8 @@
 "use client";
 
 import { useCallback, useRef, useState } from "react";
-import { normalizeTimeInput, timeToMinutes } from "../lib/time";
-import { useCloseOnOutsideClick } from "./useCloseOnOutsideClick";
+import { normalizeTimeInput, timeToMinutes } from "../../lib/time";
+import { useCloseOnOutsideClick } from "../useCloseOnOutsideClick";
 
 type TimeFilterValue = {
   startTime: string;

@@ -12,8 +12,8 @@ import type {
   SelectionMode,
 } from "@/app/features/reservaciones/crear/types/reservaciones";
 
-import { useCloseOnOutsideClick } from "./useCloseOnOutsideClick";
-import type { PeriodFilterValue } from "../types/searchFilters";
+import { useCloseOnOutsideClick } from "../useCloseOnOutsideClick";
+import type { PeriodFilterValue } from "../../types/searchFilters";
 
 type UsePeriodFilterParams = {
   value: PeriodFilterValue;
@@ -81,12 +81,8 @@ export function usePeriodFilter({ value, onChange }: UsePeriodFilterParams) {
     setDraftPeriodDateIds(value);
     setIsOpen((current) => !current);
   }
-
   function handleCancelPeriodFilter() {
-    onChange([]);
-
-    setDraftPeriodDateIds([]);
-    setHasAppliedPeriodSelection(false);
+    setDraftPeriodDateIds(value);
     setIsOpen(false);
   }
 

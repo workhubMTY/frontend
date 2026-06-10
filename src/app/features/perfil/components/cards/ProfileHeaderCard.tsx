@@ -2,13 +2,14 @@ import {
   BriefcaseBusiness,
   Clock,
   Flame,
-  Pencil,
-  Star,
+  LogOut,
   Trophy,
   UserRound,
 } from "lucide-react";
 import type { UserProfile } from "../../types/profile";
 import { getInitials } from "../../lib/formatting";
+import { useAuth } from "../../../../shared/auth/useAuth";
+import { useRouter } from "next/navigation";
 
 type ProfileHeaderCardProps = {
   profile: UserProfile;
@@ -16,6 +17,13 @@ type ProfileHeaderCardProps = {
 
 export function ProfileHeaderCard({ profile }: ProfileHeaderCardProps) {
   // QUITAR ESTO CUANDO YA ESTEN SINCRONIZADOS LOS SCHEMAS
+  const { logout } = useAuth();
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    await logout();
+    router.push("/login");
+  };
 
   return (
     <section className="h-full border border-neutral-1 bg-white shadow-sm">
@@ -40,6 +48,15 @@ export function ProfileHeaderCard({ profile }: ProfileHeaderCardProps) {
             >
               <Pencil size={15} />
             </button> */}
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="absolute bottom-1 left-1 flex h-9 w-9 items-center justify-center rounded-full border border-neutral-200 bg-white text-neutral-500 shadow-sm transition hover:bg-red-50 hover:text-red-500 hover:border-red-200"
+              aria-label="Cerrar sesión"
+            >
+              <LogOut color="#ff0000" size={15} />
+            </button>
+
           </div>
 
           <div className="min-w-0">
@@ -96,15 +113,14 @@ type ProfileStatProps = {
 
 function ProfileStat({ icon, label, value }: ProfileStatProps) {
   return (
-    <div className="flex min-h-[150px] flex-col items-center  border-neutral-1 px-6">
+    <div className="flex min-h-[150px] flex-col items-center border-neutral-1 px-6">
       <div className="mb-auto flex h-11 w-11 items-center justify-center bg-purple-50 text-purple-700 rounded-full">
         {icon}
       </div>
       <p className="mt-2 text-lg text-center font-semibold tracking-tight text-neutral-950">
         {value}
       </p>
-            <p className="text-sm mb-auto text-neutral-500 text-center">{label}</p>
-
+      <p className="text-sm mb-auto text-neutral-500 text-center">{label}</p>
     </div>
   );
 }

@@ -94,13 +94,14 @@ export const officeSlotKeys = {
     [...officeSlotKeys.all, "detail", slotId] as const,
 
   reservations: {
-    slot: (slotId: number | null, dates?: string[], detail = false) =>
+    slot: (slotId: number | null, dates?: string[], detail = false, showOnlyActiveReservations = false) =>
       [
         ...officeSlotKeys.all,
         slotId,
         "reservations",
         dates ?? [],
         detail,
+        showOnlyActiveReservations
       ] as const,
   },
 };
@@ -261,6 +262,7 @@ export function useSlotReservations(
   slotId: number | null,
   dates?: string[],
   detail = false,
+  showOnlyActiveReservations?:boolean
 ) {
   const queryClient = useQueryClient();
   const socket = useSocket();
@@ -274,6 +276,7 @@ export function useSlotReservations(
         slotId as number,
         dates && dates.length > 0 ? { dates } : undefined,
         detail,
+        showOnlyActiveReservations
       ),
     enabled: slotId !== null,
   });
