@@ -1,4 +1,4 @@
-import { authFetch } from "@/app/shared/data/api";
+import { authFetch, API_URL, getExportToken } from "@/app/shared/data/api";
 import type { 
     Parking, 
     ParkingReservations, 
@@ -110,4 +110,38 @@ export const listStats = {
         authFetch<TopUser[]>(
             `${StatsLink}/stats/global/top${buildQuery(params)}`
         ),
+
+    //  GET /stats/global/export → descarga el .xlsx
+    exportGlobalAttendance: async (params: RangeParams = {}) => {
+        const query = buildQuery(params);
+        // Usar API_URL igual que el resto de las llamadas
+        const url = `${API_URL}${StatsLink}/stats/global/export${query}`;
+
+        // Obtener el token desde los accessors registrados en authFetch
+        // Se importa _auth indirectamente a través de la función getToken exportada
+        const token = getExportToken();
+        if (!token) throw new Error("No autenticado");
+
+        const res = await fetch(url, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+            credentials: "include",
+        });
+
+        if (!res.ok) throw new Error(`Export failed: ${res.status}`);
+
+        const blob    = await res.blob();
+        const blobUrl = URL.createObjectURL(blob);
+        const anchor  = document.createElement("a");
+        const cd      = res.headers.get("Content-Disposition") ?? "";
+        const match   = cd.match(/filename="(.+)"/);
+        anchor.href     = blobUrl;
+        anchor.download = match?.[1] ?? "estadisticas.xlsx";
+        document.body.appendChild(anchor);
+        anchor.click();
+        document.body.removeChild(anchor);
+        URL.revokeObjectURL(blobUrl);
+    },
+ 
 } as const;

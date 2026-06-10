@@ -32,6 +32,10 @@ async function fetchWithToken<T>(
   });
 }
 
+export function getExportToken(): string | null {
+  return _auth?.getAccessToken() ?? null;
+}
+
 async function authFetch<T>(
   endpoint: string,
   options: RequestOptions = {}
