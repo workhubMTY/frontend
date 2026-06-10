@@ -10,11 +10,6 @@ import { formatAgendaRangeLabel } from "@/app/features/home/lib/homeAgenda";
 export default function HomePage() {
   const { state, actions } = useHomeAgendaViewModel();
 
-  const agendaSubtitle =
-    state.selectedOwner?.kind === "friend"
-      ? `Mostrando agenda de ${state.selectedOwner.name}`
-      : "Mostrando tu agenda";
-
   return (
     <main className="flex min-h-0 flex-1 flex-col bg-neutral-50 px-8 py-8">
       <div className="mb-6 flex shrink-0 items-end justify-between gap-6">
@@ -43,8 +38,6 @@ export default function HomePage() {
         />
 
         <HomeAgendaCard
-          title="Agenda rápida"
-          subtitle={agendaSubtitle}
           rangeLabel={formatAgendaRangeLabel(state.visibleDays)}
           viewMode={state.viewMode}
           onChangeViewMode={actions.setViewMode}

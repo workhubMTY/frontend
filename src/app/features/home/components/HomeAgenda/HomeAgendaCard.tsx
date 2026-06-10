@@ -11,8 +11,6 @@ import { HomeAgendaTimeline } from "./HomeAgendaTimeline";
 import { HomeAgendaToolbar } from "./HomeAgendaToolbar";
 
 type HomeAgendaCardProps = {
-  title: string;
-  subtitle: string;
   rangeLabel: string;
 
   viewMode: HomeAgendaViewMode;
@@ -32,8 +30,6 @@ type HomeAgendaCardProps = {
 };
 
 export function HomeAgendaCard({
-  title,
-  subtitle,
   rangeLabel,
 
   viewMode,
@@ -52,32 +48,36 @@ export function HomeAgendaCard({
   onNext,
 }: HomeAgendaCardProps) {
   return (
-    <section className="flex min-h-0 flex-col border border-grid-lines bg-container">
-      <HomeAgendaToolbar
-        rangeLabel={rangeLabel}
-        viewMode={viewMode}
-        onChangeViewMode={onChangeViewMode}
-        canGoPrevious={canGoPrevious}
-        canGoNext={canGoNext}
-        onPrevious={onPrevious}
-        onNext={onNext}
-      />
+    <section className="flex min-h-0 overflow-hidden border border-grid-lines bg-container">
+      <div className="flex min-w-0 flex-1 flex-col">
+        <HomeAgendaToolbar
+          rangeLabel={rangeLabel}
+          viewMode={viewMode}
+          onChangeViewMode={onChangeViewMode}
+          canGoPrevious={canGoPrevious}
+          canGoNext={canGoNext}
+          onPrevious={onPrevious}
+          onNext={onNext}
+        />
 
-      {viewMode === "agenda" ? (
-        <HomeAgendaTimeline
-          days={days}
-          itemsByDate={itemsByDate}
-          disabledDateIds={disabledDateIds}
-          isLoading={isLoading}
-        />
-      ) : (
-        <HomeAgendaList
-          days={days}
-          itemsByDate={itemsByDate}
-          disabledDateIds={disabledDateIds}
-          isLoading={isLoading}
-        />
-      )}
+        <div className="min-h-0 flex-1 overflow-hidden">
+          {viewMode === "agenda" ? (
+            <HomeAgendaTimeline
+              days={days}
+              itemsByDate={itemsByDate}
+              disabledDateIds={disabledDateIds}
+              isLoading={isLoading}
+            />
+          ) : (
+            <HomeAgendaList
+              days={days}
+              itemsByDate={itemsByDate}
+              disabledDateIds={disabledDateIds}
+              isLoading={isLoading}
+            />
+          )}
+        </div>
+      </div>
     </section>
   );
 }

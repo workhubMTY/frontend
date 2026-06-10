@@ -180,7 +180,7 @@ export function useHomeAgendaViewModel() {
         day.id >= toDateId(today) && day.id <= toDateId(maxAllowedDate);
 
       acc[day.id] = isInsideAllowedRange
-        ? (scheduleItemsByDate[day.id] ?? [])
+        ? scheduleItemsByDate[day.id] ?? []
         : [];
 
       return acc;
@@ -242,6 +242,7 @@ export function useHomeAgendaViewModel() {
 
     selectFriend(ownerId);
   }
+
   return {
     state: {
       user,

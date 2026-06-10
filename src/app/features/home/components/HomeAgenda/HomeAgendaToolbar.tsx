@@ -14,6 +14,7 @@ type HomeAgendaToolbarProps = {
 
   canGoPrevious: boolean;
   canGoNext: boolean;
+
   onPrevious: () => void;
   onNext: () => void;
 };
@@ -26,17 +27,18 @@ export function HomeAgendaToolbar({
 
   canGoPrevious,
   canGoNext,
+
   onPrevious,
   onNext,
 }: HomeAgendaToolbarProps) {
   return (
-    <div className="flex h-16 shrink-0 items-center justify-between gap-4 border-b border-slate-100 px-5">
+    <div className="flex h-14 shrink-0 items-center justify-between gap-4 border-b border-slate-100 px-5">
       <HomeAgendaViewToggle
         activeView={viewMode}
         onChangeView={onChangeViewMode}
       />
 
-      <div className="flex items-center gap-2">
+      <div className="flex shrink-0 items-center gap-2">
         <button
           type="button"
           onClick={onPrevious}
