@@ -18,7 +18,7 @@ const adminRoutes = [
 ]
 
 export default function Navbar() {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const isAttendant = user?.role === "ACCESS_ATTENDANT";
   const routes = isAttendant
     ? []
@@ -130,16 +130,6 @@ export default function Navbar() {
               </label>
             </Link>
           )}
-          <button
-            onClick={async () => {
-              await logout();
-              route.push("/login");
-            }}
-            className="bg-background-page self-center p-2 select-none rounded-full text-on-background-2 hover:text-red-500 transition-colors material-symbols-outlined"
-            aria-label="Cerrar sesión"
-          >
-            logout
-          </button>
           <button
             data-hamburger
             onClick={() => setOpen((o) => !o)}
