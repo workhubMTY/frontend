@@ -7,9 +7,9 @@ import type {
   DiaInvitaciones,
   EventoGeneral,
   Persona,
-} from "@/app/features/home/types/types";
+} from "@/app/features/home/types/unused/types";
 
-import type { ExternalEvent } from "@/app/features/home/types/Agenda";
+import type { ExternalEvent } from "@/app/features/home/types/unused/Agenda";
 
 import {
   DIAS,
@@ -18,8 +18,8 @@ import {
   mapPendingReservationToInvitacion,
   mapReservationToReserva,
 } from "@/app/features/home/lib/homeMappers";
-import { ReservationEvent } from "../../cubiculos/data/types";
-import { useFriendsReservations, useMyReservations } from "../../reservaciones/crear/data/hooks";
+import { ReservationEvent } from "../../../cubiculos/data/types";
+import { useFriendsReservations, useMyReservations } from "../../../reservaciones/crear/data/hooks";
 
 type UseHomePageDataParams = {
   selectedPerson: number | null;

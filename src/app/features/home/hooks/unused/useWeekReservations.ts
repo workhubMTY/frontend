@@ -4,8 +4,8 @@ import { useState, useEffect, useCallback } from "react";
 import { useSocket } from "@/app/shared/socket/socket.context";
 import type { OfficeUpdateMessage } from "@/app/shared/socket/socket.context";
 import type { ParkingUpdateMessage } from "@/app/features/estacionamientos/data/types";
-import { listParkingReservations, listOfficeReservations } from "../data/api";
-import type { ParkingReservation, OfficeReservation } from "../data/types";
+import { listParkingReservations, listOfficeReservations } from "../../data/api";
+import type { ParkingReservation, OfficeReservation } from "../../data/types";
 
 export function getWeekRange(weekOffset: number): { start: Date; end: Date } {
   const now = new Date();

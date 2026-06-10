@@ -1,4 +1,4 @@
-import { CalEvent } from "../types/types";
+import { CalEvent } from "../types/unused/types";
 
 export const CAL_EVENTS: CalEvent[] = [
   {

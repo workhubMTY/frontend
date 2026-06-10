@@ -30,6 +30,9 @@ export type ScheduleItem = {
   attendanceStatus: string | null;
   lifecycleStatus: "ACTIVE" | "FINALIZED" | "CANCELED";
 
+
+  officeCategory?: "MEETING" | "RESERVATION" | null;
+
   raw?: unknown;
 };
 

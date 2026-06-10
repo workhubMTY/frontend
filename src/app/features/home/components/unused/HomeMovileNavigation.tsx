@@ -1,6 +1,6 @@
 import { CalendarDays, MailOpen, Users } from "lucide-react";
 
-import type { MobileTab } from "@/app/features/home/hooks/useHomePage";
+import type { MobileTab } from "@/app/features/home/hooks/unused/useHomePage";
 
 type HomeMobileNavigationProps = {
   activeTab: MobileTab;

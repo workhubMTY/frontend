@@ -2,7 +2,7 @@
 
 import { Search, Users, WifiOff, Loader2 } from "lucide-react";
 import { useState } from "react";
-import { useFriends } from "@/app/features/home/hooks/useFriends";
+import { useFriends } from "@/app/features/home/hooks/unused/useFriends";
 
 const AVATAR_PALETTE = [
   { bg: "#EDE9FE", text: "#5B21B6" },

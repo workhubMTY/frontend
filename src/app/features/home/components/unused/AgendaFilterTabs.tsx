@@ -1,6 +1,6 @@
 import { Users, Monitor, Car, CalendarDays, LayoutGrid } from "lucide-react";
 import { useEffect, useState } from "react";
-import type { AgendaFilter } from "@/app/features/home/hooks/useHomePage";
+import type { AgendaFilter } from "@/app/features/home/hooks/unused/useHomePage";
 
 const FILTERS: { key: AgendaFilter; label: string; icon: React.ReactNode }[] = [
   { key: "juntas",           label: "Juntas",      icon: <Users size={13} /> },

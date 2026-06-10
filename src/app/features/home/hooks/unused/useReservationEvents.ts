@@ -2,9 +2,9 @@
 
 import { useMemo } from "react";
 import { useWeekReservations } from "./useWeekReservations";
-import { parkingToEvents, officeToEvents, filterEvents } from "../utils/reservationToEvent";
+import { parkingToEvents, officeToEvents, filterEvents } from "../../utils/reservationToEvent";
 import type { AgendaFilter } from "./useHomePage";
-import type { ExternalEvent } from "../types/Agenda";
+import type { ExternalEvent } from "../../types/unused/Agenda";
 
 type Params = {
   weekOffset:       number;

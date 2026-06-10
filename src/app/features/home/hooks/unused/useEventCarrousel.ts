@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import type { EventoGeneral } from "@/app/features/home/types/types";
+import type { EventoGeneral } from "@/app/features/home/types/unused/types";
 
 type UseEventCarouselParams = {
   eventosGenerales: EventoGeneral[];

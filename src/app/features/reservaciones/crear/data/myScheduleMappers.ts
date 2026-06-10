@@ -22,7 +22,6 @@ function toLocalDateId(value: string) {
 
   return `${year}-${month}-${day}`;
 }
-
 export function officeReservationToScheduleItem(
   reservation: TimelineOfficeReservation,
 ): ScheduleItem {
@@ -39,16 +38,19 @@ export function officeReservationToScheduleItem(
 
     title:
       reservation.category === "MEETING"
-        ? `Reunión en ${reservation.reservable?.name ?? reservation.reservable.code}`
-        : `Reservación en ${reservation.reservable?.name ?? reservation.reservable.code}`,
+        ? `Reunión en ${
+            reservation.reservable?.name ?? reservation.reservable.code
+          }`
+        : `Reservación en ${
+            reservation.reservable?.name ?? reservation.reservable.code
+          }`,
 
-
-    sourceLabel: "Cubículo",
+    sourceLabel: reservation.category === "MEETING" ? "Junta" : "Coworking",
 
     reservableId: reservation.reservable_id,
     reservableName,
     reservableCode: reservation.reservable.code,
-    location:reservation.reservable.code,
+    location: reservation.reservable.code,
 
     floorId: reservation.reservable?.floor_id ?? null,
     floorName: reservation.reservable?.floor_id
@@ -57,7 +59,9 @@ export function officeReservationToScheduleItem(
 
     attendanceStatus: reservation.attendance_status,
     lifecycleStatus: reservation.lifecycle_status,
-    status:getStatus(reservation.lifecycle_status),
+    status: getStatus(reservation.lifecycle_status),
+
+    officeCategory: reservation.category,
 
     raw: reservation,
   };

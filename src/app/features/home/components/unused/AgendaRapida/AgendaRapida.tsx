@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useRef } from "react";
 import { ChevronLeft, ChevronRight, Loader2, User, Users } from "lucide-react";
-import type { ExternalEvent } from "../../types/Agenda";
+import type { ExternalEvent } from "../../../types/unused/Agenda";
 
 const HOURS      = [6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18];
 const DAYS_SHORT = ["Lu", "Ma", "Mi", "Ju", "Vi"];

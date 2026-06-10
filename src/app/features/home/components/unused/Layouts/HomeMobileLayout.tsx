@@ -1,10 +1,10 @@
-import { PanelRed } from "@/app/features/home/components/Panels/PanelRed";
-import { HomeAgendaPanel } from "@/app/features/home/components/Panels/HomeAgendaPanel";
+import { PanelRed } from "@/app/features/home/components/unused/Panels/PanelRed";
+import { HomeAgendaPanel } from "@/app/features/home/components/unused/Panels/HomeAgendaPanel";
 
-import type { MobileTab } from "@/app/features/home/hooks/useHomePage";
-import type { Persona, DiaInvitaciones } from "@/app/features/home/types/types";
-import type { ExternalEvent } from "@/app/features/home/types/Agenda";
-import type { AgendaFilter } from "@/app/features/home/hooks/useHomePage";
+import type { MobileTab } from "@/app/features/home/hooks/unused/useHomePage";
+import type { Persona, DiaInvitaciones } from "@/app/features/home/types/unused/types";
+import type { ExternalEvent } from "@/app/features/home/types/unused/Agenda";
+import type { AgendaFilter } from "@/app/features/home/hooks/unused/useHomePage";
 
 type HomeMobileLayoutProps = {
   mobileTab: MobileTab;

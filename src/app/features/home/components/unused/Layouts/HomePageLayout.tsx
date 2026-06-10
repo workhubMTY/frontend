@@ -1,9 +1,9 @@
-import { HomeDesktopLayout } from "@/app/features/home/components/Layouts/HomeDesktopLayout";
-import { HomeMobileLayout }  from "@/app/features/home/components/Layouts/HomeMobileLayout";
-import { HomeMobileNavigation } from "@/app/features/home/components/HomeMovileNavigation";
-import { AgendaFilterTabs } from "@/app/features/home/components/AgendaFilterTabs";
+import { HomeDesktopLayout } from "@/app/features/home/components/unused/Layouts/HomeDesktopLayout";
+import { HomeMobileLayout }  from "@/app/features/home/components/unused/Layouts/HomeMobileLayout";
+import { HomeMobileNavigation } from "@/app/features/home/components/unused/HomeMovileNavigation";
+import { AgendaFilterTabs } from "@/app/features/home/components/unused/AgendaFilterTabs";
 
-import type { useHomePage } from "@/app/features/home/hooks/useHomePage";
+import type { useHomePage } from "@/app/features/home/hooks/unused/useHomePage";
 
 type HomePageLayoutProps = ReturnType<typeof useHomePage> & { name?: string };
 

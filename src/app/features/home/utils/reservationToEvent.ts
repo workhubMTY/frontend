@@ -1,6 +1,6 @@
 import type { ParkingReservation, OfficeReservation } from "../data/types";
-import type { AgendaFilter } from "../hooks/useHomePage";
-import type { ExternalEvent } from "../types/Agenda";
+import type { AgendaFilter } from "../hooks/unused/useHomePage";
+import type { ExternalEvent } from "../types/unused/Agenda";
 
 const PALETTE: Record<AgendaFilter, {
   own:    { bg: string; border: string; text: string; sub: string };

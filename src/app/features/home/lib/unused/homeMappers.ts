@@ -14,7 +14,7 @@ import type {
   EventoGeneral,
   Invitacion,
   Reserva,
-} from "@/app/features/home/types/types";
+} from "@/app/features/home/types/unused/types";
 
 export const DIAS = [
   "Lunes",

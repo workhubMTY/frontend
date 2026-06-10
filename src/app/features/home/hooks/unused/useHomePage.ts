@@ -1,7 +1,7 @@
 import { useState } from "react";
 
-import { useHomePageData } from "@/app/features/home/hooks/useHomePageData";
-import { useEventCarousel } from "@/app/features/home/hooks/useEventCarrousel";
+import { useHomePageData } from "@/app/features/home/hooks/unused/useHomePageData";
+import { useEventCarousel } from "@/app/features/home/hooks/unused/useEventCarrousel";
 
 export type MobileTab = "agenda" | "red" | "invitaciones";
 export type AgendaFilter = "juntas" | "coworking" | "estacionamientos" | "eventos";

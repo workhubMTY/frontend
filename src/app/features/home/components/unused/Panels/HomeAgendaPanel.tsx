@@ -1,11 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import AgendaRapida from "@/app/features/home/components/AgendaRapida/AgendaRapida";
-import { useReservationEvents } from "@/app/features/home/hooks/useReservationEvents";
-import { useFriends } from "@/app/features/home/hooks/useFriends";
+import AgendaRapida from "@/app/features/home/components/unused/AgendaRapida/AgendaRapida";
+import { useReservationEvents } from "@/app/features/home/hooks/unused/useReservationEvents";
+import { useFriends } from "@/app/features/home/hooks/unused/useFriends";
 
-import type { AgendaFilter } from "@/app/features/home/hooks/useHomePage";
+import type { AgendaFilter } from "@/app/features/home/hooks/unused/useHomePage";
 
 type HomeAgendaPanelProps = {
   agendaFilter:     AgendaFilter[];
