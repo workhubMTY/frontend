@@ -1,15 +1,24 @@
 "use client";
+
 import { useState, useEffect, useRef, useCallback } from "react";
+
 import { api } from "./Data";
 import { FriendRequest } from "./notificationInterfaces";
+import { useMyReservations } from "@/app/features/reservaciones/crear/data/hooks";
+import { OfficeReservationWithParticipants } from "@/app/features/guard-checkin/types";
+
+type NotificationTab = "requests" | "invites";
 
 function timeAgo(dateStr: string): string {
   const diff = Date.now() - new Date(dateStr).getTime();
   const m = Math.floor(diff / 60000);
+
   if (m < 1) return "ahora";
   if (m < 60) return `hace ${m}m`;
+
   const h = Math.floor(m / 60);
   if (h < 24) return `hace ${h}h`;
+
   return `hace ${Math.floor(h / 24)}d`;
 }
 
@@ -23,22 +32,41 @@ function FriendRequestItem({
   onReject: (fromUser: string) => void;
 }) {
   return (
-    <div className="notification-item">
-      <div className="notif-icon" style={{ background: "#7c3aed18", color: "#7c3aed" }}>
-        <span className="material-symbols-outlined" style={{ fontSize: 18 }}>
+    <div className="flex items-center gap-3 border-b border-slate-100 px-4 py-3 transition-colors last:border-b-0 hover:bg-slate-50">
+      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-violet-50 text-violet-700">
+        <span className="material-symbols-outlined text-[18px]">
           person_add
         </span>
       </div>
-      <div className="notif-body" style={{ flex: 1 }}>
-        <div className="notif-title">{req.fromUser}</div>
-        <div className="notif-text">quiere ser tu amigo</div>
-        <div className="notif-time">{timeAgo(req.createdAt)}</div>
+
+      <div className="min-w-0 flex-1">
+        <div className="truncate  text-[13px] font-semibold text-slate-950">
+          {req.fromUser}
+        </div>
+
+        <div className="mt-0.5  text-xs leading-5 text-slate-600">
+          quiere ser tu amigo
+        </div>
+
+        <div className="mt-1  text-[11px] text-slate-400">
+          {timeAgo(req.createdAt)}
+        </div>
       </div>
-      <div className="friend-actions">
-        <button className="btn-accept" onClick={() => onAccept(req.fromUser)}>
+
+      <div className="flex shrink-0 gap-1.5">
+        <button
+          type="button"
+          onClick={() => onAccept(req.fromUser)}
+          className="rounded-md bg-violet-600 px-2.5 py-1.5  text-xs font-semibold text-white transition-colors hover:bg-violet-700"
+        >
           Aceptar
         </button>
-        <button className="btn-reject" onClick={() => onReject(req.fromUser)}>
+
+        <button
+          type="button"
+          onClick={() => onReject(req.fromUser)}
+          className="rounded-md bg-slate-100 px-2.5 py-1.5  text-xs font-semibold text-slate-600 transition-colors hover:bg-slate-200"
+        >
           Rechazar
         </button>
       </div>
@@ -46,20 +74,83 @@ function FriendRequestItem({
   );
 }
 
+function ReservationInviteItem({
+  reservation,
+}: {
+  reservation: OfficeReservationWithParticipants;
+}) {
+  const title = reservation.reservable.name;
+
+  const location = reservation.reservable.name || reservation.reservable.code;
+
+  const startTime = reservation.start_time;
+  const endTime = reservation.end_time;
+
+  const dateLabel = startTime
+    ? new Intl.DateTimeFormat("es-MX", {
+        weekday: "short",
+        day: "numeric",
+        month: "short",
+      }).format(new Date(startTime))
+    : "Fecha pendiente";
+
+  const timeLabel =
+    startTime && endTime
+      ? `${new Intl.DateTimeFormat("es-MX", {
+          hour: "2-digit",
+          minute: "2-digit",
+        }).format(new Date(startTime))} - ${new Intl.DateTimeFormat("es-MX", {
+          hour: "2-digit",
+          minute: "2-digit",
+        }).format(new Date(endTime))}`
+      : "Horario pendiente";
+
+  return (
+    <div className="flex items-center gap-3 border-b border-slate-100 px-4 py-3 transition-colors last:border-b-0 hover:bg-slate-50">
+      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-blue-50 text-blue-600">
+        <span className="material-symbols-outlined text-[18px]">
+          event_available
+        </span>
+      </div>
+
+      <div className="min-w-0 flex-1">
+        <div className="truncate  text-[13px] font-semibold text-slate-950">
+          {title}
+        </div>
+
+        <div className="mt-0.5  text-xs leading-5 text-slate-600">
+          Te invitaron a una reservación en {location}
+        </div>
+
+        <div className="mt-1  text-[11px] text-slate-400">
+          {dateLabel} · {timeLabel}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function NotificationsPanel() {
   const [open, setOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<NotificationTab>("requests");
   const [requests, setRequests] = useState<FriendRequest[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loadingRequests, setLoadingRequests] = useState(false);
+
   const panelRef = useRef<HTMLDivElement>(null);
 
+  const invitedReservationsQuery = useMyReservations("invites_only");
+  const invitedReservations = invitedReservationsQuery.data ?? [];
+
   const fetchAll = useCallback(async () => {
-    setLoading(true);
+    setLoadingRequests(true);
+
     try {
       const reqs = await api.getFriendRequests();
       setRequests(reqs);
     } catch {
+      setRequests([]);
     } finally {
-      setLoading(false);
+      setLoadingRequests(false);
     }
   }, []);
 
@@ -70,10 +161,15 @@ export default function NotificationsPanel() {
 
   useEffect(() => {
     if (!open) return;
+
     const handler = (e: MouseEvent) => {
-      if (!panelRef.current?.contains(e.target as Node)) setOpen(false);
+      if (!panelRef.current?.contains(e.target as Node)) {
+        setOpen(false);
+      }
     };
+
     document.addEventListener("mousedown", handler);
+
     return () => document.removeEventListener("mousedown", handler);
   }, [open]);
 
@@ -87,184 +183,82 @@ export default function NotificationsPanel() {
     setRequests((prev) => prev.filter((r) => r.fromUser !== fromUser));
   };
 
+  const totalNotifications = requests.length + invitedReservations.length;
+
   return (
-    <>
-      <style>{`
-        .notif-trigger {
-          position: relative;
-          background: var(--color-background-page, #f5f5f5);
-          border: none;
-          border-radius: 9999px;
-          padding: 8px;
-          cursor: pointer;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          color: var(--color-on-background-2, #555);
-          transition: background 0.15s;
-        }
-        .notif-trigger:hover { background: var(--color-background-page, #ebebeb); }
+    <div ref={panelRef} className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        aria-label="Notificaciones"
+        className="relative flex items-center justify-center rounded-full bg-background-page p-2 text-on-background-2 transition-colors hover:bg-slate-200/70"
+      >
+        <span className="material-symbols-outlined text-[22px]">
+          notifications
+        </span>
 
-        .notif-badge {
-          position: absolute;
-          top: 3px; right: 3px;
-          min-width: 16px; height: 16px;
-          border-radius: 9999px;
-          background: #7c3aed;
-          color: #fff;
-          font-size: 10px;
-          font-weight: 700;
-          display: flex; align-items: center; justify-content: center;
-          padding: 0 3px;
-          pointer-events: none;
-          line-height: 1;
-        }
-
-        .notif-panel {
-          position: absolute;
-          top: calc(100% + 10px);
-          right: 0;
-          width: 380px;
-          max-height: 520px;
-          background: #fff;
-          border-radius: 12px;
-          box-shadow: 0 8px 32px rgba(0,0,0,0.14), 0 2px 8px rgba(0,0,0,0.08);
-          display: flex;
-          flex-direction: column;
-          overflow: hidden;
-          animation: panelIn 0.18s cubic-bezier(.22,1,.36,1) both;
-          z-index: 100;
-        }
-        @media (max-width: 480px) {
-          .notif-panel { width: calc(100vw - 16px); right: -8px; }
-        }
-        @keyframes panelIn {
-          from { opacity: 0; transform: translateY(-6px) scale(0.98); }
-          to   { opacity: 1; transform: translateY(0) scale(1); }
-        }
-
-        .notif-header {
-          padding: 14px 16px;
-          border-bottom: 1px solid #f0f0f0;
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-        }
-        .notif-header-title {
-          font-size: 15px; font-weight: 700;
-          color: #111;
-          font-family: 'DM Sans', sans-serif;
-        }
-
-        .notif-list {
-          overflow-y: auto;
-          flex: 1;
-          padding: 4px 0;
-        }
-        .notif-list::-webkit-scrollbar { width: 4px; }
-        .notif-list::-webkit-scrollbar-thumb { background: #e0e0e0; border-radius: 4px; }
-
-        .notification-item {
-          display: flex; align-items: center; gap: 12px;
-          padding: 12px 16px;
-          transition: background 0.12s;
-          border-bottom: 1px solid #f7f7f7;
-        }
-        .notification-item:last-child { border-bottom: none; }
-        .notification-item:hover { background: #fafafa; }
-
-        .notif-icon {
-          width: 36px; height: 36px; border-radius: 10px;
-          display: flex; align-items: center; justify-content: center;
-          flex-shrink: 0;
-        }
-
-        .notif-body { flex: 1; min-width: 0; }
-        .notif-title {
-          font-size: 13px; font-weight: 600; color: #111;
-          font-family: 'DM Sans', sans-serif;
-          white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-        }
-        .notif-text { font-size: 12px; color: #555; margin-top: 2px; line-height: 1.4; }
-        .notif-time { font-size: 11px; color: #aaa; margin-top: 4px; }
-
-        .friend-actions { display: flex; gap: 6px; flex-shrink: 0; }
-        .btn-accept {
-          background: #7c3aed; color: #fff;
-          border: none; border-radius: 6px;
-          font-size: 12px; font-weight: 600;
-          padding: 5px 10px; cursor: pointer;
-          transition: background 0.15s;
-          font-family: 'DM Sans', sans-serif;
-        }
-        .btn-accept:hover { background: #6d28d9; }
-        .btn-reject {
-          background: #f0f0f0; color: #555;
-          border: none; border-radius: 6px;
-          font-size: 12px; font-weight: 600;
-          padding: 5px 10px; cursor: pointer;
-          transition: background 0.15s;
-          font-family: 'DM Sans', sans-serif;
-        }
-        .btn-reject:hover { background: #e5e5e5; }
-
-        .notif-empty {
-          display: flex; flex-direction: column;
-          align-items: center; justify-content: center;
-          padding: 48px 24px; gap: 8px;
-          color: #bbb;
-        }
-        .notif-empty span.material-symbols-outlined { font-size: 36px; }
-        .notif-empty p { font-size: 13px; margin: 0; font-family: 'DM Sans', sans-serif; }
-
-        .notif-loading {
-          display: flex; align-items: center; justify-content: center;
-          padding: 32px;
-          color: #bbb; font-size: 13px;
-          font-family: 'DM Sans', sans-serif;
-        }
-      `}</style>
-
-      <div ref={panelRef} style={{ position: "relative" }}>
-        <button
-          className="notif-trigger"
-          onClick={() => setOpen((o) => !o)}
-          aria-label="Solicitudes de amistad"
-        >
-          <span className="material-symbols-outlined" style={{ fontSize: 22 }}>
-            group
+        {totalNotifications > 0 && (
+          <span className="pointer-events-none absolute right-[3px] top-[3px] flex h-4 min-w-4 items-center justify-center rounded-full bg-violet-600 px-1 text-[10px] font-bold leading-none text-white">
+            {totalNotifications > 99 ? "99+" : totalNotifications}
           </span>
-          {requests.length > 0 && (
-            <span className="notif-badge">
-              {requests.length > 99 ? "99+" : requests.length}
-            </span>
-          )}
-        </button>
+        )}
+      </button>
 
-        {open && (
-          <div className="notif-panel">
-            <div className="notif-header">
-              <span className="notif-header-title">Solicitudes de amistad</span>
-              {requests.length > 0 && (
-                <span style={{
-                  fontSize: 12,
-                  color: "#7c3aed",
-                  fontWeight: 600,
-                  fontFamily: "'DM Sans', sans-serif"
-                }}>
-                  {requests.length} pendiente{requests.length !== 1 ? "s" : ""}
+      {open && (
+        <div className="absolute right-0 top-[calc(100%+10px)] z-[100] flex max-h-[560px] w-[400px] animate-[panelIn_0.18s_cubic-bezier(.22,1,.36,1)_both] flex-col overflow-hidden rounded-[14px] border border-slate-200 bg-white shadow-[0_16px_40px_rgba(15,23,42,0.14),0_2px_8px_rgba(15,23,42,0.08)] max-[480px]:right-[-8px] max-[480px]:w-[calc(100vw-16px)]">
+          <div className="flex flex-col gap-3 border-b border-slate-100 px-4 pb-2.5 pt-3.5">
+            <div className="flex items-center justify-between">
+              <span className=" text-[15px] font-bold text-slate-950">
+                Notificaciones
+              </span>
+
+              {totalNotifications > 0 && (
+                <span className=" text-xs font-semibold text-slate-500">
+                  {totalNotifications} pendiente
+                  {totalNotifications !== 1 ? "s" : ""}
                 </span>
               )}
             </div>
 
-            <div className="notif-list">
-              {loading ? (
-                <div className="notif-loading">Cargando...</div>
+            <div className="flex items-center gap-1 rounded-[10px] bg-slate-100 p-[3px]">
+              <button
+                type="button"
+                onClick={() => setActiveTab("requests")}
+                className={`flex-1 rounded-lg px-2.5 py-[7px]  text-xs font-semibold transition-all ${
+                  activeTab === "requests"
+                    ? "bg-white text-slate-950 shadow-sm"
+                    : "text-slate-600 hover:bg-white/60 hover:text-slate-950"
+                }`}
+              >
+                Solicitudes
+                {requests.length > 0 ? ` (${requests.length})` : ""}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setActiveTab("invites")}
+                className={`flex-1 rounded-lg px-2.5 py-[7px]  text-xs font-semibold transition-all ${
+                  activeTab === "invites"
+                    ? "bg-white text-slate-950 shadow-sm"
+                    : "text-slate-600 hover:bg-white/60 hover:text-slate-950"
+                }`}
+              >
+                Invitaciones
+                {invitedReservations.length > 0
+                  ? ` (${invitedReservations.length})`
+                  : ""}
+              </button>
+            </div>
+          </div>
+
+          <div className="flex-1 overflow-y-auto py-1 [scrollbar-width:thin] [scrollbar-color:#e2e8f0_transparent]">
+            {activeTab === "requests" ? (
+              loadingRequests ? (
+                <NotificationLoading>Cargando...</NotificationLoading>
               ) : requests.length === 0 ? (
-                <div className="notif-empty">
-                  <span className="material-symbols-outlined">group_off</span>
-                  <p>No tienes solicitudes pendientes</p>
-                </div>
+                <NotificationEmpty icon="group_off">
+                  No tienes solicitudes pendientes
+                </NotificationEmpty>
               ) : (
                 requests.map((r) => (
                   <FriendRequestItem
@@ -274,11 +268,47 @@ export default function NotificationsPanel() {
                     onReject={handleReject}
                   />
                 ))
-              )}
-            </div>
+              )
+            ) : invitedReservationsQuery.isLoading ? (
+              <NotificationLoading>Cargando invitaciones...</NotificationLoading>
+            ) : invitedReservations.length === 0 ? (
+              <NotificationEmpty icon="event_busy">
+                No tienes invitaciones pendientes
+              </NotificationEmpty>
+            ) : (
+              invitedReservations.map((reservation) => (
+                <ReservationInviteItem
+                  key={reservation.id}
+                  reservation={reservation}
+                />
+              ))
+            )}
           </div>
-        )}
-      </div>
-    </>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function NotificationLoading({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="flex items-center justify-center p-8  text-[13px] text-slate-400">
+      {children}
+    </div>
+  );
+}
+
+function NotificationEmpty({
+  icon,
+  children,
+}: {
+  icon: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="flex flex-col items-center justify-center gap-2 px-6 py-12 text-slate-400">
+      <span className="material-symbols-outlined text-4xl">{icon}</span>
+      <p className="m-0 text-[13px]">{children}</p>
+    </div>
   );
 }

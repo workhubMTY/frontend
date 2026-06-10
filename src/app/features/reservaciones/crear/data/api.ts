@@ -30,6 +30,8 @@ import {
   groupScheduleItemsByDate,
   toTime,
 } from "@/app/features/reservaciones/crear/data/scheduleItems";
+import { OfficeReservationWithParticipants } from "@/app/features/guard-checkin/types";
+import { UserReservationScope } from "./hooks";
 
 const RESERVATIONS_BASE = `/office/reservations`;
 
@@ -129,7 +131,7 @@ export function reservationSummaryToScheduleItem(
     floorName: reservation.floor_name ?? null,
 
     attendanceStatus: reservation.attendance_status ?? null,
-    lifecycleStatus : reservation.lifecycle_status ?? null,
+    lifecycleStatus: reservation.lifecycle_status ?? null,
 
     raw: reservation,
   };
@@ -154,8 +156,15 @@ export const reservationsApi = {
       },
     ),
 
-  getMyReservations: () =>
-    authFetch<UserReservationSummary>(`${RESERVATIONS_BASE}/me`),
+  getMyReservations: (scope: UserReservationScope = "without_invites") => {
+    const params = new URLSearchParams();
+
+    params.set("scope", scope);
+
+    return authFetch<OfficeReservationWithParticipants[]>(
+      `/office/reservations/me?${params.toString()}`,
+    );
+  },
 
   getFriendsReservations: () =>
     authFetch<FriendReservationsSummary>(`${RESERVATIONS_BASE}/me/friends`),
@@ -167,12 +176,9 @@ export const reservationsApi = {
   getUserTimeline: (userId: string, query: UserTimelineQuery) => {
     const search = buildUserTimelineSearchParams(query);
 
-    return authFetch<UserTimelineData>(
-      `/users/${userId}/timeline?${search}`,
-      {
-        method: "GET",
-      },
-    );
+    return authFetch<UserTimelineData>(`/users/${userId}/timeline?${search}`, {
+      method: "GET",
+    });
   },
 
   getSpaceScheduleItemsInVisibleRange: async ({
