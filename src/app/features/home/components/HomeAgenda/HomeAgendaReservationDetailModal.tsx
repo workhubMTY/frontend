@@ -6,6 +6,7 @@ import {
   Clock,
   Loader2,
   MapPin,
+  ShieldCheck,
   Users,
   X,
 } from "lucide-react";
@@ -51,11 +52,10 @@ type HomeAgendaReservationDetailModalProps = {
   onClose: () => void;
 };
 
-function formatDate(value?: string | null) {
+function formatDate(value?: string | Date | null) {
   if (!value) return "—";
 
   const date = new Date(value);
-
   if (Number.isNaN(date.getTime())) return "—";
 
   return date.toLocaleDateString("es-MX", {
@@ -66,11 +66,23 @@ function formatDate(value?: string | null) {
   });
 }
 
-function formatTime(value?: string | null) {
+function formatShortDate(value?: string | Date | null) {
   if (!value) return "—";
 
   const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "—";
 
+  return date.toLocaleDateString("es-MX", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+}
+
+function formatTime(value?: string | Date | null) {
+  if (!value) return "—";
+
+  const date = new Date(value);
   if (Number.isNaN(date.getTime())) return "—";
 
   return date.toLocaleTimeString("es-MX", {
@@ -155,203 +167,247 @@ export function HomeAgendaReservationDetailModal({
   if (!open) return null;
 
   const reservation = detailQuery.data as OfficeReservationDetail | undefined;
+  const reservable = reservation?.reservable ?? null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/30 px-4 backdrop-blur-[1px]">
-      <section className="flex max-h-[min(720px,calc(100vh-48px))] w-full max-w-2xl flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-2xl">
-        <header className="flex shrink-0 items-start justify-between gap-4 border-b border-slate-100 bg-white px-5 py-4">
-          <div className="min-w-0">
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
-              Detalle de reservación
-            </p>
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/35 px-3 py-4 backdrop-blur-sm sm:px-4 sm:py-6"
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget) {
+          onClose();
+        }
+      }}
+    >
+      <section className="flex h-[92dvh] w-full max-w-6xl flex-col overflow-hidden bg-white shadow-2xl lg:flex-row">
+        {detailQuery.isLoading ? (
+          <LoadingModal onClose={onClose} />
+        ) : detailQuery.isError ? (
+          <ErrorModal onClose={onClose} />
+        ) : !reservation ? (
+          <EmptyModal onClose={onClose} />
+        ) : (
+          <>
+            <div className="flex min-w-0 flex-1 flex-col">
+              <header className="flex shrink-0 items-start justify-between gap-4 border-b border-slate-200 px-5 py-4 sm:px-6 sm:py-5">
+                <div className="min-w-0">
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-violet-600">
+                    Reservación de espacio
+                  </p>
 
-            <h2 className="mt-1 truncate text-lg font-semibold text-slate-950">
-              {detailQuery.isLoading
-                ? "Cargando reservación..."
-                : reservation?.reservable?.code
-                  ? `Reservación ${reservation.reservable.code}`
-                  : `Reservación #${reservation?.id ?? reservationId}`}
-            </h2>
+                  <h3 className="mt-2 truncate text-xl font-bold text-slate-950">
+                    {reservable?.code
+                      ? `Reservación ${reservable.code}`
+                      : `Reservación #${reservation.id}`}
+                  </h3>
 
-            <p className="mt-1 line-clamp-2 text-sm text-slate-500">
-              {reservation?.description?.trim()
-                ? reservation.description
-                : "Sin descripción adicional"}
-            </p>
-          </div>
+                  <p className="mt-1 text-sm text-slate-500">
+                    Consulta el detalle del espacio, horario y participantes.
+                  </p>
+                </div>
 
-          <button
-            type="button"
-            onClick={onClose}
-            className="grid size-8 shrink-0 place-items-center rounded-md text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
-            aria-label="Cerrar detalle"
-          >
-            <X className="size-4" />
-          </button>
-        </header>
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="rounded-full p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
+                  aria-label="Cerrar modal"
+                >
+                  <X className="size-5" />
+                </button>
+              </header>
 
-        <div className="min-h-0 flex-1 overflow-y-auto bg-slate-50/70 p-5">
-          {detailQuery.isLoading ? (
-            <LoadingState />
-          ) : detailQuery.isError ? (
-            <ErrorState />
-          ) : !reservation ? (
-            <EmptyState />
-          ) : (
-            <ReservationDetailContent reservation={reservation} />
-          )}
-        </div>
+              <main className="min-h-0 flex-1 overflow-y-auto bg-white">
+                <div className="space-y-4 px-4 py-4 sm:px-6 lg:hidden">
+                  <MobileOfficeSummary reservation={reservation} />
+                </div>
 
-        <footer className="flex shrink-0 items-center justify-end gap-2 border-t border-slate-100 bg-white px-5 py-4">
-          <button
-            type="button"
-            onClick={onClose}
-            className="h-9 rounded-lg border border-slate-200 bg-white px-4 text-sm font-medium text-slate-600 transition hover:bg-slate-50"
-          >
-            Cerrar
-          </button>
-        </footer>
+                <div className="grid gap-4 px-4 pb-4 sm:px-6 sm:py-5 lg:grid-cols-[minmax(0,1fr)_320px]">
+                  <section className="space-y-4">
+                    <ReservationInfoCard reservation={reservation} />
+                    <ReservationStatusCard reservation={reservation} />
+                  </section>
+
+                  <aside className="hidden space-y-4 lg:block">
+                    <ParticipantsCard
+                      participants={reservation.participants ?? []}
+                    />
+                  </aside>
+                </div>
+              </main>
+
+              <footer className="flex shrink-0 flex-col gap-3 border-t border-slate-200 px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+                <p className="text-sm text-slate-500">
+                  Revisa participantes, estado y datos del espacio reservado.
+                </p>
+
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                >
+                  Cerrar
+                </button>
+              </footer>
+            </div>
+          </>
+        )}
       </section>
     </div>
   );
 }
 
-function ReservationDetailContent({
+function MobileOfficeSummary({
   reservation,
 }: {
   reservation: OfficeReservationDetail;
 }) {
-  const participants = reservation.participants ?? [];
+  const reservable = reservation.reservable;
 
-  const checkedInCount = participants.filter(
-    (participant) => participant.attendance_status === "CHECKED_IN",
-  ).length;
+  return (
+    <section className="border border-slate-200 bg-slate-50 p-4">
+      <div className="flex min-w-0 items-start gap-3">
+        <div className="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-violet-100 text-violet-700">
+          <MapPin size={18} />
+        </div>
 
+        <div className="min-w-0">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-violet-600">
+            Espacio reservado
+          </p>
+
+          <h4 className="mt-1 truncate text-base font-bold text-slate-950">
+            {reservable?.code ?? `Reservación #${reservation.id}`}
+          </h4>
+
+          <p className="text-sm text-slate-500">
+            {formatShortDate(reservation.start_time)} ·{" "}
+            {formatTime(reservation.start_time)} –{" "}
+            {formatTime(reservation.end_time)}
+          </p>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function ReservationStatusCard({
+  reservation,
+}: {
+  reservation: OfficeReservationDetail;
+}) {
+  return (
+    <section className="border border-slate-200 bg-white p-5">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <h4 className="text-sm font-bold text-slate-950">
+            Estado de la reservación
+          </h4>
+
+          <p className="mt-1 text-sm leading-6 text-slate-500">
+            Consulta el ciclo de vida y el estado actual de asistencia.
+          </p>
+        </div>
+
+        <div className="flex shrink-0 flex-wrap gap-2 sm:justify-end">
+          <StatusBadge
+            className={getLifecycleClassName(reservation.lifecycle_status)}
+          >
+            {getLifecycleLabel(reservation.lifecycle_status)}
+          </StatusBadge>
+
+          <StatusBadge
+            className={getAttendanceClassName(reservation.attendance_status)}
+          >
+            {getAttendanceLabel(reservation.attendance_status)}
+          </StatusBadge>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function ReservationInfoCard({
+  reservation,
+}: {
+  reservation: OfficeReservationDetail;
+}) {
+  const reservable = reservation.reservable;
+
+  return (
+    <section className="border border-slate-200 bg-white p-5">
+      <h4 className="text-sm font-bold text-slate-950">
+        Información de la reservación
+      </h4>
+
+      <div className="mt-4 grid gap-4 sm:grid-cols-2">
+        <InfoBlock label="Reservación" value={`#${reservation.id}`} />
+        <InfoBlock label="Categoría" value={reservation.category} />
+        <InfoBlock label="Espacio" value={reservable?.code ?? "Sin espacio"} />
+        <InfoBlock
+          label="Capacidad"
+          value={
+            typeof reservable?.capacity === "number"
+              ? `${reservable.capacity} personas`
+              : "—"
+          }
+        />
+        <InfoBlock
+          label="Inicio"
+          value={`${formatDate(reservation.start_time)} · ${formatTime(
+            reservation.start_time,
+          )}`}
+        />
+        <InfoBlock
+          label="Fin"
+          value={`${formatDate(reservation.end_time)} · ${formatTime(
+            reservation.end_time,
+          )}`}
+        />
+      </div>
+    </section>
+  );
+}
+
+function ParticipantsCard({
+  participants,
+}: {
+  participants: OfficeReservationParticipant[];
+}) {
   const ownerParticipant = participants.find(
     (participant) => participant.ownership_priority === 0,
   );
 
   return (
-    <div className="space-y-4">
-      <section className="grid gap-3 md:grid-cols-3">
-        <DetailTile
-          icon={<CalendarDays className="size-4" />}
-          label="Fecha"
-          value={formatDate(reservation.start_time)}
-        />
+    <section className="overflow-hidden border border-slate-200 bg-white">
+      <header className="flex items-center justify-between border-b border-slate-200 px-5 py-4">
+        <div>
+          <h4 className="text-sm font-bold text-slate-950">Participantes</h4>
 
-        <DetailTile
-          icon={<Clock className="size-4" />}
-          label="Horario"
-          value={`${formatTime(reservation.start_time)} - ${formatTime(
-            reservation.end_time,
-          )}`}
-        />
-
-        <DetailTile
-          icon={<Users className="size-4" />}
-          label="Participantes"
-          value={`${participants.length} total`}
-          description={`${checkedInCount} con check-in`}
-        />
-      </section>
-
-      <section className="grid gap-3 md:grid-cols-2">
-        <div className="rounded-xl border border-slate-200 bg-white p-4">
-          <div className="mb-3 grid size-8 place-items-center rounded-lg bg-slate-100 text-slate-500">
-            <MapPin className="size-4" />
-          </div>
-
-          <p className="text-xs font-medium text-slate-400">Espacio</p>
-
-          <p className="mt-1 text-sm font-semibold text-slate-800">
-            {reservation.reservable?.code ?? "Sin código"}
-          </p>
-
-          <p className="mt-0.5 text-xs text-slate-400">
-            Capacidad {reservation.reservable?.capacity ?? "—"} · Piso{" "}
-            {reservation.reservable?.floor_id ?? "—"}
+          <p className="text-sm text-slate-500">
+            Estado de asistencia de la reservación.
           </p>
         </div>
 
-        <div className="rounded-xl border border-slate-200 bg-white p-4">
-          <p className="text-xs font-medium text-slate-400">Estado</p>
+        <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-500">
+          {participants.length}
+        </span>
+      </header>
 
-          <div className="mt-3 flex flex-wrap gap-2">
-            <span
-              className={cn(
-                "rounded-full border px-2.5 py-1 text-xs font-medium",
-                getLifecycleClassName(reservation.lifecycle_status),
-              )}
-            >
-              {getLifecycleLabel(reservation.lifecycle_status)}
-            </span>
-
-            <span
-              className={cn(
-                "rounded-full border px-2.5 py-1 text-xs font-medium",
-                getAttendanceClassName(reservation.attendance_status),
-              )}
-            >
-              {getAttendanceLabel(reservation.attendance_status)}
-            </span>
+      <div className="divide-y divide-slate-100">
+        {participants.length === 0 ? (
+          <div className="px-5 py-6 text-sm text-slate-400">
+            No hay participantes registrados.
           </div>
-        </div>
-      </section>
-
-      <section className="rounded-xl border border-slate-200 bg-white p-4">
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <h3 className="text-sm font-semibold text-slate-900">
-              Información general
-            </h3>
-
-            <p className="mt-1 text-sm text-slate-500">
-              {reservation.description?.trim() ||
-                "Esta reservación no tiene descripción registrada."}
-            </p>
-          </div>
-
-          <span className="shrink-0 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-medium text-slate-500">
-            {reservation.category}
-          </span>
-        </div>
-      </section>
-
-      <section className="overflow-hidden rounded-xl border border-slate-200 bg-white">
-        <header className="flex items-center justify-between border-b border-slate-100 px-4 py-3">
-          <div>
-            <h3 className="text-sm font-semibold text-slate-900">
-              Participantes
-            </h3>
-
-            <p className="text-xs text-slate-400">
-              Estado de asistencia de la reservación
-            </p>
-          </div>
-
-          <span className="rounded-full bg-slate-100 px-2 py-1 text-xs font-medium text-slate-500">
-            {participants.length}
-          </span>
-        </header>
-
-        <div className="divide-y divide-slate-100">
-          {participants.length === 0 ? (
-            <div className="px-4 py-5 text-sm text-slate-400">
-              No hay participantes registrados.
-            </div>
-          ) : (
-            participants.map((participant) => (
-              <ParticipantRow
-                key={participant.id}
-                participant={participant}
-                isOwner={ownerParticipant?.id === participant.id}
-              />
-            ))
-          )}
-        </div>
-      </section>
-    </div>
+        ) : (
+          participants.map((participant) => (
+            <ParticipantRow
+              key={participant.id}
+              participant={participant}
+              isOwner={ownerParticipant?.id === participant.id}
+            />
+          ))
+        )}
+      </div>
+    </section>
   );
 }
 
@@ -365,15 +421,15 @@ function ParticipantRow({
   const name = participant.user_id ?? "Usuario sin asignar";
 
   return (
-    <div className="flex items-center justify-between gap-4 px-4 py-3">
+    <div className="flex flex-col gap-3 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
       <div className="flex min-w-0 items-center gap-3">
-        <div className="grid size-9 shrink-0 place-items-center rounded-full bg-slate-100 text-xs font-semibold text-slate-500">
+        <div className="grid size-10 shrink-0 place-items-center rounded-full bg-slate-100 text-xs font-bold text-slate-500">
           {name.charAt(0).toUpperCase()}
         </div>
 
         <div className="min-w-0">
-          <div className="flex min-w-0 items-center gap-2">
-            <p className="truncate text-sm font-medium text-slate-800">
+          <div className="flex min-w-0 flex-wrap items-center gap-2">
+            <p className="truncate text-sm font-semibold text-slate-800">
               {name}
             </p>
 
@@ -382,13 +438,13 @@ function ParticipantRow({
             ) : null}
 
             {isOwner ? (
-              <span className="rounded-full bg-slate-100 px-1.5 py-0.5 text-[10px] font-medium text-slate-500">
+              <span className="rounded-full bg-violet-50 px-2 py-0.5 text-[10px] font-semibold text-violet-700">
                 Organizador
               </span>
             ) : null}
           </div>
 
-          <p className="truncate text-xs text-slate-400">
+          <p className="mt-0.5 text-xs text-slate-400">
             Prioridad {participant.ownership_priority}
           </p>
         </div>
@@ -396,7 +452,7 @@ function ParticipantRow({
 
       <span
         className={cn(
-          "shrink-0 rounded-full border px-2.5 py-1 text-xs font-medium",
+          "w-fit shrink-0 rounded-full border px-2.5 py-1 text-xs font-semibold",
           getAttendanceClassName(participant.attendance_status),
         )}
       >
@@ -406,57 +462,194 @@ function ParticipantRow({
   );
 }
 
-function DetailTile({
+function MetricCard({
   icon,
   label,
   value,
-  description,
+  helper,
 }: {
   icon: React.ReactNode;
   label: string;
   value: string;
-  description?: string;
+  helper: string;
 }) {
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-4">
-      <div className="mb-3 grid size-8 place-items-center rounded-lg bg-slate-100 text-slate-500">
+    <div className="border border-slate-200 bg-white p-4">
+      <div className="flex items-center justify-between gap-2">
+        <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+          {label}
+        </p>
+
+        <div className="text-slate-400">{icon}</div>
+      </div>
+
+      <p className="mt-3 truncate text-2xl font-bold tracking-tight text-slate-950">
+        {value}
+      </p>
+
+      <p className="mt-0.5 truncate text-xs text-slate-500">{helper}</p>
+    </div>
+  );
+}
+
+function InfoBlock({ label, value }: { label: string; value?: string | null }) {
+  return (
+    <div className="border border-slate-200 bg-slate-50 px-4 py-3">
+      <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+        {label}
+      </p>
+
+      <p className="mt-1 break-words text-sm font-semibold text-slate-800">
+        {value ?? "—"}
+      </p>
+    </div>
+  );
+}
+
+function SummaryBlock({
+  icon,
+  label,
+  value,
+  helper,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+  helper?: string;
+}) {
+  return (
+    <div className="flex items-start gap-3">
+      <div className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-500">
         {icon}
       </div>
 
-      <p className="text-xs font-medium text-slate-400">{label}</p>
+      <div className="min-w-0">
+        <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+          {label}
+        </p>
 
-      <p className="mt-1 text-sm font-semibold text-slate-800">{value}</p>
+        <p className="mt-1 text-sm font-bold leading-5 text-slate-950">
+          {value}
+        </p>
 
-      {description ? (
-        <p className="mt-0.5 text-xs text-slate-400">{description}</p>
-      ) : null}
-    </div>
-  );
-}
-
-function LoadingState() {
-  return (
-    <div className="flex min-h-[260px] items-center justify-center">
-      <div className="flex items-center gap-2 text-sm text-slate-500">
-        <Loader2 className="size-4 animate-spin" />
-        Cargando información...
+        {helper ? (
+          <p className="mt-1 text-xs leading-5 text-slate-500">{helper}</p>
+        ) : null}
       </div>
     </div>
   );
 }
 
-function ErrorState() {
+function StatusBadge({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className: string;
+}) {
   return (
-    <div className="rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
-      No se pudo cargar el detalle de la reservación.
+    <span
+      className={cn(
+        "rounded-full border px-2.5 py-1 text-xs font-semibold",
+        className,
+      )}
+    >
+      {children}
+    </span>
+  );
+}
+
+function LoadingModal({ onClose }: { onClose: () => void }) {
+  return (
+    <div className="flex min-h-0 flex-1 flex-col">
+      <ModalHeader
+        eyebrow="Reservación"
+        title="Cargando reservación..."
+        description="Estamos preparando el detalle del espacio reservado."
+        onClose={onClose}
+      />
+
+      <div className="flex flex-1 items-center justify-center">
+        <div className="flex items-center gap-2 text-sm text-slate-500">
+          <Loader2 className="size-4 animate-spin" />
+          Cargando información...
+        </div>
+      </div>
     </div>
   );
 }
 
-function EmptyState() {
+function ErrorModal({ onClose }: { onClose: () => void }) {
   return (
-    <div className="rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm text-slate-500">
-      No hay información disponible.
+    <div className="flex min-h-0 flex-1 flex-col">
+      <ModalHeader
+        eyebrow="Reservación"
+        title="No se pudo cargar"
+        description="Ocurrió un problema al consultar la reservación."
+        onClose={onClose}
+      />
+
+      <div className="p-6">
+        <div className="border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700">
+          No se pudo cargar el detalle de la reservación.
+        </div>
+      </div>
     </div>
+  );
+}
+
+function EmptyModal({ onClose }: { onClose: () => void }) {
+  return (
+    <div className="flex min-h-0 flex-1 flex-col">
+      <ModalHeader
+        eyebrow="Reservación"
+        title="Sin información"
+        description="No encontramos detalle para esta reservación."
+        onClose={onClose}
+      />
+
+      <div className="p-6">
+        <div className="border border-slate-200 bg-white px-4 py-3 text-sm text-slate-500">
+          No hay información disponible.
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ModalHeader({
+  eyebrow,
+  title,
+  description,
+  onClose,
+}: {
+  eyebrow: string;
+  title: string;
+  description: string;
+  onClose: () => void;
+}) {
+  return (
+    <header className="flex shrink-0 items-start justify-between gap-4 border-b border-slate-200 px-5 py-4 sm:px-6 sm:py-5">
+      <div className="min-w-0">
+        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-violet-600">
+          {eyebrow}
+        </p>
+
+        <h3 className="mt-2 truncate text-xl font-bold text-slate-950">
+          {title}
+        </h3>
+
+        <p className="mt-1 text-sm text-slate-500">{description}</p>
+      </div>
+
+      <button
+        type="button"
+        onClick={onClose}
+        className="rounded-full p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
+        aria-label="Cerrar modal"
+      >
+        <X className="size-5" />
+      </button>
+    </header>
   );
 }
