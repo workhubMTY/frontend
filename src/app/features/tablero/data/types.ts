@@ -37,6 +37,7 @@ export type GetParkingReservationsParams = {
 export type Office = {
     id: number;
     name: string;
+    code: string;
     capacity: number;
     floor_id: number;
     is_blocked: boolean;
@@ -45,7 +46,7 @@ export type Office = {
 export type Participants = {
     id: number;
     reservations_id: number;
-    user_id: number;
+    user_id: string;
     ownership_priority: number;
     attendance_status: string | null;
     created_at: string;

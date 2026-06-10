@@ -67,8 +67,10 @@ export const listParkingReservations = {
 } as const;
 
 export const listOfficeReservations = {
-  // Get /office/reservations
-  getOfficeReservations: () => authFetch<OfficeReservations>(`${OfficeLink}/reservations`),
+  // Get /office/reservations/
+  getOfficeReservations: () => authFetch<OfficeReservations>(`${OfficeLink}/reservations/`),
+  // Get /office/reservations/id
+  getOfficeReservationsId: (id: number) => authFetch<OfficeReservations>(`${OfficeLink}/reservations/${id}`),
 } as const
 
 export const listUsers = {
@@ -131,12 +133,12 @@ export const listStats = {
 
         if (!res.ok) throw new Error(`Export failed: ${res.status}`);
 
-        const blob    = await res.blob();
+        const blob = await res.blob();
         const blobUrl = URL.createObjectURL(blob);
-        const anchor  = document.createElement("a");
-        const cd      = res.headers.get("Content-Disposition") ?? "";
-        const match   = cd.match(/filename="(.+)"/);
-        anchor.href     = blobUrl;
+        const anchor = document.createElement("a");
+        const cd = res.headers.get("Content-Disposition") ?? "";
+        const match = cd.match(/filename="(.+)"/);
+        anchor.href = blobUrl;
         anchor.download = match?.[1] ?? "estadisticas.xlsx";
         document.body.appendChild(anchor);
         anchor.click();
