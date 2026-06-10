@@ -1,8 +1,12 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useEffect } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useSocket } from "@/app/shared/socket/socket.context";
+import type { OfficeUpdateMessage } from "@/app/shared/socket/socket.context";
 
 import { officeSlotsApi } from "./api";
+import type { OfficeSlot } from "./types";
 
 import type { SpaceSearchFilters } from "@/app/features/cubiculos/types/searchFilters";
 
@@ -72,8 +76,8 @@ export function buildAvailableSlotsFilters(nextFilters: SpaceSearchFilters) {
     daysToApply:
       nextFilters.daysToApply.length > 0
         ? nextFilters.daysToApply.map((dateId) =>
-            new Date(`${dateId}T00:00:00`).toISOString(),
-          )
+          new Date(`${dateId}T00:00:00`).toISOString(),
+        )
         : undefined,
   };
 }
@@ -101,15 +105,76 @@ export const officeSlotKeys = {
   },
 };
 
+function useJoinOfficeRoom() {
+  const socket = useSocket();
+
+  useEffect(() => {
+    socket.emit("joinOfficeRoom");
+    return () => {
+      socket.emit("leaveOfficeRoom");
+    };
+  }, [socket]);
+}
+
 export function useOfficeSlots() {
-  return useQuery({
+  const queryClient = useQueryClient();
+  const socket = useSocket();
+
+  useJoinOfficeRoom();
+
+  const query = useQuery({
     queryKey: officeSlotKeys.list(),
     queryFn: () => officeSlotsApi.getAllSlots(),
   });
+
+  useEffect(() => {
+    function onOfficeUpdate(msg: OfficeUpdateMessage) {
+      if (msg.type === "slot.created") {
+        queryClient.setQueryData<OfficeSlot[]>(
+          officeSlotKeys.list(),
+          (prev) => {
+            if (!prev) return prev;
+            const exists = prev.some((s) => s.id === msg.payload.id);
+            return exists ? prev : [...prev, msg.payload as unknown as OfficeSlot];
+          },
+        );
+        return;
+      }
+
+      if (msg.type === "slot.updated") {
+        queryClient.setQueryData<OfficeSlot[]>(
+          officeSlotKeys.list(),
+          (prev) => {
+            if (!prev) return prev;
+            return prev.map((s) =>
+              s.id === msg.payload.id ? { ...s, ...msg.payload } : s,
+            );
+          },
+        );
+        return;
+      }
+
+      if (msg.type === "slot.deleted") {
+        queryClient.invalidateQueries({ queryKey: officeSlotKeys.list() });
+      }
+    }
+
+    socket.on("officeUpdate", onOfficeUpdate);
+    return () => {
+      socket.off("officeUpdate", onOfficeUpdate);
+    };
+  }, [socket, queryClient]);
+
+  return query;
 }
 
 export function useReservableSpaces(filters: SpaceSearchFilters) {
-  return useQuery({
+  const queryClient = useQueryClient();
+  const socket = useSocket();
+
+  useJoinOfficeRoom();
+
+  const query = useQuery({
     queryKey: officeSlotKeys.search(filters),
     queryFn: () => {
       const hasNoFilters = areReservableSpaceFiltersEmpty(filters);
@@ -123,14 +188,73 @@ export function useReservableSpaces(filters: SpaceSearchFilters) {
       );
     },
   });
+
+  useEffect(() => {
+    function onOfficeUpdate(msg: OfficeUpdateMessage) {
+      // Cualquier cambio en slots o reservaciones puede afectar la disponibilidad
+      if (
+        msg.type === "slot.created" ||
+        msg.type === "slot.updated" ||
+        msg.type === "slot.deleted" ||
+        msg.type === "reservation.created" ||
+        msg.type === "reservation.canceled" ||
+        msg.type === "reservation.checkedin" ||
+        msg.type === "reservation.checkedout" ||
+        msg.type === "reservation.noshow"
+      ) {
+        queryClient.invalidateQueries({
+          queryKey: officeSlotKeys.search(filters),
+        });
+      }
+    }
+
+    socket.on("officeUpdate", onOfficeUpdate);
+    return () => {
+      socket.off("officeUpdate", onOfficeUpdate);
+    };
+  }, [socket, queryClient, filters]);
+
+  return query;
 }
 
 export function useOfficeSlotDetail(slotId: number | null) {
-  return useQuery({
+  const queryClient = useQueryClient();
+  const socket = useSocket();
+
+  useJoinOfficeRoom();
+
+  const query = useQuery({
     queryKey: officeSlotKeys.detail(slotId),
     queryFn: () => officeSlotsApi.getSlotById(slotId as number),
     enabled: slotId !== null,
   });
+
+  useEffect(() => {
+    if (slotId === null) return;
+
+    function onOfficeUpdate(msg: OfficeUpdateMessage) {
+      if (msg.type === "slot.updated" && msg.payload.id === slotId) {
+        queryClient.setQueryData<OfficeSlot>(
+          officeSlotKeys.detail(slotId),
+          (prev) => (prev ? { ...prev, ...msg.payload } : prev),
+        );
+        return;
+      }
+
+      if (msg.type === "slot.deleted" && msg.payload.id === slotId) {
+        queryClient.removeQueries({
+          queryKey: officeSlotKeys.detail(slotId),
+        });
+      }
+    }
+
+    socket.on("officeUpdate", onOfficeUpdate);
+    return () => {
+      socket.off("officeUpdate", onOfficeUpdate);
+    };
+  }, [socket, queryClient, slotId]);
+
+  return query;
 }
 
 export function useSlotReservations(
@@ -138,7 +262,12 @@ export function useSlotReservations(
   dates?: string[],
   detail = false,
 ) {
-  return useQuery({
+  const queryClient = useQueryClient();
+  const socket = useSocket();
+
+  useJoinOfficeRoom();
+
+  const query = useQuery({
     queryKey: officeSlotKeys.reservations.slot(slotId, dates, detail),
     queryFn: () =>
       officeSlotsApi.getSlotReservations(
@@ -148,4 +277,34 @@ export function useSlotReservations(
       ),
     enabled: slotId !== null,
   });
+
+  useEffect(() => {
+    if (slotId === null) return;
+
+    function onOfficeUpdate(msg: OfficeUpdateMessage) {
+      if (
+        msg.type === "reservation.created" ||
+        msg.type === "reservation.canceled" ||
+        msg.type === "reservation.checkedin" ||
+        msg.type === "reservation.checkedout" ||
+        msg.type === "reservation.noshow" ||
+        msg.type === "reservation.attendance_updated" ||
+        msg.type === "participant.updated"
+      ) {
+        // Invalidar si la reservación pertenece a este slot
+        if (msg.payload.reservable_id === slotId) {
+          queryClient.invalidateQueries({
+            queryKey: officeSlotKeys.reservations.slot(slotId, dates, detail),
+          });
+        }
+      }
+    }
+
+    socket.on("officeUpdate", onOfficeUpdate);
+    return () => {
+      socket.off("officeUpdate", onOfficeUpdate);
+    };
+  }, [socket, queryClient, slotId, dates, detail]);
+
+  return query;
 }
