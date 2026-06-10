@@ -5,13 +5,14 @@ import { HomeAgendaFilters } from "@/app/features/home/components/HomeAgenda/Hom
 import { HomeAgendaPeopleCard } from "@/app/features/home/components/PeopleCard/HomeAgendaPeopleCard";
 import { useHomeAgendaViewModel } from "@/app/features/home/hooks/useHomeAgendaViewModel";
 
+import { cn } from "@/app/shared/lib/cn";
 import { formatAgendaRangeLabel } from "@/app/features/home/lib/homeAgenda";
 
 export default function HomePage() {
   const { state, actions } = useHomeAgendaViewModel();
 
   return (
-    <main className="flex min-h-0 flex-1 flex-col bg-neutral-50 px-8 py-8">
+    <main className="flex min-h-0 flex-1 flex-col bg-neutral-50 px-8 py-4">
       <div className="mb-6 flex shrink-0 items-end justify-between gap-6">
         <div>
           <h1 className="text-3xl font-semibold text-slate-950">
@@ -29,7 +30,14 @@ export default function HomePage() {
         />
       </div>
 
-      <section className="grid min-h-0 flex-1 grid-cols-[280px_minmax(0,1fr)] gap-5">
+      <section
+        className={cn(
+          "grid min-h-0 grid-cols-[260px_minmax(0,1fr)] gap-5",
+          state.viewMode === "list"
+            ? "h-[min(640px,calc(100vh-180px))]"
+            : "flex-1",
+        )}
+      >
         <HomeAgendaPeopleCard
           owners={state.agendaOwners}
           selectedOwnerId={state.selectedUserId}

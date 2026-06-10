@@ -48,7 +48,7 @@ export function HomeAgendaCard({
   onNext,
 }: HomeAgendaCardProps) {
   return (
-    <section className="flex min-h-0 overflow-hidden border border-grid-lines bg-container">
+    <section className="flex min-h-0 max-h-[640px] overflow-hidden border border-grid-lines bg-container">
       <div className="flex min-w-0 flex-1 flex-col">
         <HomeAgendaToolbar
           rangeLabel={rangeLabel}
