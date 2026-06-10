@@ -103,7 +103,6 @@ export function FriendshipsPanel({ user, friendships, loading, onClose }: Props)
           </div>
         ) : friendships.length === 0 ? (
           <div className="flex flex-col items-center py-10 text-slate-300">
-            <span className="text-3xl mb-2">🤝</span>
             <p className="text-xs">Sin amistades registradas</p>
           </div>
         ) : (
