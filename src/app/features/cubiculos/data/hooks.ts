@@ -90,13 +90,14 @@ export const officeSlotKeys = {
     [...officeSlotKeys.all, "detail", slotId] as const,
 
   reservations: {
-    slot: (slotId: number | null, dates?: string[], detail = false) =>
+    slot: (slotId: number | null, dates?: string[], detail = false, showOnlyActiveReservations = false) =>
       [
         ...officeSlotKeys.all,
         slotId,
         "reservations",
         dates ?? [],
         detail,
+        showOnlyActiveReservations
       ] as const,
   },
 };
@@ -140,7 +141,7 @@ export function useSlotReservations(
   showOnlyActiveReservations?:boolean
 ) {
   return useQuery({
-    queryKey: officeSlotKeys.reservations.slot(slotId, dates, detail),
+    queryKey: officeSlotKeys.reservations.slot(slotId, dates, detail, showOnlyActiveReservations),
     queryFn: () =>
       officeSlotsApi.getSlotReservations(
         slotId as number,

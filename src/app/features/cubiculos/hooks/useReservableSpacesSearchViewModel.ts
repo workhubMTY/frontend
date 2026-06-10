@@ -8,8 +8,39 @@ import { useSlotReservations } from "@/app/features/cubiculos/data/hooks";
 
 const SELECTED_SPACE_STORAGE_KEY = "cubiculos:selectedSpace";
 
-function getTodayDateId() {
-  return new Date().toISOString().split("T")[0];
+function getLocalDateId(date = new Date()) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+}
+
+function getReservationLookupDateIds(daysToApply: string[]) {
+  return daysToApply.length > 0 ? daysToApply : [getLocalDateId()];
+}
+
+function getActiveReservationDateId(selectedDateIds: string[]) {
+  return selectedDateIds[0] ?? getLocalDateId();
+}
+
+function getDateIdFromApiDate(value: string | Date) {
+  const date = value instanceof Date ? value : new Date(value);
+
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+}
+
+function filterReservationsByDate<T extends { start_time: string | Date }>(
+  reservations: T[],
+  dateId: string,
+) {
+  return reservations.filter((reservation) => {
+    return getDateIdFromApiDate(reservation.start_time) === dateId;
+  });
 }
 
 export function useReservableSpacesSearchViewModel() {
@@ -19,20 +50,31 @@ export function useReservableSpacesSearchViewModel() {
 
   const selectedSpaceId = search.selectedSpace?.id ?? null;
 
-  const selectedDateIds = useMemo(() => {
-    if (search.filters.daysToApply.length > 0) {
-      return search.filters.daysToApply;
-    }
+  const selectedDateIds = useMemo(
+    () => getReservationLookupDateIds(search.filters.daysToApply),
+    [search.filters.daysToApply],
+  );
 
-    return [getTodayDateId()];
-  }, [search.filters.daysToApply]);
+  const activeReservationDateId = useMemo(
+    () => getActiveReservationDateId(selectedDateIds),
+    [selectedDateIds],
+  );
 
   const {
     data: selectedSpaceReservations = [],
     isLoading: isLoadingSelectedSpaceReservations,
     isFetching: isFetchingSelectedSpaceReservations,
     error: selectedSpaceReservationsError,
-  } = useSlotReservations(selectedSpaceId, selectedDateIds, false);
+  } = useSlotReservations(selectedSpaceId, selectedDateIds, false, true);
+
+  const selectedSpaceReservationsForActiveDate = useMemo(
+    () =>
+      filterReservationsByDate(
+        selectedSpaceReservations,
+        activeReservationDateId,
+      ),
+    [selectedSpaceReservations, activeReservationDateId],
+  );
 
   const canContinue = Boolean(search.selectedSpace);
 
@@ -69,7 +111,10 @@ export function useReservableSpacesSearchViewModel() {
       disabledMapIds: search.disabledMapIds,
 
       selectedDateIds,
+      activeReservationDateId,
+
       selectedSpaceReservations,
+      selectedSpaceReservationsForActiveDate,
 
       isLoading: search.isLoading,
       isFetching: search.isFetching,
