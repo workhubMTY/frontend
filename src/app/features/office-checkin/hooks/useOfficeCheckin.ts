@@ -72,8 +72,8 @@ export function useOfficeCheckin() {
 
   const parseQr = useCallback((raw: string): string | null => {
     const trimmed = raw.trim();
-    // Full URL: http://localhost:3000/cubiculos/reservacion/checkin/MZ034
-    const urlMatch = trimmed.match(/\/checkin\/([^/?#]+)/);
+    // Full URL: http://localhost:3000/office-checkin/MZ034
+    const urlMatch = trimmed.match(/\/office-checkin\/([^/?#]+)/);
     if (urlMatch) return decodeURIComponent(urlMatch[1]);
     // Plain code: "MZ034"
     if (trimmed.length > 0 && !trimmed.includes(" ")) return trimmed;

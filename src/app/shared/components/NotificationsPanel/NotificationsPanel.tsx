@@ -1,7 +1,10 @@
 "use client";
 import { useState, useEffect, useRef, useCallback } from "react";
+import { useReceivedFriendRequests } from "../../data/friendships/hooks";
+import { useUsers } from "@/app/features/perfil/data/hooks/useUsers"
 import { api, TYPE_ICON, TYPE_COLOR } from "./Data";
-import { Notification, FriendRequest } from "./notificationInterfaces";
+import { Notification } from "./notificationInterfaces";
+import type { FriendRequest as ReceivedFriendRequest } from "../../data/friendships/types";
 
 function timeAgo(dateStr: string): string {
   const diff = Date.now() - new Date(dateStr).getTime();
@@ -65,10 +68,12 @@ function NotificationItem({
 
 function FriendRequestItem({
   req,
+  userName,
   onAccept,
   onReject,
 }: {
-  req: FriendRequest;
+  req: ReceivedFriendRequest;
+  userName: string;
   onAccept: (fromUser: string) => void;
   onReject: (fromUser: string) => void;
 }) {
@@ -83,9 +88,9 @@ function FriendRequestItem({
         </span>
       </div>
       <div className="notif-body" style={{ flex: 1 }}>
-        <div className="notif-title">{req.fromName}</div>
+        <div className="notif-title">{userName}</div>
         <div className="notif-text">quiere ser tu amigo</div>
-        <div className="notif-time">{timeAgo(req.sentAt)}</div>
+        <div className="notif-time">{timeAgo(req.createdAt)}</div>
       </div>
       <div className="friend-actions">
         <button className="btn-accept" onClick={() => onAccept(req.fromUser)}>
@@ -103,33 +108,37 @@ export default function NotificationsPanel() {
   const [open, setOpen] = useState(false);
   const [tab, setTab] = useState<"notifs" | "requests">("notifs");
   const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [requests, setRequests] = useState<FriendRequest[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
-  const [loading, setLoading] = useState(false);
+  const [loadingNotifications, setLoadingNotifications] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
+  const {
+    data: receivedRequests = [],
+    isLoading: loadingRequests,
+    acceptFriendRequest,
+    rejectFriendRequest,
+  } = useReceivedFriendRequests();
+  const { data: users } = useUsers()
 
   const fetchAll = useCallback(async () => {
-    setLoading(true);
+    setLoadingNotifications(true);
     try {
-      const [notifs, count, reqs] = await Promise.all([
+      const [notifs, count] = await Promise.all([
         api.getNotifications(),
         api.getUnreadCount(),
-        api.getFriendRequests(),
       ]);
       setNotifications(notifs);
       setUnreadCount(count.count);
-      setRequests(reqs);
     } catch {
     } finally {
-      setLoading(false);
+      setLoadingNotifications(false);
     }
   }, []);
 
-  // useEffect(() => {
-  //   fetchAll();
-  //   const id = setInterval(fetchAll, 30_000); // poll every 30s
-  //   return () => clearInterval(id);
-  // }, [fetchAll]);
+  useEffect(() => {
+    fetchAll();
+    const id = setInterval(fetchAll, 30_000); // poll every 30s
+    return () => clearInterval(id);
+  }, [fetchAll]);
 
   useEffect(() => {
     if (!open) return;
@@ -168,16 +177,14 @@ export default function NotificationsPanel() {
   };
 
   const handleAccept = async (fromUser: string) => {
-    await api.acceptRequest(fromUser);
-    setRequests((prev) => prev.filter((r) => r.fromUser !== fromUser));
+    await acceptFriendRequest.mutateAsync({ fromUser });
   };
 
   const handleReject = async (fromUser: string) => {
-    await api.rejectRequest(fromUser);
-    setRequests((prev) => prev.filter((r) => r.fromUser !== fromUser));
+    await rejectFriendRequest.mutateAsync(fromUser);
   };
 
-  const totalBadge = unreadCount + requests.length;
+  const totalBadge = unreadCount + receivedRequests.length;
 
   return (
     <>
@@ -438,14 +445,14 @@ export default function NotificationsPanel() {
                   onClick={() => setTab("requests")}
                 >
                   Solicitudes
-                  {requests.length > 0 && (
-                    <span className="tab-badge">{requests.length}</span>
+                  {receivedRequests.length > 0 && (
+                    <span className="tab-badge">{receivedRequests.length}</span>
                   )}
                 </button>
               </div>
             </div>
             <div className="notif-list">
-              {loading ? (
+              {(tab === "notifs" ? loadingNotifications : loadingRequests) ? (
                 <div className="notif-loading">Cargando...</div>
               ) : tab === "notifs" ? (
                 notifications.length === 0 ? (
@@ -465,16 +472,17 @@ export default function NotificationsPanel() {
                     />
                   ))
                 )
-              ) : requests.length === 0 ? (
+              ) : receivedRequests.length === 0 ? (
                 <div className="notif-empty">
                   <span className="material-symbols-outlined">group_off</span>
                   <p>No tienes solicitudes pendientes</p>
                 </div>
               ) : (
-                requests.map((r) => (
+                receivedRequests.map((r) => (
                   <FriendRequestItem
-                    key={r.fromUser}
+                    key={`${r.fromUser}-${r.createdAt}`}
                     req={r}
+                    userName={users?.filter((u) => u.eId == r.fromUser)[0].name ?? r.fromUser}
                     onAccept={handleAccept}
                     onReject={handleReject}
                   />
