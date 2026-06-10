@@ -5,8 +5,6 @@ import type {
 
 import { toTime } from "./scheduleItems";
 
-import type { MyScheduleApiItem } from "../../confirmar/types/confirmation";
-
 import type {
   TimelineCalendarEvent,
   TimelineOfficeReservation,

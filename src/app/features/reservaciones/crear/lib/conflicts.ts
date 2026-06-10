@@ -1,8 +1,6 @@
 import type {
   ApiReservation,
-  DayEvent,
   TimeBlock,
-  TimelineEvent,
 } from "../types/reservaciones";
 import { timeValueToMinutes } from "./time";
 
@@ -30,38 +28,18 @@ export function blockHasConflict(block: TimeBlock, blocks: TimeBlock[]) {
   );
 }
 
-export function blockOverlapsTimelineEvent(
-  block: TimeBlock,
-  event: TimelineEvent,
-) {
-  return blocksOverlap(block, {
-    id: event.id,
-    label: event.label,
-    start: event.start,
-    end: event.end,
-  });
-}
-
 export function blockOverlapsApiReservation(
   block: TimeBlock,
   event: ApiReservation,
 ) {
   return blocksOverlap(block, {
     id: event.id,
-    label: event.title,
+    // label: event.title,
     start: event.start,
     end: event.end,
   });
 }
 
-export function blockOverlapsDayEvent(block: TimeBlock, event: DayEvent) {
-  return blocksOverlap(block, {
-    id: event.id,
-    label: event.title,
-    start: event.start,
-    end: event.end,
-  });
-}
 
 export function getOverlapSegments(
   block: TimeBlock,

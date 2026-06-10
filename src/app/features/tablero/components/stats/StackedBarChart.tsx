@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import { ChartCard } from "./ChartCard";
-import type { ReservationBucket } from "../../data/types";
+import { ReservationBucket } from "../../data/stats.types";
 
 type StackedBarChartProps = {
     buckets: ReservationBucket[];

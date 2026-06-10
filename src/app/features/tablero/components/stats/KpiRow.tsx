@@ -2,7 +2,7 @@
 
 import { CalendarDays, CheckCircle2, XCircle, TrendingUp } from "lucide-react";
 import { KpiCard } from "./KpiCard";
-import type { GlobalAttendanceSummary } from "../../data/types";
+import { GlobalAttendanceSummary } from "../../data/stats.types";
 
 type KpiRowProps = {
     data: GlobalAttendanceSummary | null;

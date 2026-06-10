@@ -1,4 +1,4 @@
-import type { UpdateTeamPayload } from "../../../../../data/hooks/useTeams";
+import { UpdateTeamPayload } from "@/app/features/perfil/data/types";
 
 type BuildUpdateTeamPayloadParams = {
   originalName: string;

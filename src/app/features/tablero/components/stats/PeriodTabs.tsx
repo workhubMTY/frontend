@@ -1,6 +1,7 @@
 "use client";
 
-import type { Period } from "../../data/types";
+import { Period } from "../../data/stats.types";
+
 
 const OPTIONS: { value: Period; label: string }[] = [
     { value: "day",   label: "Día" },

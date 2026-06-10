@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import { ChartCard } from "./ChartCard";
-import type { ReportsBucket } from "../../data/types";
+import { ReportsBucket } from "../../data/stats.types";
 
 type LineChartProps = {
     buckets: ReportsBucket[];

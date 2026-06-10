@@ -1,7 +1,7 @@
 "use client";
 
 import { Trophy } from "lucide-react";
-import type { TopUser } from "../../data/types";
+import { TopUser } from "../../data/stats.types";
 
 const AVATAR_BG = [
     "bg-violet-100 text-violet-600",

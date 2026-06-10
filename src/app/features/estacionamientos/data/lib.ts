@@ -30,10 +30,12 @@ export function parkingReservationToScheduleItem(
 
     reservableId: null,
     reservableName: null,
+    reservableCode:null,
     floorId: null,
     floorName: null,
 
     attendanceStatus: reservation.attendance_status ?? null,
+    lifecycleStatus:reservation.lifecycle_status,
 
     raw: reservation,
   };

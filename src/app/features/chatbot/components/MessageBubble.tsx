@@ -15,6 +15,9 @@ interface Props {
   onWidgetResult: (widgetId: string, toolName: string, result: Record<string, unknown>, cancelled?: boolean) => void;
 }
 
+function toWidgetResult<T extends object>(result: T): Record<string, unknown> {
+  return result as unknown as Record<string, unknown>;
+}
 function WidgetRenderer({
   instance,
   onResult,
@@ -31,7 +34,7 @@ function WidgetRenderer({
       <SpaceCarousel
         args={widget.args}
         onSelect={(r: ShowSpaceCarouselResult) =>
-          onResult(r as Record<string, unknown>, r.selected_id === null)
+          onResult(toWidgetResult(r), r.selected_id === null)
         }
       />
     );
@@ -42,13 +45,12 @@ function WidgetRenderer({
       <ParticipantPicker
         args={widget.args}
         onConfirm={(r: OpenParticipantPickerResult) =>
-          onResult(r as Record<string, unknown>, false)
+          onResult(toWidgetResult(r), false)
         }
       />
     );
   }
 
-  // Fallback: unknown widget type — don't block the conversation
   return (
     <div className="mt-1 px-3 py-2 bg-amber-50 border border-amber-100 rounded-xl text-xs text-amber-600">
       Widget no soportado: <strong>{instance.toolName}</strong>. El asistente continuará sin esta información.

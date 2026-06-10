@@ -110,6 +110,7 @@ export type MyScheduleApiItem = {
 
   reservable_id: number | null;
   reservable_name: string | null;
+  reservable_code: string;
   floor_id: number | null;
   floor_name: string | null;
 

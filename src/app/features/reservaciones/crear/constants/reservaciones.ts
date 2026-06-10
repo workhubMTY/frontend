@@ -18,25 +18,22 @@ export const timelineHours = [
   "23:59",
 ];
 
-export const initialBlocks: TimeBlock[] = [
-  {
-    id: "b1",
-    label: "Bloque 1",
-    start: "08:00 AM",
-    end: "09:30 AM",
-    conflict: true,
-  },
-  {
-    id: "b2",
-    label: "Bloque 2",
-    start: "02:00 PM",
-    end: "04:00 PM",
-    conflict: true,
-  },
-  {
-    id: "b3",
-    label: "Bloque 3",
-    start: "06:00 PM",
-    end: "07:30 PM",
-  },
-];
+// export const initialBlocks: TimeBlock[] = [
+//   {
+//     id: "b1",
+//     start: "08:00 AM",
+//     end: "09:30 AM",
+//     conflict: true,
+//   },
+//   {
+//     id: "b2",
+//     start: "02:00 PM",
+//     end: "04:00 PM",
+//     conflict: true,
+//   },
+//   {
+//     id: "b3",
+//     start: "06:00 PM",
+//     end: "07:30 PM",
+//   },
+// ];

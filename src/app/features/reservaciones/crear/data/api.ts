@@ -124,6 +124,7 @@ export function reservationSummaryToScheduleItem(
 
     reservableId: reservation.reservable_id ?? null,
     reservableName: reservation.reservable_name ?? null,
+    reservableCode: reservation.reservable_code,
     floorId: reservation.floor_id ?? null,
     floorName: reservation.floor_name ?? null,
 

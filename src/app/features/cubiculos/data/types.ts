@@ -163,6 +163,7 @@ export type AvailableOfficeSlotsQuery = {
 export type ReservationSummary = {
   id: number;
   reservable_id: number;
+  reservable_code: string;
   start_time: string;
   end_time: string;
   attendance_status: SpaceStatus;

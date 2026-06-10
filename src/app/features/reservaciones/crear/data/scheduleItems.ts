@@ -74,6 +74,7 @@ export function myScheduleApiItemToScheduleItem(
 
     reservableId: item.reservable_id ?? null,
     reservableName: item.reservable_name ?? null,
+    reservableCode: item.reservable_code ?? null,
     floorId: item.floor_id ?? null,
     floorName: item.floor_name ?? null,
 

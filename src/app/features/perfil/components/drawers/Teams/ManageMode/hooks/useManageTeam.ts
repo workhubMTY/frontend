@@ -4,9 +4,9 @@ import { useEffect, useMemo, useState } from "react";
 
 import type { User } from "../../../../../types/profile";
 import type { TeamMembersState, TeamSummary } from "../../types";
-import type { UpdateTeamPayload } from "../../../../../data/hooks/useTeams";
 import { useDebouncedSearch } from "@/app/features/perfil/hooks/useDebouncedSearch";
 import { buildUpdateTeamPayload } from "../utils/teamUpdatePayload";
+import { UpdateTeamPayload } from "@/app/features/perfil/data/types";
 
 export type ManageTeamTab = "details" | "members" | "danger";
 
