@@ -14,7 +14,7 @@ interface User {
 export default function Login() {
   const [user, setUser] = useState<User>({ eId: "", password: "" });
   const [error, setError] = useState<string>("");
-  const [dark, setDark] = useState<boolean>(true);
+  const [dark, setDark] = useState<boolean>(false);
   const router = useRouter();
 
   // const [verifyingSesion, setVerifyingSesion] = useState(true);
