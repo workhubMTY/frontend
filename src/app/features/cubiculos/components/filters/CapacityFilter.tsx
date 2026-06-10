@@ -3,7 +3,7 @@
 import { UsersRound } from "lucide-react";
 
 import { FilterFlyout } from "./FilterFlyout";
-import { useCapacityFilter } from "../../hooks/useCapacityFilter";
+import { useCapacityFilter } from "../../hooks/filters/useCapacityFilter";
 import { getCapacityButtonLabel } from "../../lib/filterLabels";
 import type { CapacityFilterValue } from "../../types/searchFilters";
 

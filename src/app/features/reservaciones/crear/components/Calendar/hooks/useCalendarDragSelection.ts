@@ -14,7 +14,7 @@ type UseCalendarDragSelectionParams = {
   calendarCells: CalendarCell[];
   selectionMode: SelectionMode;
   onSelect: (action: CalendarSelectionAction) => void;
-  onActivateDay: (dayId: string) => void;
+  onActivateDay?: (dayId: string) => void;
 };
 
 export function useCalendarDragSelection({
@@ -45,6 +45,8 @@ export function useCalendarDragSelection({
   }
 
   function shouldOnlyActivateDay(dayId: string) {
+    if (!onActivateDay) return false;
+
     const isSelected = selectedDatesSet.has(dayId);
     const isActive = activeDayId === dayId;
 
@@ -56,7 +58,7 @@ export function useCalendarDragSelection({
 
     if (!canDragSelect) {
       if (shouldOnlyActivateDay(dayId)) {
-        onActivateDay(dayId);
+        onActivateDay?.(dayId);
         return;
       }
 
@@ -68,10 +70,6 @@ export function useCalendarDragSelection({
       return;
     }
 
-    /**
-     * En multiple siempre iniciamos posible drag.
-     * Todavía no sabemos si será click simple o rango.
-     */
     setDragStartId(dayId);
     setDragPreviewIds([dayId]);
   }
@@ -91,7 +89,7 @@ export function useCalendarDragSelection({
 
     if (isSingleDayClick) {
       if (shouldOnlyActivateDay(dragStartId)) {
-        onActivateDay(dragStartId);
+        onActivateDay?.(dragStartId);
       } else {
         onSelect({
           type: "day",

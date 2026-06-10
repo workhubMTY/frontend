@@ -1,7 +1,7 @@
 "use client";
 
 import { Clock3 } from "lucide-react";
-import { useTimeFilter } from "../../hooks/useTimeFilter";
+import { useTimeFilter } from "../../hooks/filters/useTimeFilter";
 import { getTimeButtonLabel } from "../../lib/filterLabels";
 import type { TimeFilterValue } from "../../types/searchFilters";
 import { FilterFlyout } from "./FilterFlyout";

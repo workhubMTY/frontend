@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 import { useRouter } from "next/navigation";
 
-import { useReservableSpacesSearch } from "@/app/features/cubiculos/hooks/useReservableSpacesSearch";
+import { useReservableSpacesSearch } from "@/app/features/cubiculos/hooks/filters/useReservableSpacesSearch";
 import { useSlotReservations } from "@/app/features/cubiculos/data/hooks";
 
 const SELECTED_SPACE_STORAGE_KEY = "cubiculos:selectedSpace";

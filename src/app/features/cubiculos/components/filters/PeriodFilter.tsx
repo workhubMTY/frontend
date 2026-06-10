@@ -6,7 +6,7 @@ import { MonthCalendar } from "@/app/features/reservaciones/crear/components/Cal
 import { SelectionModeSegmentedControl } from "@/app/features/reservaciones/crear/components/Calendar/DaysSelection/SelectionModeSegmentedControl";
 
 import { FilterFlyout } from "./FilterFlyout";
-import { usePeriodFilter } from "../../hooks/usePeriodFilter";
+import { usePeriodFilter } from "../../hooks/filters/usePeriodFilter";
 import { getPeriodButtonLabel } from "../../lib/filterLabels";
 import type { PeriodFilterValue } from "../../types/searchFilters";
 
