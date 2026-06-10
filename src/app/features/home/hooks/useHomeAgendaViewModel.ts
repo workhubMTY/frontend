@@ -1,17 +1,20 @@
-// src/app/features/home/hooks/useHomeAgendaViewModel.ts
-
 "use client";
 
 import { useMemo, useState } from "react";
 
 import { useAuth } from "@/app/shared/auth/useAuth";
 
+import { useFriends } from "@/app/shared/data/friendships/hooks";
+
 import { useUserTimeline } from "@/app/features/reservaciones/crear/data/hooks";
 import { timelineToScheduleItems } from "@/app/features/reservaciones/crear/data/myScheduleMappers";
 import { groupScheduleItemsByDate } from "@/app/features/reservaciones/crear/data/api";
 
 import type { ScheduleItem } from "@/app/features/reservaciones/crear/types/schedule";
-import type { HomeAgendaFilter } from "../types/homeAgenda";
+import type {
+  HomeAgendaFilter,
+  HomeAgendaOwner,
+} from "../types/homeAgenda";
 
 import {
   addDays,
@@ -30,29 +33,19 @@ const MAX_DAYS_FROM_TODAY = 21;
 export function useHomeAgendaViewModel() {
   const { user } = useAuth();
 
-  const userId = user?.eId ? String(user.eId) : null;
+  const myUserId = user?.eId ? String(user.eId) : null;
+
+  const friendsQuery = useFriends();
 
   const today = useMemo(() => startOfLocalDay(new Date()), []);
 
-  /**
-   * Límite real del sistema:
-   * hoy + 3 semanas exactas.
-   */
   const maxAllowedDate = useMemo(
     () => addDays(today, MAX_DAYS_FROM_TODAY),
     [today],
   );
 
-  /**
-   * La agenda visual siempre arranca en lunes.
-   * Si hoy es miércoles, se muestra lunes-viernes de esta semana.
-   */
   const firstVisibleWeekStart = useMemo(() => getMondayOfWeek(today), [today]);
 
-  /**
-   * Última semana a la que se puede navegar.
-   * Es el lunes de la semana donde cae hoy + 21 días.
-   */
   const lastVisibleWeekStart = useMemo(
     () => getMondayOfWeek(maxAllowedDate),
     [maxAllowedDate],
@@ -61,14 +54,73 @@ export function useHomeAgendaViewModel() {
   const [windowStartDate, setWindowStartDate] = useState(firstVisibleWeekStart);
   const [activeFilter, setActiveFilter] = useState<HomeAgendaFilter>("all");
 
+  /**
+   * null significa "yo".
+   * Lo hacemos así para no depender de que user exista desde el primer render.
+   */
+  const [selectedFriendId, setSelectedFriendId] = useState<string | null>(null);
+
+  const friends = useMemo(() => friendsQuery.data ?? [], [friendsQuery.data]);
+
+  const selectedUserId = selectedFriendId ?? myUserId;
+
+  const selectedOwner = useMemo<HomeAgendaOwner | null>(() => {
+    if (!selectedUserId) return null;
+
+    if (!selectedFriendId) {
+      return {
+        kind: "me",
+        eId: selectedUserId,
+        name: user?.name ?? "Mi agenda",
+        raw: user,
+      };
+    }
+
+    const selectedFriend = friends.find(
+      (friend) => String(friend.eId) === selectedFriendId,
+    );
+
+    if (!selectedFriend) return null;
+
+    return {
+      kind: "friend",
+      eId: String(selectedFriend.eId),
+      name: selectedFriend.name,
+      raw: selectedFriend,
+    };
+  }, [selectedUserId, selectedFriendId, user, friends]);
+
+  const agendaOwners = useMemo<HomeAgendaOwner[]>(() => {
+    const owners: HomeAgendaOwner[] = [];
+
+    if (myUserId) {
+      owners.push({
+        kind: "me",
+        eId: myUserId,
+        name: user?.name ?? "Mi agenda",
+        raw: user,
+      });
+    }
+
+    for (const friend of friends) {
+      owners.push({
+        kind: "friend",
+        eId: String(friend.eId),
+        name: friend.name,
+        raw: friend,
+      });
+    }
+
+    return owners;
+  }, [myUserId, user, friends]);
+
   const visibleDays = useMemo(
     () => getDaysBetween(windowStartDate, VISIBLE_DAYS),
     [windowStartDate],
   );
 
   /**
-   * La consulta NO depende de la semana visible.
-   * Siempre pide desde hoy hasta hoy + 3 semanas exactas.
+   * La consulta siempre es hoy → hoy + 21 días exactos.
    */
   const queryRange = useMemo(() => {
     return {
@@ -87,8 +139,12 @@ export function useHomeAgendaViewModel() {
     [queryRange, activeFilter],
   );
 
-  const timelineQueryResult = useUserTimeline(userId, timelineQuery, {
-    enabled: Boolean(userId),
+  /**
+   * Esta es la parte importante:
+   * si seleccionas amigo, el timeline se pide con su eId.
+   */
+  const timelineQueryResult = useUserTimeline(selectedUserId, timelineQuery, {
+    enabled: Boolean(selectedUserId),
   });
 
   const timeline = timelineQueryResult.data ?? null;
@@ -105,14 +161,9 @@ export function useHomeAgendaViewModel() {
 
   const scheduleItems = useMemo(() => {
     return filterHomeAgendaItems(rawScheduleItems, activeFilter).filter(
-      (item) => {
-        /**
-         * Seguridad extra del frontend:
-         * aunque el backend devuelva algo fuera del rango,
-         * no lo mostramos.
-         */
-        return item.dateId >= toDateId(today) && item.dateId <= toDateId(maxAllowedDate);
-      },
+      (item) =>
+        item.dateId >= toDateId(today) &&
+        item.dateId <= toDateId(maxAllowedDate),
     );
   }, [rawScheduleItems, activeFilter, today, maxAllowedDate]);
 
@@ -136,7 +187,9 @@ export function useHomeAgendaViewModel() {
 
   const disabledDateIds = useMemo(() => {
     return visibleDays
-      .filter((day) => day.id < toDateId(today) || day.id > toDateId(maxAllowedDate))
+      .filter(
+        (day) => day.id < toDateId(today) || day.id > toDateId(maxAllowedDate),
+      )
       .map((day) => day.id);
   }, [visibleDays, today, maxAllowedDate]);
 
@@ -145,13 +198,21 @@ export function useHomeAgendaViewModel() {
 
   function goPrevious() {
     setWindowStartDate((current) =>
-      clampDate(addDays(current, -7), firstVisibleWeekStart, lastVisibleWeekStart),
+      clampDate(
+        addDays(current, -7),
+        firstVisibleWeekStart,
+        lastVisibleWeekStart,
+      ),
     );
   }
 
   function goNext() {
     setWindowStartDate((current) =>
-      clampDate(addDays(current, 7), firstVisibleWeekStart, lastVisibleWeekStart),
+      clampDate(
+        addDays(current, 7),
+        firstVisibleWeekStart,
+        lastVisibleWeekStart,
+      ),
     );
   }
 
@@ -163,9 +224,37 @@ export function useHomeAgendaViewModel() {
     setActiveFilter(filter);
   }
 
+  function selectMe() {
+    setSelectedFriendId(null);
+  }
+
+  function selectFriend(friendId: string) {
+    setSelectedFriendId(friendId);
+  }
+
+  function selectOwner(ownerId: string) {
+    if (ownerId === myUserId) {
+      selectMe();
+      return;
+    }
+
+    selectFriend(ownerId);
+  }
+
   return {
     state: {
       user,
+
+      myUserId,
+      selectedUserId,
+      selectedFriendId,
+      selectedOwner,
+      agendaOwners,
+
+      friends,
+      friendsIsLoading: friendsQuery.isLoading,
+      friendsIsFetching: friendsQuery.isFetching,
+      friendsError: friendsQuery.error,
 
       activeFilter,
 
@@ -185,13 +274,18 @@ export function useHomeAgendaViewModel() {
       canGoPrevious,
       canGoNext,
 
-      isLoading: timelineQueryResult.isLoading,
-      isFetching: timelineQueryResult.isFetching,
-      error: timelineQueryResult.error,
+      isLoading: timelineQueryResult.isLoading || friendsQuery.isLoading,
+      isFetching: timelineQueryResult.isFetching || friendsQuery.isFetching,
+      error: timelineQueryResult.error ?? friendsQuery.error,
     },
 
     actions: {
       setFilter,
+
+      selectMe,
+      selectFriend,
+      selectOwner,
+
       goPrevious,
       goNext,
       goToday,

@@ -1,12 +1,6 @@
 "use client";
 
-import {
-  CalendarDays,
-  Car,
-  Clock,
-  Monitor,
-  Users,
-} from "lucide-react";
+import { CalendarDays, Car, Clock, Monitor, Users } from "lucide-react";
 
 import { cn } from "@/app/shared/lib/cn";
 import type { ScheduleItem } from "@/app/features/reservaciones/crear/types/schedule";
@@ -15,6 +9,7 @@ import type { HomeAgendaDay } from "@/app/features/home/types/homeAgenda";
 type HomeAgendaTimelineProps = {
   days: HomeAgendaDay[];
   itemsByDate: Record<string, ScheduleItem[]>;
+  disabledDateIds?: string[];
   isLoading?: boolean;
 };
 
@@ -69,16 +64,14 @@ function itemOverlapsTimeline(item: ScheduleItem) {
 }
 
 function placeItemsInLanes(items: ScheduleItem[]): PositionedAgendaItem[] {
-  const sortedItems = [...items]
-    .filter(itemOverlapsTimeline)
-    .sort((a, b) => {
-      const aStart = timeToMinutes(a.start);
-      const bStart = timeToMinutes(b.start);
+  const sortedItems = [...items].filter(itemOverlapsTimeline).sort((a, b) => {
+    const aStart = timeToMinutes(a.start);
+    const bStart = timeToMinutes(b.start);
 
-      if (aStart !== bStart) return aStart - bStart;
+    if (aStart !== bStart) return aStart - bStart;
 
-      return timeToMinutes(a.end) - timeToMinutes(b.end);
-    });
+    return timeToMinutes(a.end) - timeToMinutes(b.end);
+  });
 
   const laneEndTimes: number[] = [];
 
@@ -134,8 +127,7 @@ function getAgendaItemStyles(item: ScheduleItem) {
   if (item.kind === "calendar_event") {
     return {
       icon: CalendarDays,
-      className:
-        "border-sky-200 bg-sky-50 text-sky-700 shadow-sky-100/70",
+      className: "border-sky-200 bg-sky-50 text-sky-700 shadow-sky-100/70",
       labelClassName: "text-sky-500",
     };
   }
@@ -160,8 +152,7 @@ function getAgendaItemStyles(item: ScheduleItem) {
 
   return {
     icon: Clock,
-    className:
-      "border-neutral-200 bg-white text-slate-700 shadow-slate-100/70",
+    className: "border-neutral-200 bg-white text-slate-700 shadow-slate-100/70",
     labelClassName: "text-slate-500",
   };
 }
@@ -173,10 +164,10 @@ function formatHourLabel(hour: number) {
 function formatRangeLabel(item: ScheduleItem) {
   return `${item.start} - ${item.end}`;
 }
-
 export function HomeAgendaTimeline({
   days,
   itemsByDate,
+  disabledDateIds = [],
   isLoading = false,
 }: HomeAgendaTimelineProps) {
   const positionedItemsByDate = days.reduce<
@@ -216,10 +207,13 @@ export function HomeAgendaTimeline({
           {days.map((day) => {
             const positionedItems = positionedItemsByDate[day.id] ?? [];
             const laneCount = getMaxLane(positionedItems);
+            const isDisabled = disabledDateIds.includes(day.id);
 
             const rowHeight = Math.max(
               ROW_MIN_HEIGHT,
-              laneCount * LANE_HEIGHT + Math.max(laneCount - 1, 0) * LANE_GAP + 24,
+              laneCount * LANE_HEIGHT +
+                Math.max(laneCount - 1, 0) * LANE_GAP +
+                24,
             );
 
             return (

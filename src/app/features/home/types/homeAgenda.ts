@@ -1,4 +1,4 @@
-// src/app/features/home/types/homeAgenda.ts
+import { UserViewModel } from "@/app/shared/data/users/types";
 
 export type HomeAgendaFilter =
   | "all"
@@ -15,3 +15,19 @@ export type HomeAgendaDay = {
   monthLabel: string;
   isToday: boolean;
 };
+
+export type HomeAgendaOwner =
+  | {
+      kind: "me";
+      eId: string;
+      name: string;
+      avatarUrl?: string | null;
+      raw?: unknown;
+    }
+  | {
+      kind: "friend";
+      eId: string;
+      name: string;
+      avatarUrl?: string | null;
+      raw: UserViewModel;
+    };
