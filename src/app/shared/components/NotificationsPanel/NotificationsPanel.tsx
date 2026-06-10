@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useReceivedFriendRequests } from "../../data/friendships/hooks";
+import { useUsers } from "@/app/features/perfil/data/hooks/useUsers"
 import { api, TYPE_ICON, TYPE_COLOR } from "./Data";
 import { Notification } from "./notificationInterfaces";
 import type { FriendRequest as ReceivedFriendRequest } from "../../data/friendships/types";
@@ -67,10 +68,12 @@ function NotificationItem({
 
 function FriendRequestItem({
   req,
+  userName,
   onAccept,
   onReject,
 }: {
   req: ReceivedFriendRequest;
+  userName: string;
   onAccept: (fromUser: string) => void;
   onReject: (fromUser: string) => void;
 }) {
@@ -85,7 +88,7 @@ function FriendRequestItem({
         </span>
       </div>
       <div className="notif-body" style={{ flex: 1 }}>
-        <div className="notif-title">{req.fromUser}</div>
+        <div className="notif-title">{userName}</div>
         <div className="notif-text">quiere ser tu amigo</div>
         <div className="notif-time">{timeAgo(req.createdAt)}</div>
       </div>
@@ -114,6 +117,7 @@ export default function NotificationsPanel() {
     acceptFriendRequest,
     rejectFriendRequest,
   } = useReceivedFriendRequests();
+  const { data: users } = useUsers()
 
   const fetchAll = useCallback(async () => {
     setLoadingNotifications(true);
@@ -478,6 +482,7 @@ export default function NotificationsPanel() {
                   <FriendRequestItem
                     key={`${r.fromUser}-${r.createdAt}`}
                     req={r}
+                    userName={users?.filter((u) => u.eId == r.fromUser)[0].name ?? r.fromUser}
                     onAccept={handleAccept}
                     onReject={handleReject}
                   />

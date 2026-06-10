@@ -12,9 +12,8 @@ export const friendshipsApi = {
     }),
 
   remove: (payload: RemoveRelationDto) =>
-    authFetch<void>("/friendships", {
+    authFetch<void>(`/friendships/${payload}`, {
       method: "DELETE",
-      body: JSON.stringify(payload),
     }),
 
   getReceivedRequests: () =>
@@ -36,14 +35,12 @@ export const friendshipsApi = {
     }),
 
   cancelSentRequest: (toUser: string) =>
-    authFetch<void>("/friendships/requests/sent", {
+    authFetch<void>(`/friendships/requests/sent/${toUser}`, {
       method: "DELETE",
-      body: JSON.stringify({ toUser }),
     }),
 
   rejectReceivedRequest: (fromUser: string) =>
-    authFetch<void>("/friendships/requests/received", {
+    authFetch<void>(`/friendships/requests/received/${fromUser}`, {
       method: "DELETE",
-      body: JSON.stringify({ fromUser }),
     }),
 };
