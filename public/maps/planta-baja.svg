@@ -1062,7 +1062,7 @@
        id="use1-9"
        transform="matrix(-0.46466675,0,0,0.46466675,336.94071,123.52467)" /></g><g id="interactive-selection-boxes-generated" aria-label="Rectángulos de selección alrededor de reservables">
     <rect id="selection-box-MZSJ-117" class="selection-box-generated" data-id="MZSJ-117" x="260.2812" y="123.7478" width="39.8124" height="29.8375" rx="0" ry="0" />
-    <rect id="selection-box-MZSJ-116" class="selection-box-generated" data-id="MZSJ-116" x="196.4322" y="124.1277" width="29.9939" height="29.4893" rx="0" ry="0" />
+    <rect id="selection-box-MZSJ-116" class="selection-box-generated" data-id="MZSJ-116" x="192.4322" y="126.1277" width="33" height="24.5" rx="0" ry="0" />
     <rect id="selection-box-MZSJ-115" class="selection-box-generated" data-id="MZSJ-115" x="143.7172" y="123.8245" width="27.8710" height="29.7741" rx="0" ry="0" />
     <rect id="selection-box-MZ037" class="selection-box-generated" data-id="MZ037" x="154.6644" y="159.3499" width="12.7367" height="11.8811" rx="0" ry="0" />
     <rect id="selection-box-MZ036" class="selection-box-generated" data-id="MZ036" x="144.2422" y="159.3499" width="12.7367" height="11.8811" rx="0" ry="0" />
@@ -1104,5 +1104,71 @@
     <rect id="selection-box-MZ003" class="selection-box-generated" data-id="MZ003" x="43.7458" y="7.9146" width="12.7367" height="11.8811" rx="0" ry="0" />
     <rect id="selection-box-MZ002" class="selection-box-generated" data-id="MZ002" x="33.3281" y="7.9146" width="12.7367" height="11.8811" rx="0" ry="0" />
     <rect id="selection-box-MZ001" class="selection-box-generated" data-id="MZ001" x="22.9107" y="7.9146" width="12.7367" height="11.8811" rx="0" ry="0" />
+        <rect id="selection-box-MZ041" class="selection-box-generated" data-id="MZ041" x="154.6644" y="169.3605" width="12.7367" height="11.8811" rx="0" ry="0" />
+
+    <rect id="selection-box-MZ042" class="selection-box-generated" data-id="MZ042" x="173.5150" y="159.5147" width="12.7367" height="11.8811" rx="0" ry="0" />
+    <rect id="selection-box-MZ043" class="selection-box-generated" data-id="MZ043" x="173.5150" y="169.5253" width="12.7367" height="11.8811" rx="0" ry="0" />
+    <rect id="selection-box-MZ044" class="selection-box-generated" data-id="MZ044" x="183.9374" y="159.5147" width="12.7367" height="11.8811" rx="0" ry="0" />
+    <rect id="selection-box-MZ045" class="selection-box-generated" data-id="MZ045" x="183.9374" y="169.5253" width="12.7367" height="11.8811" rx="0" ry="0" />
+    <rect id="selection-box-MZ046" class="selection-box-generated" data-id="MZ046" x="194.3598" y="159.5147" width="12.7367" height="11.8811" rx="0" ry="0" />
+    <rect id="selection-box-MZ047" class="selection-box-generated" data-id="MZ047" x="194.3598" y="169.5253" width="12.7367" height="11.8811" rx="0" ry="0" />
+    <rect id="selection-box-MZ048" class="selection-box-generated" data-id="MZ048" x="204.7822" y="159.5147" width="12.7367" height="11.8811" rx="0" ry="0" />
+    <rect id="selection-box-MZ049" class="selection-box-generated" data-id="MZ049" x="204.7822" y="169.5253" width="12.7367" height="11.8811" rx="0" ry="0" />
+
+    <rect id="selection-box-MZ050" class="selection-box-generated" data-id="MZ050" x="173.4578" y="190.0102" width="12.7367" height="11.8811" rx="0" ry="0" />
+    <rect id="selection-box-MZ051" class="selection-box-generated" data-id="MZ051" x="173.4578" y="200.0208" width="12.7367" height="11.8811" rx="0" ry="0" />
+    <rect id="selection-box-MZ052" class="selection-box-generated" data-id="MZ052" x="183.8802" y="190.0102" width="12.7367" height="11.8811" rx="0" ry="0" />
+    <rect id="selection-box-MZ053" class="selection-box-generated" data-id="MZ053" x="183.8802" y="200.0208" width="12.7367" height="11.8811" rx="0" ry="0" />
+    <rect id="selection-box-MZ054" class="selection-box-generated" data-id="MZ054" x="194.3026" y="190.0102" width="12.7367" height="11.8811" rx="0" ry="0" />
+    <rect id="selection-box-MZ055" class="selection-box-generated" data-id="MZ055" x="194.3026" y="200.0208" width="12.7367" height="11.8811" rx="0" ry="0" />
+    <rect id="selection-box-MZ056" class="selection-box-generated" data-id="MZ056" x="204.7250" y="190.0102" width="12.7367" height="11.8811" rx="0" ry="0" />
+    <rect id="selection-box-MZ057" class="selection-box-generated" data-id="MZ057" x="204.7250" y="200.0208" width="12.7367" height="11.8811" rx="0" ry="0" />
+
+    <rect id="selection-box-MZ058" class="selection-box-generated" data-id="MZ058" x="225.1921" y="159.5147" width="12.7367" height="11.8811" rx="0" ry="0" />
+    <rect id="selection-box-MZ059" class="selection-box-generated" data-id="MZ059" x="225.1921" y="169.5253" width="12.7367" height="11.8811" rx="0" ry="0" />
+    <rect id="selection-box-MZ060" class="selection-box-generated" data-id="MZ060" x="235.6145" y="159.5147" width="12.7367" height="11.8811" rx="0" ry="0" />
+    <rect id="selection-box-MZ061" class="selection-box-generated" data-id="MZ061" x="235.6145" y="169.5253" width="12.7367" height="11.8811" rx="0" ry="0" />
+    <rect id="selection-box-MZ062" class="selection-box-generated" data-id="MZ062" x="246.0369" y="159.5147" width="12.7367" height="11.8811" rx="0" ry="0" />
+    <rect id="selection-box-MZ063" class="selection-box-generated" data-id="MZ063" x="246.0369" y="169.5253" width="12.7367" height="11.8811" rx="0" ry="0" />
+    <rect id="selection-box-MZ064" class="selection-box-generated" data-id="MZ064" x="256.4593" y="159.5147" width="12.7367" height="11.8811" rx="0" ry="0" />
+    <rect id="selection-box-MZ065" class="selection-box-generated" data-id="MZ065" x="256.4593" y="169.5253" width="12.7367" height="11.8811" rx="0" ry="0" />
+
+    <rect id="selection-box-MZ066" class="selection-box-generated" data-id="MZ066" x="225.1349" y="190.0102" width="12.7367" height="11.8811" rx="0" ry="0" />
+    <rect id="selection-box-MZ067" class="selection-box-generated" data-id="MZ067" x="225.1349" y="200.0208" width="12.7367" height="11.8811" rx="0" ry="0" />
+    <rect id="selection-box-MZ068" class="selection-box-generated" data-id="MZ068" x="235.5573" y="190.0102" width="12.7367" height="11.8811" rx="0" ry="0" />
+    <rect id="selection-box-MZ069" class="selection-box-generated" data-id="MZ069" x="235.5573" y="200.0208" width="12.7367" height="11.8811" rx="0" ry="0" />
+    <rect id="selection-box-MZ070" class="selection-box-generated" data-id="MZ070" x="245.9797" y="190.0102" width="12.7367" height="11.8811" rx="0" ry="0" />
+    <rect id="selection-box-MZ071" class="selection-box-generated" data-id="MZ071" x="245.9797" y="200.0208" width="12.7367" height="11.8811" rx="0" ry="0" />
+    <rect id="selection-box-MZ072" class="selection-box-generated" data-id="MZ072" x="256.4021" y="190.0102" width="12.7367" height="11.8811" rx="0" ry="0" />
+    <rect id="selection-box-MZ073" class="selection-box-generated" data-id="MZ073" x="256.4021" y="200.0208" width="12.7367" height="11.8811" rx="0" ry="0" />
+
+    <rect id="selection-box-MZ074" class="selection-box-generated" data-id="MZ074" x="275.6773" y="159.5147" width="12.7367" height="11.8811" rx="0" ry="0" />
+    <rect id="selection-box-MZ075" class="selection-box-generated" data-id="MZ075" x="275.6773" y="169.5253" width="12.7367" height="11.8811" rx="0" ry="0" />
+    <rect id="selection-box-MZ076" class="selection-box-generated" data-id="MZ076" x="286.0997" y="159.5147" width="12.7367" height="11.8811" rx="0" ry="0" />
+    <rect id="selection-box-MZ077" class="selection-box-generated" data-id="MZ077" x="286.0997" y="169.5253" width="12.7367" height="11.8811" rx="0" ry="0" />
+    <rect id="selection-box-MZ078" class="selection-box-generated" data-id="MZ078" x="296.5221" y="159.5147" width="12.7367" height="11.8811" rx="0" ry="0" />
+    <rect id="selection-box-MZ079" class="selection-box-generated" data-id="MZ079" x="296.5221" y="169.5253" width="12.7367" height="11.8811" rx="0" ry="0" />
+    <rect id="selection-box-MZ080" class="selection-box-generated" data-id="MZ080" x="306.9445" y="159.5147" width="12.7367" height="11.8811" rx="0" ry="0" />
+    <rect id="selection-box-MZ081" class="selection-box-generated" data-id="MZ081" x="306.9445" y="169.5253" width="12.7367" height="11.8811" rx="0" ry="0" />
+
+    <rect id="selection-box-MZ082" class="selection-box-generated" data-id="MZ082" x="314.8652" y="98.4303" width="12.7367" height="11.8811" rx="0" ry="0" />
+    <rect id="selection-box-MZ083" class="selection-box-generated" data-id="MZ083" x="314.8652" y="108.4409" width="12.7367" height="11.8811" rx="0" ry="0" />
+    <rect id="selection-box-MZ084" class="selection-box-generated" data-id="MZ084" x="325.2876" y="98.4303" width="12.7367" height="11.8811" rx="0" ry="0" />
+    <rect id="selection-box-MZ085" class="selection-box-generated" data-id="MZ085" x="325.2876" y="108.4409" width="12.7367" height="11.8811" rx="0" ry="0" />
+    <rect id="selection-box-MZ086" class="selection-box-generated" data-id="MZ086" x="335.7100" y="98.4303" width="12.7367" height="11.8811" rx="0" ry="0" />
+    <rect id="selection-box-MZ087" class="selection-box-generated" data-id="MZ087" x="335.7100" y="108.4409" width="12.7367" height="11.8811" rx="0" ry="0" />
+    <rect id="selection-box-MZ088" class="selection-box-generated" data-id="MZ088" x="346.1324" y="98.4303" width="12.7367" height="11.8811" rx="0" ry="0" />
+    <rect id="selection-box-MZ089" class="selection-box-generated" data-id="MZ089" x="346.1324" y="108.4409" width="12.7367" height="11.8811" rx="0" ry="0" />
+
+    <rect id="selection-box-MZ090" class="selection-box-generated" data-id="MZ090" x="314.8751" y="77.6262" width="12.7367" height="11.8811" rx="0" ry="0" />
+    <rect id="selection-box-MZ091" class="selection-box-generated" data-id="MZ091" x="325.2926" y="77.6262" width="12.7367" height="11.8811" rx="0" ry="0" />
+    <rect id="selection-box-MZ092" class="selection-box-generated" data-id="MZ092" x="335.7101" y="77.6262" width="12.7367" height="11.8811" rx="0" ry="0" />
+    <rect id="selection-box-MZ093" class="selection-box-generated" data-id="MZ093" x="346.1276" y="77.6262" width="12.7367" height="11.8811" rx="0" ry="0" />
+    <rect id="selection-box-MZ094" class="selection-box-generated" data-id="MZ094" x="356.5451" y="77.6262" width="12.7367" height="11.8811" rx="0" ry="0" />
+
+    <rect id="selection-box-MZ095" class="selection-box-generated" data-id="MZ095" x="314.0053" y="128.9725" width="12.7367" height="11.8811" rx="0" ry="0" />
+    <rect id="selection-box-MZ096" class="selection-box-generated" data-id="MZ096" x="314.0053" y="138.9831" width="12.7367" height="11.8811" rx="0" ry="0" />
+    <rect id="selection-box-MZ097" class="selection-box-generated" data-id="MZ097" x="324.4277" y="128.9725" width="12.7367" height="11.8811" rx="0" ry="0" />
+    <rect id="selection-box-MZ098" class="selection-box-generated" data-id="MZ098" x="324.4277" y="138.9831" width="12.7367" height="11.8811" rx="0" ry="0" />
   </g>
 </svg>
