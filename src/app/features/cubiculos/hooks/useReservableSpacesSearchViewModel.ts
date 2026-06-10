@@ -101,6 +101,10 @@ export function useReservableSpacesSearchViewModel() {
 
       spaces: search.spaces,
 
+      floors: search.floors,
+      selectedFloor: search.selectedFloor,
+      selectedFloorCode: search.selectedFloorCode,
+
       selectedSpace: search.selectedSpace,
       selectedSpaceCode: search.selectedSpaceCode,
       selectedMapId: search.selectedMapId,
@@ -130,6 +134,7 @@ export function useReservableSpacesSearchViewModel() {
     actions: {
       setFilters: search.setFilters,
       setSelectedSpaceCode: search.setSelectedSpaceCode,
+      setSelectedFloorCode: search.setSelectedFloorCode,
 
       selectMapId: search.handleSelectMapId,
       resetFilters: search.handleResetFilters,

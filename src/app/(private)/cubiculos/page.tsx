@@ -21,7 +21,10 @@ export default function ReservableSpacesSearchPage() {
         <section className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
           <FloorMapCard
             spaces={state.spaces}
-            isLoading={state.isLoading}
+            isLoading={state.isLoading || state.isFetching}
+            floors={state.floors}
+            selectedFloorCode={state.selectedFloorCode}
+            onChangeFloorCode={actions.setSelectedFloorCode}
             selectedMapId={state.selectedMapId}
             availableMapIds={state.availableMapIds}
             reservedMapIds={state.reservedMapIds}

@@ -81,11 +81,10 @@ export function buildAvailableSlotsFilters(nextFilters: SpaceSearchFilters) {
         : undefined,
   };
 }
-
 export const officeSlotKeys = {
   all: ["office", "slots"] as const,
 
-  list: () => [...officeSlotKeys.all, "list"] as const,
+  list: (floor?: string) => [...officeSlotKeys.all, "list", floor] as const,
 
   search: (filters: SpaceSearchFilters) =>
     [...officeSlotKeys.all, "search", filters] as const,
@@ -94,14 +93,19 @@ export const officeSlotKeys = {
     [...officeSlotKeys.all, "detail", slotId] as const,
 
   reservations: {
-    slot: (slotId: number | null, dates?: string[], detail = false, showInactiveReservations = false) =>
+    slot: (
+      slotId: number | null,
+      dates?: string[],
+      detail = false,
+      showInactiveReservations = false,
+    ) =>
       [
         ...officeSlotKeys.all,
         slotId,
         "reservations",
         dates ?? [],
         detail,
-        showInactiveReservations
+        showInactiveReservations,
       ] as const,
   },
 };
@@ -168,7 +172,6 @@ export function useOfficeSlots() {
 
   return query;
 }
-
 export function useReservableSpaces(filters: SpaceSearchFilters) {
   const queryClient = useQueryClient();
   const socket = useSocket();
@@ -181,7 +184,7 @@ export function useReservableSpaces(filters: SpaceSearchFilters) {
       const hasNoFilters = areReservableSpaceFiltersEmpty(filters);
 
       if (hasNoFilters) {
-        return officeSlotsApi.getAllSlots();
+        return officeSlotsApi.getAllSlots(filters.floor);
       }
 
       return officeSlotsApi.getAvailableSlots(
@@ -192,7 +195,6 @@ export function useReservableSpaces(filters: SpaceSearchFilters) {
 
   useEffect(() => {
     function onOfficeUpdate(msg: OfficeUpdateMessage) {
-      // Cualquier cambio en slots o reservaciones puede afectar la disponibilidad
       if (
         msg.type === "slot.created" ||
         msg.type === "slot.updated" ||
@@ -210,6 +212,7 @@ export function useReservableSpaces(filters: SpaceSearchFilters) {
     }
 
     socket.on("officeUpdate", onOfficeUpdate);
+
     return () => {
       socket.off("officeUpdate", onOfficeUpdate);
     };

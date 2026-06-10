@@ -5,8 +5,11 @@ import { useEffect, useMemo, useState } from "react";
 import type { SpaceSearchFilters } from "@/app/features/cubiculos/types/searchFilters";
 import { useReservableSpaces } from "@/app/features/cubiculos/data/hooks";
 import { useDebounce } from "@/app/shared/hooks/useDebounce";
+import { OFFICE_FLOORS } from "@/app/features/cubiculos/constants/floors";
 
 const initialFilters: SpaceSearchFilters = {
+  floor: OFFICE_FLOORS[0].code,
+
   search: "",
   time: {
     startTime: "",
@@ -24,20 +27,8 @@ export function useReservableSpacesSearch() {
     string | undefined
   >(undefined);
 
-  /**
-   * Este estado ahora representa los filtros aplicados.
-   *
-   * PeriodFilter, TimeFilter y CapacityFilter deberían tener su propio draft
-   * interno y llamar setFilters solo cuando el usuario presione "Aplicar".
-   */
   const [filters, setFilters] = useState<SpaceSearchFilters>(initialFilters);
 
-  /**
-   * Solo debounced para search.
-   *
-   * Así puedes escribir sin disparar una consulta en cada tecla,
-   * pero mantienes React Query como fuente de verdad para la llamada.
-   */
   const debouncedSearch = useDebounce(filters.search, 350);
 
   const appliedFilters = useMemo<SpaceSearchFilters>(
@@ -57,6 +48,10 @@ export function useReservableSpacesSearch() {
   } = useReservableSpaces(appliedFilters);
 
   useEffect(() => {
+    setSelectedSpaceCode(undefined);
+  }, [filters.floor]);
+
+  useEffect(() => {
     if (spaces.length === 0) {
       setSelectedSpaceCode(undefined);
       return;
@@ -74,6 +69,15 @@ export function useReservableSpacesSearch() {
   }, [spaces, selectedSpaceCode]);
 
   const selectedMapId = selectedSpace?.code ?? null;
+
+  const selectedFloorCode = filters.floor;
+
+  const selectedFloor = useMemo(() => {
+    return (
+      OFFICE_FLOORS.find((floor) => floor.code === selectedFloorCode) ??
+      OFFICE_FLOORS[0]
+    );
+  }, [selectedFloorCode]);
 
   const availableMapIds = useMemo(() => {
     return spaces
@@ -99,6 +103,13 @@ export function useReservableSpacesSearch() {
       .map((space) => space.code);
   }, [spaces]);
 
+  function setSelectedFloorCode(floorCode: string) {
+    setFilters((current) => ({
+      ...current,
+      floor: floorCode,
+    }));
+  }
+
   function handleSelectMapId(mapId: string) {
     const exists = spaces.some((space) => space.code === mapId);
 
@@ -115,10 +126,6 @@ export function useReservableSpacesSearch() {
     filters,
     setFilters,
 
-    /**
-     * Lo puedes dejar temporalmente si tu ViewModel todavía espera
-     * submittedFilters. Pero conceptualmente ya no existe un submit global.
-     */
     submittedFilters: appliedFilters,
 
     spaces,
@@ -126,6 +133,11 @@ export function useReservableSpacesSearch() {
     isFetching,
     error,
     refetch,
+
+    floors: OFFICE_FLOORS,
+    selectedFloor,
+    selectedFloorCode,
+    setSelectedFloorCode,
 
     selectedSpace,
     selectedSpaceCode,

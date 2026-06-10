@@ -47,14 +47,22 @@ function normalizeSlotReservationsPayload(
 }
 
 export const officeSlotsApi = {
-  getAllSlots: () => authFetch<OfficeSlot[]>(`${SLOTS_BASE}/`),
+  getAllSlots: (floor?: string) => {
+    const params = new URLSearchParams();
+    if (floor) params.append("floor", floor);
+    const search = params.toString();
+
+    return authFetch<OfficeSlot[]>(
+      `${SLOTS_BASE}/${search ? `?${search}` : ""}`,
+    );
+  },
 
   getSlotById: (id: number) => authFetch<OfficeSlot>(`${SLOTS_BASE}/${id}`),
 
   getAvailableSlots: (query: AvailableOfficeSlotsQuery) => {
     const params = new URLSearchParams();
 
-    if (query.floorId) params.append("floorId", query.floorId.toString());
+    if (query.floor) params.append("floor", query.floor);
     if (query.startTime) params.append("startTime", query.startTime);
     if (query.endTime) params.append("endTime", query.endTime);
     if (query.userId) params.append("userId", query.userId);
@@ -100,7 +108,7 @@ export const officeSlotsApi = {
     id: number,
     payload?: GetSlotReservationsPayload,
     detail = false,
-    showInactiveReservations?:boolean
+    showInactiveReservations?: boolean,
   ) => {
     const params = new URLSearchParams();
 
@@ -108,8 +116,8 @@ export const officeSlotsApi = {
       params.append("detail", "true");
     }
 
-    if(showInactiveReservations){
-      params.append("showInactiveReservations", "true")
+    if (showInactiveReservations) {
+      params.append("showInactiveReservations", "true");
     }
 
     const search = params.toString();

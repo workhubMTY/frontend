@@ -10,11 +10,19 @@ export type CapacityFilterValue = {
 };
 
 export type SpaceSearchFilters = {
+  floor: string;
+
   search: string;
+
   time: {
     startTime: string;
     endTime: string;
   };
-  capacity: CapacityFilterValue;
-  daysToApply: PeriodFilterValue;
+
+  capacity: {
+    minCapacity: string;
+    maxCapacity: string;
+  };
+
+  daysToApply: string[];
 };

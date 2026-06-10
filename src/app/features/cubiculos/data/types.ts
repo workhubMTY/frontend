@@ -147,8 +147,9 @@ export type CreateReservationDto = {
   start_time: string;
   end_time: string;
 };
+
 export type AvailableOfficeSlotsQuery = {
-  floorId?: number;
+  floor?: string;
   startTime?: string;
   endTime?: string;
   minCapacity?: number;
