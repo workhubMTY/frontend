@@ -1,15 +1,5 @@
 export type SelectionMode = "single" | "multiple" | "repeat";
 
-export type ParticipantAttendanceStatus =
-  | 'INVITED'
-  | 'NOT_ARRIVED'
-  | 'CHECKED_IN'
-  | 'CHECKED_OUT'
-  | 'NO_SHOW'
-  | 'NOT_ACCEPTED'
-  | 'REJECTED'
-  | 'CANCELED';
-
 export type CalendarCell = {
   id: string;
   date: Date;

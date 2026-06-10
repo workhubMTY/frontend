@@ -31,8 +31,6 @@ import {
   toTime,
 } from "@/app/features/reservaciones/crear/data/scheduleItems";
 
-import type { ParticipantAttendanceStatus } from "../types/reservaciones"
-
 const RESERVATIONS_BASE = `/office/reservations`;
 
 export { groupScheduleItemsByDate };
@@ -147,12 +145,12 @@ export const reservationsApi = {
       body: JSON.stringify(payload),
     }),
 
-  updateParticipantStatus: (reservationId: number, participantId: number, attendance_status: ParticipantAttendanceStatus) =>
+  updateParticipantStatus: (id: number, payload: UpdateParticipantStatusDto) =>
     authFetch<ReservationParticipant>(
-      `${RESERVATIONS_BASE}/${reservationId}/participants/${participantId}/attendance`,
+      `${RESERVATIONS_BASE}/participants/${id}/status`,
       {
         method: "PATCH",
-        body: JSON.stringify({ attendance_status }),
+        body: JSON.stringify(payload),
       },
     ),
 
