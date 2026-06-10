@@ -211,6 +211,7 @@ export function useParkingLotDetail(id: number) {
 
     function onParkingUpdate(msg: ParkingUpdateMessage) {
       if (msg.type === "reservation.created") {
+        console.log("llego un reservation.created")
         queryClient.invalidateQueries({ queryKey: key });
         return;
       }
