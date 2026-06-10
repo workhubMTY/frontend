@@ -1,14 +1,17 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useSocket } from "@/app/shared/socket/socket.context";
+import type { OfficeUpdateMessage } from "@/app/shared/socket/socket.context";
+import type { ParkingUpdateMessage } from "@/app/features/estacionamientos/data/types";
 import { listParkingReservations, listOfficeReservations } from "../data/api";
 import type { ParkingReservation, OfficeReservation } from "../data/types";
 
 export function getWeekRange(weekOffset: number): { start: Date; end: Date } {
-  const now  = new Date();
-  const day  = now.getDay();
+  const now = new Date();
+  const day = now.getDay();
   const diff = day === 0 ? -6 : 1 - day;
-  const mon  = new Date(now);
+  const mon = new Date(now);
   mon.setDate(now.getDate() + diff + weekOffset * 7);
   mon.setHours(0, 0, 0, 0);
   const sun = new Date(mon);
@@ -17,7 +20,6 @@ export function getWeekRange(weekOffset: number): { start: Date; end: Date } {
   return { start: mon, end: sun };
 }
 
-// /parking/reservations/me → array de { reservation, projection }
 function parseParkingMe(raw: any): ParkingReservation[] {
   if (!raw) return [];
   const arr = Array.isArray(raw) ? raw : [raw];
@@ -49,23 +51,25 @@ function filterByWeek<T extends { start_time: string }>(items: T[], weekOffset: 
 
 export type WeekReservations = {
   parking: ParkingReservation[];
-  office:  OfficeReservation[];
+  office: OfficeReservation[];
   loading: boolean;
-  error:   string | null;
+  error: string | null;
   refresh: () => void;
 };
 
 type Params = {
   weekOffset: number;
-  userId?:    string | null; // si viene → reservas de ese amigo
+  userId?: string | null;
 };
 
 export function useWeekReservations({ weekOffset, userId }: Params): WeekReservations {
   const [parking, setParking] = useState<ParkingReservation[]>([]);
-  const [office,  setOffice]  = useState<OfficeReservation[]>([]);
+  const [office, setOffice] = useState<OfficeReservation[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error,   setError]   = useState<string | null>(null);
-  const [tick,    setTick]    = useState(0);
+  const [error, setError] = useState<string | null>(null);
+  const [tick, setTick] = useState(0);
+
+  const socket = useSocket();
 
   const refresh = useCallback(() => setTick((t) => t + 1), []);
 
@@ -75,27 +79,23 @@ export function useWeekReservations({ weekOffset, userId }: Params): WeekReserva
     setError(null);
 
     let parkingPromise: Promise<any>;
-    let officePromise:  Promise<any>;
+    let officePromise: Promise<any>;
 
     if (userId) {
-      // Reservas del amigo: usar endpoint /office/users/:eId/reservations
-      // Parking del amigo no disponible por permisos → array vacío
       parkingPromise = Promise.resolve([]);
-      officePromise  = listOfficeReservations.getOfficeReservationsId(userId);
+      officePromise = listOfficeReservations.getOfficeReservationsId(userId);
     } else {
-      // Reservas propias
       parkingPromise = listParkingReservations.getParkingReservationsMe();
-      officePromise  = listOfficeReservations.getOfficeReservationsMe();
+      officePromise = listOfficeReservations.getOfficeReservationsMe();
     }
 
     Promise.allSettled([parkingPromise, officePromise]).then(([pResult, oResult]) => {
       if (cancelled) return;
 
       let parsedParking: ParkingReservation[] = [];
-      let parsedOffice:  OfficeReservation[]  = [];
+      let parsedOffice: OfficeReservation[] = [];
 
       if (pResult.status === "fulfilled") {
-        // /me devuelve todo → filtrar por semana en frontend
         parsedParking = filterByWeek(parseParkingMe(pResult.value), weekOffset);
       }
 
@@ -105,7 +105,6 @@ export function useWeekReservations({ weekOffset, userId }: Params): WeekReserva
         console.warn("Office fetch failed:", oResult.reason?.message);
       }
 
-      // console.log(`[${userId ?? "me"}] parking:`, parsedParking.length, "office:", parsedOffice.length);
       setParking(parsedParking);
       setOffice(parsedOffice);
       setLoading(false);
@@ -113,6 +112,44 @@ export function useWeekReservations({ weekOffset, userId }: Params): WeekReserva
 
     return () => { cancelled = true; };
   }, [weekOffset, userId, tick]);
+
+  useEffect(() => {
+    function onOfficeUpdate(msg: OfficeUpdateMessage) {
+      if (
+        msg.type === "reservation.created" ||
+        msg.type === "reservation.canceled" ||
+        msg.type === "reservation.checkedin" ||
+        msg.type === "reservation.checkedout" ||
+        msg.type === "reservation.noshow" ||
+        msg.type === "reservation.attendance_updated"
+      ) {
+        refresh();
+      }
+    }
+
+    socket.on("officeUpdate", onOfficeUpdate);
+    return () => {
+      socket.off("officeUpdate", onOfficeUpdate);
+    };
+  }, [socket, refresh]);
+
+  useEffect(() => {
+    function onParkingUpdate(msg: ParkingUpdateMessage) {
+      if (
+        msg.type === "reservation.created" ||
+        msg.type === "reservation.canceled" ||
+        msg.type === "reservation.attendance_updated" ||
+        msg.type === "reservation.no_show"
+      ) {
+        refresh();
+      }
+    }
+
+    socket.on("parkingUpdate", onParkingUpdate);
+    return () => {
+      socket.off("parkingUpdate", onParkingUpdate);
+    };
+  }, [socket, refresh]);
 
   return { parking, office, loading, error, refresh };
 }
