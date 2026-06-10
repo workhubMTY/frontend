@@ -216,7 +216,12 @@ export function useUserReservationInvitations(myUserId: string) {
       };
       return activeReservationsApi.updateParticipantAttendance(payload);
     },
-    onSuccess: invalidate,
+    onSuccess: () => {
+      invalidate();
+      queryClient.invalidateQueries({
+        queryKey: activeReservationKeys.mine(myUserId),
+      });
+    },
   });
 
   return {
