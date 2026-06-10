@@ -19,6 +19,7 @@ import type {
   ListReservationsResponse,
   ReservationDetailResponse,
 } from "./types";
+import { userTimelineKeys } from "../../reservaciones/crear/hooks/useUserTimeline";
 export const parkingKeys = {
   all: () => ["parking"] as const,
   lots: () => ["parking", "lots"] as const,
@@ -253,8 +254,10 @@ export function useParkingLotDetail(id: number) {
   const patchAttendance = useMutation({
     mutationFn: ({ id, payload }: { id: number; payload: PatchAttendance }) =>
       parkingReservationsApi.patchAttendance(id, payload),
-    onSuccess: () =>
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: parkingKeys.reservations() }),
+      queryClient.invalidateQueries({queryKey:userTimelineKeys.all})
+    }
   });
 
   return {
