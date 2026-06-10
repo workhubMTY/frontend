@@ -21,8 +21,6 @@ export function HomeAgendaTimeline({
 }: HomeAgendaTimelineProps) {
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <HomeAgendaTimelineHeader />
-
       <div className="min-h-0 flex-1 px-6 py-2">
         <div className="space-y-2">
           {days.map((day) => (
@@ -36,6 +34,7 @@ export function HomeAgendaTimeline({
           ))}
         </div>
       </div>
+      <HomeAgendaTimelineHeader />
     </div>
   );
 }

@@ -53,7 +53,7 @@ export function HomeAgendaFilters({
   onChangeFilter,
 }: HomeAgendaFiltersProps) {
   return (
-    <div className="flex flex-wrap self-center items-center border border-grid-lines gap-2 bg-container p-1 bg-neutral-50" >
+    <div className="flex flex-wrap self-center items-center border border-neutral-300 gap-2 bg-container p-1 bg-neutral-50" >
       {FILTERS.map((filter) => {
         const isActive = activeFilter === filter.value;
 
