@@ -14,7 +14,7 @@ const baseRoutes = [
 ];
 
 const adminRoutes = [
-  {name: "Tablero", href: "/tablero" },
+  { name: "Tablero", href: "/tablero" },
 ]
 
 export default function Navbar() {
@@ -23,8 +23,8 @@ export default function Navbar() {
   const routes = isAttendant
     ? []
     : user?.role === "ADMIN"
-    ? [...baseRoutes, ...adminRoutes]
-    : baseRoutes;
+      ? [...baseRoutes, ...adminRoutes]
+      : baseRoutes;
   const pathname = usePathname();
   const route = useRouter();
   const [open, setOpen] = useState(false);
@@ -51,7 +51,7 @@ export default function Navbar() {
   return (
     <>
       <header className="w-full sticky top-0 h-16 z-40 bg-background flex flex-row items-center gap-2 px-4">
-        <a href="/home" className="shrink-0 pl-1">
+        <a href={isAttendant ? "/parking-checkin" : "/home"} className="shrink-0 pl-1">
           <Image
             src={AccentureLogo}
             alt="Accenture logo"
@@ -81,13 +81,13 @@ export default function Navbar() {
                 style={
                   isActive
                     ? {
-                        clipPath: "url(#tab-shape)",
-                        height: "44px",
-                        width: "clamp(100px, fit-content, 200px)",
-                        paddingTop: "4px",
-                        paddingLeft: "20px",
-                        paddingRight: "20px",
-                      }
+                      clipPath: "url(#tab-shape)",
+                      height: "44px",
+                      width: "clamp(100px, fit-content, 200px)",
+                      paddingTop: "4px",
+                      paddingLeft: "20px",
+                      paddingRight: "20px",
+                    }
                     : {}
                 }
               >
@@ -108,6 +108,16 @@ export default function Navbar() {
                 Pide al chatbot
               </button>
             </label>
+          )}
+          {!isAttendant && (
+            <Link
+              href="/office-checkin"
+              className="bg-background-page self-center select-none rounded-full text-on-background-2 font-semibold"
+            >
+              <label className="bg-background-page self-center p-2 select-none rounded-full text-on-background-2 font-semibold material-symbols-outlined cursor-pointer">
+                photo_camera
+              </label>
+            </Link>
           )}
           {!isAttendant && <NotificationsPanel />}
           {!isAttendant && (
