@@ -1,9 +1,14 @@
 import type { ScheduleItem } from "@/app/features/reservaciones/crear/types/schedule";
 
-const OFFICE_RESERVATION_KINDS = new Set([
-  "my_reservation",
-  "space_reservation",
-]);
+export type HomeAgendaSelectedDetail =
+  | {
+      type: "office";
+      id: number;
+    }
+  | {
+      type: "parking";
+      id: number;
+    };
 
 function getNumberFromUnknown(value: unknown) {
   if (typeof value === "number" && Number.isFinite(value)) {
@@ -27,16 +32,32 @@ function getNumberFromUnknown(value: unknown) {
   return null;
 }
 
-export function getOfficeReservationDetailId(item: ScheduleItem) {
-  if (!OFFICE_RESERVATION_KINDS.has(item.kind)) {
-    return null;
-  }
-
+export function getAgendaSelectedDetail(
+  item: ScheduleItem,
+): HomeAgendaSelectedDetail | null {
   const itemRecord = item as unknown as Record<string, unknown>;
 
-  return (
+  const id =
     getNumberFromUnknown(itemRecord.reservationId) ??
     getNumberFromUnknown(itemRecord.reservation_id) ??
-    getNumberFromUnknown(itemRecord.id)
-  );
+    getNumberFromUnknown(itemRecord.sourceReservationId) ??
+    getNumberFromUnknown(itemRecord.id);
+
+  if (id === null) return null;
+
+  if (item.kind === "parking_reservation") {
+    return {
+      type: "parking",
+      id,
+    };
+  }
+
+  if (item.kind === "my_reservation" || item.kind === "space_reservation") {
+    return {
+      type: "office",
+      id,
+    };
+  }
+
+  return null;
 }

@@ -14,7 +14,11 @@ import { HomeAgendaList } from "./List/HomeAgendaList";
 import { HomeAgendaTimeline } from "./Timeline/HomeAgendaTimeline";
 import { HomeAgendaToolbar } from "./HomeAgendaToolbar";
 import { HomeAgendaReservationDetailModal } from "./HomeAgendaReservationDetailModal";
-import { getOfficeReservationDetailId } from "./HomeAgendaSelectionUtils";
+import { HomeAgendaParkingDetailModal } from "./HomeAgendaParkingDetailModal";
+import {
+  getAgendaSelectedDetail,
+  type HomeAgendaSelectedDetail,
+} from "./HomeAgendaSelectionUtils";
 
 type HomeAgendaCardProps = {
   rangeLabel: string;
@@ -53,22 +57,22 @@ export function HomeAgendaCard({
   onPrevious,
   onNext,
 }: HomeAgendaCardProps) {
-  const [selectedReservationId, setSelectedReservationId] = useState<
-    number | null
-  >(null);
+  const [selectedDetail, setSelectedDetail] =
+    useState<HomeAgendaSelectedDetail | null>(null);
 
   function handleSelectItem(item: ScheduleItem) {
-    const reservationId = getOfficeReservationDetailId(item);
+    const detail = getAgendaSelectedDetail(item);
 
-    if (reservationId === null) {
+    if (!detail) {
+      console.warn("Este item no tiene detalle disponible:", item);
       return;
     }
 
-    setSelectedReservationId(reservationId);
+    setSelectedDetail(detail);
   }
 
-  function closeReservationDetail() {
-    setSelectedReservationId(null);
+  function closeDetail() {
+    setSelectedDetail(null);
   }
 
   return (
@@ -113,9 +117,17 @@ export function HomeAgendaCard({
       </section>
 
       <HomeAgendaReservationDetailModal
-        open={selectedReservationId !== null}
-        reservationId={selectedReservationId}
-        onClose={closeReservationDetail}
+        open={selectedDetail?.type === "office"}
+        reservationId={selectedDetail?.type === "office" ? selectedDetail.id : null}
+        onClose={closeDetail}
+      />
+
+      <HomeAgendaParkingDetailModal
+        open={selectedDetail?.type === "parking"}
+        reservationId={
+          selectedDetail?.type === "parking" ? selectedDetail.id : null
+        }
+        onClose={closeDetail}
       />
     </>
   );
