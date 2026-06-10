@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+
 import type { SpaceSearchFilters } from "@/app/features/cubiculos/types/searchFilters";
 import { useReservableSpaces } from "@/app/features/cubiculos/data/hooks";
+import { useDebounce } from "@/app/shared/hooks/useDebounce";
 
 const initialFilters: SpaceSearchFilters = {
   search: "",
@@ -22,9 +24,29 @@ export function useReservableSpacesSearch() {
     string | undefined
   >(undefined);
 
+  /**
+   * Este estado ahora representa los filtros aplicados.
+   *
+   * PeriodFilter, TimeFilter y CapacityFilter deberían tener su propio draft
+   * interno y llamar setFilters solo cuando el usuario presione "Aplicar".
+   */
   const [filters, setFilters] = useState<SpaceSearchFilters>(initialFilters);
-  const [submittedFilters, setSubmittedFilters] =
-    useState<SpaceSearchFilters>(initialFilters);
+
+  /**
+   * Solo debounced para search.
+   *
+   * Así puedes escribir sin disparar una consulta en cada tecla,
+   * pero mantienes React Query como fuente de verdad para la llamada.
+   */
+  const debouncedSearch = useDebounce(filters.search, 350);
+
+  const appliedFilters = useMemo<SpaceSearchFilters>(
+    () => ({
+      ...filters,
+      search: debouncedSearch,
+    }),
+    [filters, debouncedSearch],
+  );
 
   const {
     data: spaces = [],
@@ -32,7 +54,7 @@ export function useReservableSpacesSearch() {
     isFetching,
     error,
     refetch,
-  } = useReservableSpaces(submittedFilters);
+  } = useReservableSpaces(appliedFilters);
 
   useEffect(() => {
     if (spaces.length === 0) {
@@ -85,21 +107,19 @@ export function useReservableSpacesSearch() {
     setSelectedSpaceCode(mapId);
   }
 
-  function handleSubmitFilters(nextFilters: SpaceSearchFilters) {
-    setFilters(nextFilters);
-    setSubmittedFilters(nextFilters);
-  }
-
   function handleResetFilters() {
     setFilters(initialFilters);
-    setSubmittedFilters(initialFilters);
   }
 
   return {
     filters,
     setFilters,
 
-    submittedFilters,
+    /**
+     * Lo puedes dejar temporalmente si tu ViewModel todavía espera
+     * submittedFilters. Pero conceptualmente ya no existe un submit global.
+     */
+    submittedFilters: appliedFilters,
 
     spaces,
     isLoading,
@@ -118,7 +138,6 @@ export function useReservableSpacesSearch() {
 
     setSelectedSpaceCode,
     handleSelectMapId,
-    handleSubmitFilters,
     handleResetFilters,
   };
 }

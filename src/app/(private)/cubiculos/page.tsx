@@ -16,7 +16,6 @@ export default function ReservableSpacesSearchPage() {
         <ReservationFilters
           value={state.filters}
           onChange={actions.setFilters}
-          onSubmit={actions.submitFilters}
         />
 
         <section className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">

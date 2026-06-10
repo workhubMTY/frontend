@@ -81,12 +81,8 @@ export function usePeriodFilter({ value, onChange }: UsePeriodFilterParams) {
     setDraftPeriodDateIds(value);
     setIsOpen((current) => !current);
   }
-
   function handleCancelPeriodFilter() {
-    onChange([]);
-
-    setDraftPeriodDateIds([]);
-    setHasAppliedPeriodSelection(false);
+    setDraftPeriodDateIds(value);
     setIsOpen(false);
   }
 

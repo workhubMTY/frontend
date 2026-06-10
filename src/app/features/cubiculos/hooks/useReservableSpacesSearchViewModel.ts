@@ -132,7 +132,6 @@ export function useReservableSpacesSearchViewModel() {
       setSelectedSpaceCode: search.setSelectedSpaceCode,
 
       selectMapId: search.handleSelectMapId,
-      submitFilters: search.handleSubmitFilters,
       resetFilters: search.handleResetFilters,
       refetchSpaces: search.refetch,
 
