@@ -1,7 +1,7 @@
 "use client";
 
 import type { ScheduleItem } from "@/app/features/reservaciones/crear/types/schedule";
-import type { HomeAgendaDay } from "../../types/homeAgenda";
+import type { HomeAgendaDay } from "../../../types/homeAgenda";
 
 import { HomeAgendaTimelineHeader } from "./HomeAgendaTimelineHeader";
 import { HomeAgendaDayRow } from "./HomeAgendaDayRow";

@@ -3,7 +3,7 @@
 import { useState } from "react";
 
 import type { ScheduleItem } from "@/app/features/reservaciones/crear/types/schedule";
-import type { HomeAgendaDay } from "../../types/homeAgenda";
+import type { HomeAgendaDay } from "../../../types/homeAgenda";
 
 import { HomeAgendaDayColumn } from "./HomeAgendaColumn";
 import { sortItemsByTime } from "./HomeAgendaListUtils";
@@ -15,7 +15,7 @@ type HomeAgendaListProps = {
   isLoading?: boolean;
 };
 
-export const MAX_VISIBLE_ITEMS_PER_DAY = 4;
+export const MAX_VISIBLE_ITEMS_PER_DAY = 5;
 
 export function HomeAgendaList({
   days,

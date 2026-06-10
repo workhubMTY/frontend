@@ -5,7 +5,7 @@ import {
   HOME_AGENDA_END_HOUR,
   HOME_AGENDA_HOUR_LABELS,
   HOME_AGENDA_START_HOUR,
-} from "../../lib/homeAgendaTimeline";
+} from "../../../lib/homeAgendaTimeline";
 
 export function HomeAgendaTimelineHeader() {
   return (

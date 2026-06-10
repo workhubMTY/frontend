@@ -3,7 +3,7 @@
 import { cn } from "@/app/shared/lib/cn";
 
 import type { ScheduleItem } from "@/app/features/reservaciones/crear/types/schedule";
-import type { HomeAgendaDay } from "../../types/homeAgenda";
+import type { HomeAgendaDay } from "../../../types/homeAgenda";
 
 import { MAX_VISIBLE_ITEMS_PER_DAY } from "./HomeAgendaList";
 import { HomeAgendaListItem } from "./HomeAgendaListItem";

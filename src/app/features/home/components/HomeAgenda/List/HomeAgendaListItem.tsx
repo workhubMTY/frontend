@@ -6,8 +6,8 @@ import { cn } from "@/app/shared/lib/cn";
 
 import type { ScheduleItem } from "@/app/features/reservaciones/crear/types/schedule";
 
-import { getAgendaItemStyles } from "../../lib/homeAgendaStyles";
-import { formatAgendaItemRange } from "../../lib/homeAgendaTimeline";
+import { getAgendaItemStyles } from "../../../lib/homeAgendaStyles";
+import { formatAgendaItemRange } from "../../../lib/homeAgendaTimeline";
 
 import { getItemLocation } from "./HomeAgendaListUtils";
 

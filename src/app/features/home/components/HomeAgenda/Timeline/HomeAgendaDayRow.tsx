@@ -3,7 +3,7 @@
 import { cn } from "@/app/shared/lib/cn";
 
 import type { ScheduleItem } from "@/app/features/reservaciones/crear/types/schedule";
-import type { HomeAgendaDay } from "../../types/homeAgenda";
+import type { HomeAgendaDay } from "../../../types/homeAgenda";
 
 import { HomeAgendaItemBlock } from "./HomeAgendaItemBlock";
 
@@ -11,7 +11,7 @@ import {
   getHomeAgendaRowHeight,
   getMaxLane,
   placeItemsInLanes,
-} from "../../lib/homeAgendaTimeline";
+} from "../../../lib/homeAgendaTimeline";
 
 type HomeAgendaDayRowProps = {
   day: HomeAgendaDay;

@@ -2,13 +2,13 @@
 
 import { cn } from "@/app/shared/lib/cn";
 
-import { getAgendaItemStyles } from "../../lib/homeAgendaStyles";
+import { getAgendaItemStyles } from "../../../lib/homeAgendaStyles";
 import {
   formatAgendaItemRange,
   HOME_AGENDA_LANE_GAP,
   HOME_AGENDA_LANE_HEIGHT,
   type PositionedAgendaItem,
-} from "../../lib/homeAgendaTimeline";
+} from "../../../lib/homeAgendaTimeline";
 
 type HomeAgendaItemBlockProps = {
   item: PositionedAgendaItem;

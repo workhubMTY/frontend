@@ -6,8 +6,8 @@ import type {
   HomeAgendaViewMode,
 } from "../../types/homeAgenda";
 
-import { HomeAgendaList } from "./HomeAgendaList";
-import { HomeAgendaTimeline } from "./HomeAgendaTimeline";
+import { HomeAgendaList } from "./List/HomeAgendaList";
+import { HomeAgendaTimeline } from "./Timeline/HomeAgendaTimeline";
 import { HomeAgendaToolbar } from "./HomeAgendaToolbar";
 
 type HomeAgendaCardProps = {

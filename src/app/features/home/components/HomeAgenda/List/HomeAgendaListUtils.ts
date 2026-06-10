@@ -1,6 +1,6 @@
 import type { ScheduleItem } from "@/app/features/reservaciones/crear/types/schedule";
 
-import { timeToMinutes } from "../../lib/homeAgendaTimeline";
+import { timeToMinutes } from "../../../lib/homeAgendaTimeline";
 
 export function sortItemsByTime(items: ScheduleItem[]) {
   return [...items].sort((a, b) => {
