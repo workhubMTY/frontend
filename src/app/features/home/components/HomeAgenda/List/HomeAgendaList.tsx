@@ -5,7 +5,7 @@ import { useState } from "react";
 import type { ScheduleItem } from "@/app/features/reservaciones/crear/types/schedule";
 import type { HomeAgendaDay } from "../../../types/homeAgenda";
 
-import { HomeAgendaDayColumn } from "./HomeAgendaColumn";
+import { HomeAgendaColumn } from "./HomeAgendaColumn";
 import { sortItemsByTime } from "./HomeAgendaListUtils";
 
 type HomeAgendaListProps = {
@@ -13,15 +13,17 @@ type HomeAgendaListProps = {
   itemsByDate: Record<string, ScheduleItem[]>;
   disabledDateIds: string[];
   isLoading?: boolean;
+  onSelectItem?: (item: ScheduleItem) => void;
 };
 
-export const MAX_VISIBLE_ITEMS_PER_DAY = 5;
+export const MAX_VISIBLE_ITEMS_PER_DAY = 3;
 
 export function HomeAgendaList({
   days,
   itemsByDate,
   disabledDateIds,
   isLoading = false,
+  onSelectItem,
 }: HomeAgendaListProps) {
   const [expandedDateIds, setExpandedDateIds] = useState<Set<string>>(
     () => new Set(),
@@ -61,13 +63,14 @@ export function HomeAgendaList({
             : sortItemsByTime(itemsByDate[day.id] ?? []);
 
           return (
-            <HomeAgendaDayColumn
+            <HomeAgendaColumn
               key={day.id}
               day={day}
               items={items}
               isDisabled={isDisabled}
               isExpanded={expandedDateIds.has(day.id)}
               onToggleExpanded={() => toggleDayExpansion(day.id)}
+              onSelectItem={onSelectItem}
             />
           );
         })}

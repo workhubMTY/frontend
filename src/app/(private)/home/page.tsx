@@ -44,7 +44,6 @@ export default function HomePage() {
           isLoading={state.friendsIsLoading}
           onSelectOwner={actions.selectOwner}
         />
-
         <HomeAgendaCard
           rangeLabel={formatAgendaRangeLabel(state.visibleDays)}
           viewMode={state.viewMode}

@@ -18,6 +18,7 @@ type HomeAgendaDayRowProps = {
   items: ScheduleItem[];
   isDisabled?: boolean;
   isLoading?: boolean;
+  onSelectItem?: (item: ScheduleItem) => void;
 };
 
 export function HomeAgendaDayRow({
@@ -25,6 +26,7 @@ export function HomeAgendaDayRow({
   items,
   isDisabled = false,
   isLoading = false,
+  onSelectItem,
 }: HomeAgendaDayRowProps) {
   const positionedItems = placeItemsInLanes(items);
   const laneCount = getMaxLane(positionedItems);
@@ -52,7 +54,6 @@ export function HomeAgendaDayRow({
         >
           {day.dayNumber}
         </span>
-
       </div>
 
       <div
@@ -85,7 +86,11 @@ export function HomeAgendaDayRow({
           <AgendaRowState label="Sin actividades" muted />
         ) : (
           positionedItems.map((item) => (
-            <HomeAgendaItemBlock key={item.id} item={item} />
+            <HomeAgendaItemBlock
+              key={item.id}
+              item={item}
+              onClick={() => onSelectItem?.(item)}
+            />
           ))
         )}
       </div>

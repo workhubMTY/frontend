@@ -3,38 +3,42 @@
 import type { ScheduleItem } from "@/app/features/reservaciones/crear/types/schedule";
 import type { HomeAgendaDay } from "../../../types/homeAgenda";
 
-import { HomeAgendaTimelineHeader } from "./HomeAgendaTimelineHeader";
 import { HomeAgendaDayRow } from "./HomeAgendaDayRow";
+import { HomeAgendaTimelineHeader } from "./HomeAgendaTimelineHeader";
 
 type HomeAgendaTimelineProps = {
   days: HomeAgendaDay[];
   itemsByDate: Record<string, ScheduleItem[]>;
-  disabledDateIds?: string[];
+  disabledDateIds: string[];
   isLoading?: boolean;
+  onSelectItem?: (item: ScheduleItem) => void;
 };
 
 export function HomeAgendaTimeline({
   days,
   itemsByDate,
-  disabledDateIds = [],
+  disabledDateIds,
   isLoading = false,
+  onSelectItem,
 }: HomeAgendaTimelineProps) {
+  const disabledIds = new Set(disabledDateIds);
+
   return (
-    <div className="flex min-h-0 flex-1 flex-col">
-      <div className="min-h-0 flex-1 px-6 py-2">
-        <div className="space-y-2">
-          {days.map((day) => (
-            <HomeAgendaDayRow
-              key={day.id}
-              day={day}
-              items={itemsByDate[day.id] ?? []}
-              isDisabled={disabledDateIds.includes(day.id)}
-              isLoading={isLoading}
-            />
-          ))}
-        </div>
-      </div>
+    <div className="h-full min-h-0 overflow-auto px-5 py-4">
       <HomeAgendaTimelineHeader />
+
+      <div className="mt-3 space-y-3">
+        {days.map((day) => (
+          <HomeAgendaDayRow
+            key={day.id}
+            day={day}
+            items={itemsByDate[day.id] ?? []}
+            isDisabled={disabledIds.has(day.id)}
+            isLoading={isLoading}
+            onSelectItem={onSelectItem}
+          />
+        ))}
+      </div>
     </div>
   );
 }

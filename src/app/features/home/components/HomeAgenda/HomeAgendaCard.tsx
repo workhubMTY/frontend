@@ -1,5 +1,9 @@
 "use client";
 
+import { useState } from "react";
+
+import { cn } from "@/app/shared/lib/cn";
+
 import type { ScheduleItem } from "@/app/features/reservaciones/crear/types/schedule";
 import type {
   HomeAgendaDay,
@@ -9,6 +13,8 @@ import type {
 import { HomeAgendaList } from "./List/HomeAgendaList";
 import { HomeAgendaTimeline } from "./Timeline/HomeAgendaTimeline";
 import { HomeAgendaToolbar } from "./HomeAgendaToolbar";
+import { HomeAgendaReservationDetailModal } from "./HomeAgendaReservationDetailModal";
+import { getOfficeReservationDetailId } from "./HomeAgendaSelectionUtils";
 
 type HomeAgendaCardProps = {
   rangeLabel: string;
@@ -47,37 +53,70 @@ export function HomeAgendaCard({
   onPrevious,
   onNext,
 }: HomeAgendaCardProps) {
-  return (
-    <section className="flex min-h-0 max-h-[640px] overflow-hidden border border-grid-lines bg-container">
-      <div className="flex min-w-0 flex-1 flex-col">
-        <HomeAgendaToolbar
-          rangeLabel={rangeLabel}
-          viewMode={viewMode}
-          onChangeViewMode={onChangeViewMode}
-          canGoPrevious={canGoPrevious}
-          canGoNext={canGoNext}
-          onPrevious={onPrevious}
-          onNext={onNext}
-        />
+  const [selectedReservationId, setSelectedReservationId] = useState<
+    number | null
+  >(null);
 
-        <div className="min-h-0 flex-1 overflow-hidden">
-          {viewMode === "agenda" ? (
-            <HomeAgendaTimeline
-              days={days}
-              itemsByDate={itemsByDate}
-              disabledDateIds={disabledDateIds}
-              isLoading={isLoading}
-            />
-          ) : (
-            <HomeAgendaList
-              days={days}
-              itemsByDate={itemsByDate}
-              disabledDateIds={disabledDateIds}
-              isLoading={isLoading}
-            />
-          )}
+  function handleSelectItem(item: ScheduleItem) {
+    const reservationId = getOfficeReservationDetailId(item);
+
+    if (reservationId === null) {
+      return;
+    }
+
+    setSelectedReservationId(reservationId);
+  }
+
+  function closeReservationDetail() {
+    setSelectedReservationId(null);
+  }
+
+  return (
+    <>
+      <section
+        className={cn(
+          "flex min-h-0 overflow-hidden border border-grid-lines bg-container",
+          viewMode === "list" ? "max-h-[640px]" : "h-full",
+        )}
+      >
+        <div className="flex min-w-0 flex-1 flex-col">
+          <HomeAgendaToolbar
+            rangeLabel={rangeLabel}
+            viewMode={viewMode}
+            onChangeViewMode={onChangeViewMode}
+            canGoPrevious={canGoPrevious}
+            canGoNext={canGoNext}
+            onPrevious={onPrevious}
+            onNext={onNext}
+          />
+
+          <div className="min-h-0 flex-1 overflow-hidden">
+            {viewMode === "agenda" ? (
+              <HomeAgendaTimeline
+                days={days}
+                itemsByDate={itemsByDate}
+                disabledDateIds={disabledDateIds}
+                isLoading={isLoading}
+                onSelectItem={handleSelectItem}
+              />
+            ) : (
+              <HomeAgendaList
+                days={days}
+                itemsByDate={itemsByDate}
+                disabledDateIds={disabledDateIds}
+                isLoading={isLoading}
+                onSelectItem={handleSelectItem}
+              />
+            )}
+          </div>
         </div>
-      </div>
-    </section>
+      </section>
+
+      <HomeAgendaReservationDetailModal
+        open={selectedReservationId !== null}
+        reservationId={selectedReservationId}
+        onClose={closeReservationDetail}
+      />
+    </>
   );
 }

@@ -8,21 +8,23 @@ import type { HomeAgendaDay } from "../../../types/homeAgenda";
 import { MAX_VISIBLE_ITEMS_PER_DAY } from "./HomeAgendaList";
 import { HomeAgendaListItem } from "./HomeAgendaListItem";
 
-type HomeAgendaDayColumnProps = {
+type HomeAgendaColumnProps = {
   day: HomeAgendaDay;
   items: ScheduleItem[];
   isDisabled: boolean;
   isExpanded: boolean;
   onToggleExpanded: () => void;
+  onSelectItem?: (item: ScheduleItem) => void;
 };
 
-export function HomeAgendaDayColumn({
+export function HomeAgendaColumn({
   day,
   items,
   isDisabled,
   isExpanded,
   onToggleExpanded,
-}: HomeAgendaDayColumnProps) {
+  onSelectItem,
+}: HomeAgendaColumnProps) {
   const hasItems = items.length > 0;
   const hasHiddenItems = items.length > MAX_VISIBLE_ITEMS_PER_DAY;
 
@@ -94,6 +96,7 @@ export function HomeAgendaDayColumn({
                   index,
                 ].join("-")}
                 item={item}
+                onClick={() => onSelectItem?.(item)}
               />
             ))}
 

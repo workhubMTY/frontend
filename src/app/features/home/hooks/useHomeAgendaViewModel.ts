@@ -28,6 +28,8 @@ import {
   toDateId,
 } from "../lib/homeAgenda";
 
+  // import { useUpdateAgendaItem } from "../data/hooks/useUpdateAgendaItem";
+
 const VISIBLE_DAYS = 5;
 const MAX_DAYS_FROM_TODAY = 21;
 
@@ -37,6 +39,8 @@ export function useHomeAgendaViewModel() {
   const myUserId = user?.eId ? String(user.eId) : null;
 
   const friendsQuery = useFriends();
+
+  // const updateAgendaItemMutation = useUpdateAgendaItem();
 
   const today = useMemo(() => startOfLocalDay(new Date()), []);
 
@@ -243,6 +247,21 @@ export function useHomeAgendaViewModel() {
     selectFriend(ownerId);
   }
 
+  // NUEVO
+  // async function patchAgendaItem(
+  //   item: ScheduleItem,
+  //   values: {
+  //     start: string;
+  //     end: string;
+  //   },
+  // ) {
+  //   await updateAgendaItemMutation.mutateAsync({
+  //     item,
+  //     start: values.start,
+  //     end: values.end,
+  //   });
+  // }
+
   return {
     state: {
       user,
@@ -277,6 +296,9 @@ export function useHomeAgendaViewModel() {
       canGoPrevious,
       canGoNext,
 
+      // NUEVO
+      // isUpdatingAgendaItem: updateAgendaItemMutation.isPending,
+
       isLoading: timelineQueryResult.isLoading || friendsQuery.isLoading,
       isFetching: timelineQueryResult.isFetching || friendsQuery.isFetching,
       error: timelineQueryResult.error ?? friendsQuery.error,
@@ -293,6 +315,9 @@ export function useHomeAgendaViewModel() {
       goPrevious,
       goNext,
       goToday,
+
+      // NUEVO
+      // patchAgendaItem,
     },
   };
 }
