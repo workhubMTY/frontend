@@ -10,6 +10,6 @@ type OfficeReservationQrProps = {
 };
 
 export function OfficeReservationQr({ slotCode, size }: OfficeReservationQrProps) {
-  const url = `${APP_BASE_URL}/cubiculos/reservacion/checkin/${encodeURIComponent(slotCode)}`;
+  const url = `${APP_BASE_URL}/office-checkin/${encodeURIComponent(slotCode)}`;
   return <ReservationQr url={url} label={`Espacio ${slotCode}`} size={size} />;
 }

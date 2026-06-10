@@ -25,7 +25,7 @@ export default function OfficeCheckinSlotPage() {
 
   const handleClose = () => {
     reset();
-    router.push("/cubiculos/reservacion/checkin");
+    router.push("/office-checkin");
   };
 
   return (
@@ -33,7 +33,7 @@ export default function OfficeCheckinSlotPage() {
       <div className="flex flex-col items-center px-4 py-10 gap-6 max-w-2xl mx-auto w-full">
         <div className="w-full">
           <button
-            onClick={() => router.push("/cubiculos/reservacion/checkin")}
+            onClick={() => router.push("/office-checkin")}
             className="flex items-center gap-1.5 text-sm text-on-background-2 hover:text-on-background transition-colors"
           >
             <ArrowLeft className="h-4 w-4" />
