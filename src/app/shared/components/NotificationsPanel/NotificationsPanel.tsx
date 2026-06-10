@@ -193,7 +193,7 @@ export default function NotificationsPanel() {
         aria-label="Notificaciones"
         className="relative flex items-center justify-center rounded-full bg-background-page p-2 text-on-background-2 transition-colors hover:bg-slate-200/70"
       >
-        <span className="material-symbols-outlined text-[22px]">
+        <span className="material-symbols-outlined text-[22px] select-none">
           notifications
         </span>
 
@@ -205,7 +205,7 @@ export default function NotificationsPanel() {
       </button>
 
       {open && (
-        <div className="absolute right-0 top-[calc(100%+10px)] z-[100] flex max-h-[560px] w-[400px] animate-[panelIn_0.18s_cubic-bezier(.22,1,.36,1)_both] flex-col overflow-hidden rounded-[14px] border border-slate-200 bg-white shadow-[0_16px_40px_rgba(15,23,42,0.14),0_2px_8px_rgba(15,23,42,0.08)] max-[480px]:right-[-8px] max-[480px]:w-[calc(100vw-16px)]">
+        <div className="select-none absolute right-0 top-[calc(100%+10px)] z-[100] flex max-h-[560px] w-[400px] animate-[panelIn_0.18s_cubic-bezier(.22,1,.36,1)_both] flex-col overflow-hidden rounded-[14px] border border-slate-200 bg-white shadow-[0_16px_40px_rgba(15,23,42,0.14),0_2px_8px_rgba(15,23,42,0.08)] max-[480px]:right-[-8px] max-[480px]:w-[calc(100vw-16px)]">
           <div className="flex flex-col gap-3 border-b border-slate-100 px-4 pb-2.5 pt-3.5">
             <div className="flex items-center justify-between">
               <span className=" text-[15px] font-bold text-slate-950">
@@ -220,7 +220,7 @@ export default function NotificationsPanel() {
               )}
             </div>
 
-            <div className="flex items-center gap-1 rounded-[10px] bg-slate-100 p-[3px]">
+            <div className="flex items-center gap-1 rounded-[10px] bg-slate-100 p-[3px] select-none">
               <button
                 type="button"
                 onClick={() => setActiveTab("requests")}
@@ -251,7 +251,7 @@ export default function NotificationsPanel() {
             </div>
           </div>
 
-          <div className="flex-1 overflow-y-auto py-1 [scrollbar-width:thin] [scrollbar-color:#e2e8f0_transparent]">
+          <div className="flex-1 overflow-y-auto py-1 [scrollbar-width:thin] [scrollbar-color:#e2e8f0_transparent] select-none">
             {activeTab === "requests" ? (
               loadingRequests ? (
                 <NotificationLoading>Cargando...</NotificationLoading>
