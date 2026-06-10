@@ -1,5 +1,15 @@
 export type SelectionMode = "single" | "multiple" | "repeat";
 
+export type ParticipantAttendanceStatus =
+  | 'INVITED'
+  | 'NOT_ARRIVED'
+  | 'CHECKED_IN'
+  | 'CHECKED_OUT'
+  | 'NO_SHOW'
+  | 'NOT_ACCEPTED'
+  | 'REJECTED'
+  | 'CANCELED';
+
 export type CalendarCell = {
   id: string;
   date: Date;
@@ -11,7 +21,7 @@ export type CalendarCell = {
   isWeekend: boolean;
 };
 export type TimeBlock = {
-  id:  string;
+  id: string;
   start: string;
   end: string;
   conflict?: boolean;
@@ -29,13 +39,13 @@ export type ApiReservation = {
 
 export type CalendarSelectionAction =
   | {
-      type: "day";
-      dayId: string;
-    }
+    type: "day";
+    dayId: string;
+  }
   | {
-      type: "range";
-      dateIds: string[];
-    };
+    type: "range";
+    dateIds: string[];
+  };
 
 
 export type CreateReservationBatchDto = {
