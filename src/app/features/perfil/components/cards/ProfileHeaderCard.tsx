@@ -15,7 +15,6 @@ type ProfileHeaderCardProps = {
 };
 
 export function ProfileHeaderCard({ profile }: ProfileHeaderCardProps) {
-  // QUITAR ESTO CUANDO YA ESTEN SINCRONIZADOS LOS SCHEMAS
 
   return (
     <section className="h-full border border-neutral-1 bg-white shadow-sm">

@@ -100,11 +100,16 @@ export const officeSlotsApi = {
     id: number,
     payload?: GetSlotReservationsPayload,
     detail = false,
+    showOnlyActiveReservations?:boolean
   ) => {
     const params = new URLSearchParams();
 
     if (detail) {
       params.append("detail", "true");
+    }
+
+    if(showOnlyActiveReservations){
+      params.append("showOnlyActiveReservations", "true")
     }
 
     const search = params.toString();

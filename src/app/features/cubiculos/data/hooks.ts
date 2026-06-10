@@ -137,6 +137,7 @@ export function useSlotReservations(
   slotId: number | null,
   dates?: string[],
   detail = false,
+  showOnlyActiveReservations?:boolean
 ) {
   return useQuery({
     queryKey: officeSlotKeys.reservations.slot(slotId, dates, detail),
@@ -145,6 +146,7 @@ export function useSlotReservations(
         slotId as number,
         dates && dates.length > 0 ? { dates } : undefined,
         detail,
+        showOnlyActiveReservations
       ),
     enabled: slotId !== null,
   });

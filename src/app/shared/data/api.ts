@@ -86,6 +86,8 @@ async function authFetch<T>(
     err.status = response.status;
     err.body = payload;
     throw err;
+  } else {
+    console.log(`API Response for ${response.url}`, payload.data)
   }
 
   return payload.data as T;
